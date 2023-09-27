@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>DTI Employees</h1>
+
+<p><a href="/employees/create_employee">Add Employee</a></p>
+  
+<ul>
+  {% for x in allemp %}
+    <li>{{ x.first_name }} {{ x.last_name }}</li>
+  {% endfor %}
+</ul>
+
+</body>
+</html>
