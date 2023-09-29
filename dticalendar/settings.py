@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'employees',
     'calendars',
     'divisions',
-    'events'
+    'events',
+    'users',
+    'schedule'
 ]
 
 MIDDLEWARE = [
@@ -118,6 +120,10 @@ LANGUAGE_CODE = 'en-us'
 #TIME_ZONE = 'UTC'
 TIME_ZONE = 'Asia/Manila'
 
+# Date Format
+DATE_FORMAT = 'Y-m-d'
+TIME_FORMAT = 'H:i'
+
 USE_I18N = True
 
 USE_TZ = True
@@ -137,6 +143,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-#LOGIN_REDIRECT_URL = '/accounts/profile/'  # Redirect to this URL after login
-#LOGOUT_REDIRECT_URL = '/accounts/login/'   # Redirect to this URL after logout
+LOGIN_REDIRECT_URL = '/users/profile/'  # Redirect to this URL after login
+LOGOUT_REDIRECT_URL = '/users/login/'   # Redirect to this URL after logout
 

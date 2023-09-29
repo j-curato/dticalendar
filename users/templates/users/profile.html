@@ -1,0 +1,27 @@
+{% extends 'users/master.html' %}
+    {% block title %}
+        Profile Page
+    {% endblock %}
+{% block content %}
+    <h2>Profile</h2>
+    <p>Username: {{ user.username }}</p>
+    <p>Email: {{ user.email }}</p>
+    <p>First name: {{ user.first_name }}</p>
+    <p>Last name: {{ user.last_name }}</p>
+    <p><a href="{% url 'logout' %}">Logout</a></p>
+
+    <h2>Create Event</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {{ form.errors }}
+        <button type="submit">Create</button>
+    </form>
+
+    <h2>Events</h2>
+    <ul>
+    {% for event in events %}
+        <p>{{ event.title }} - {{ event.start }} - {{ event.end }}</p>
+    {% endfor %}
+    </ul>
+{% endblock %}

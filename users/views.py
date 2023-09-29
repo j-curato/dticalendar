@@ -1,6 +1,8 @@
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect
+from schedule.models import Event
+from schedule.forms import EventForm
 
 from .forms import UserRegisterForm
 
@@ -28,9 +30,27 @@ def login_request(request):
             user = authenticate(username = username,password = password)
             if user is not None:
                 login(request, user)
-                return redirect('home')
+                return redirect('profile')
             else:
                 print("Invalid username or password.")
     else:
         form = AuthenticationForm()
     return render(request, 'users/login.html', {'form': form})
+
+def profile(request):
+    #return render(request, 'users/profile.html')
+    # Create an event
+    if request.method == 'POST':
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save()
+            event.user = request.user
+            event.save()
+    else:
+        form = EventForm()
+
+    # List events for the logged-in user
+    events = Event.objects.filter(user=request.user)
+            
+    # Render the profile template
+    return render(request, 'users/profile.html', {'events': events, 'form': form})
