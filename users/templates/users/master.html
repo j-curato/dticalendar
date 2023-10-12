@@ -7,6 +7,10 @@
         {% load bootstrap4 %}
         {% bootstrap_css %}
         {% bootstrap_javascript jquery='full' %}
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+        <script src="{% static 'js/vue.global.js' %}"></script>
+        
     </head> 
     
     <body>
@@ -14,53 +18,13 @@
         <div class="container">
 
             {% block content %}
+            
             {% endblock %}
 
         </div>
-
-        <div id="app">
-            <button @click="showModal">Show Pop-up</button>
-          
-            <!-- Modal -->
-            <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Hello, World!</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    This is a pop-up box with a message: "Hello, World!"
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-
         
+        <script src="{% static 'js/custom-vue.js' %}"></script>
 
     </body>
-    
-    <script src="{% static 'js/vue.global.js' %}"></script>
-      
-      <script type="module">
 
-const app = Vue.createApp({
-  methods: {
-    showModal() {
-      // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
-      $('#myModal').modal('show');
-    }
-  }
-});
-
-app.mount('#app');
-
-
-      </script>
-        
 </html>

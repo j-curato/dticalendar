@@ -1,27 +1,152 @@
 {% extends 'users/master.html' %}
+
     {% block title %}
         Profile Page
     {% endblock %}
+
 {% block content %}
+
     <h2>Profile</h2>
+    <p>ID: {{ user.id }}</p>
     <p>Username: {{ user.username }}</p>
     <p>Email: {{ user.email }}</p>
     <p>First name: {{ user.first_name }}</p>
     <p>Last name: {{ user.last_name }}</p>
     <p><a href="{% url 'logout' %}">Logout</a></p>
 
-    <h2>Create Event</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        {{ form.errors }}
-        <button type="submit">Create</button>
-    </form>
+    <div class="container-fluid">
 
-    <h2>Events</h2>
+      {% if msgvar %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% else %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+       <div id="app">
+        
+        <button @click="showModal" class="btn btn-primary"><i class="bi bi-calendar-event"></i> New Event</button>&nbsp;
+        <button @click="showCalModal" class="btn btn-primary"><i class="bi bi-calendar-check"></i> Calendar Category</button>&nbsp;
+        <button @click="showDivModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Division</button>&nbsp;
+          
+            <!-- Modal -->
+            <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form action="{% url 'save-event' %}" method="post" enctype="multipart/form-data">
+                      {% csrf_token %}
+                        <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
+                        <p><input type="text" name="event_title" class="form-control" placeholder="Event title" required></p>
+                        <p><input type="text" name="event_location" class="form-control" placeholder="Location" required></p>
+                        <p><select name="division_id" class="form-control form-select" aria-label="Default select example" v-model="selectedDivisionId" @change="onDivisionChange">
+                          <option value="0" selected>Select Division</option>
+                          {% for val in divisionList %}
+                          <option value="{{ val.id }}">{{ val.division_name }}</option>
+                          {% endfor %}
+                        </select></p>
+                        <p><select name="calendar_id" class="form-control form-select" aria-label="Default select example">
+                          <option selected>Select Calendar</option>
+                          {% for val in calendarList %}
+                          <option value="{{ val.id }}">{{ val.calendar_name }}</option>
+                          {% endfor %}
+                        </select></p>
+                        <p><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="startdate" @change="updateStartDateFields" required></p>
+                        <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="dayStart" style="display:none;"></p>
+                        <p><input type="text" name="event_month_start" class="form-control" placeholder="Month Start"  v-model="monthStart" style="display:none;"></p>
+                        <p><input type="text" name="event_year_start" class="form-control" placeholder="Year Start"  v-model="yearStart" style="display:none;"></p>
+                        <p><input type="text" name="event_time_start" class="form-control" placeholder="Time Start"  v-model="timeStart" style="display:none;"></p>
+                        <!-- <p><input type="time" name="" class="form-control" placeholder="Time start" required></p> -->
+                        <p><input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="enddate" @change="updateEndDateFields" required></p>
+                        <!-- <p><input type="time" name="" class="form-control" placeholder="Time end" required></p> -->
+                        <p><input type="text" name="event_day_end" class="form-control" v-model="dayEnd" placeholder="Day End" style="display: none;"></p>
+                        <p><input type="text" name="event_month_end" class="form-control" v-model="monthEnd" placeholder="Month End" style="display: none;"></p>
+                        <p><input type="text" name="event_year_end" class="form-control" v-model="yearEnd" placeholder="Year end" style="display: none;"></p>
+                        <p><input type="text" name="event_time_end" class="form-control" v-model="timeEnd" placeholder="Time end" style="display: none;"></p>
+                        <p><textarea name="event_desc" class="form-control" id="id-desc" placeholder="Add a description"></textarea></p>
+                        <p><textarea name="participants" class="form-control" id="id-participants" placeholder="Participants"></textarea></p>
+                        <p><input type="file" name="file_attachment" class="form-control" ></p>
+                  
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
+                  </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal fade" id="myCalModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add calendar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form action="{% url 'save-calendar' %}" method="post">
+                      {% csrf_token %}
+                        <p><input type="text" name="calendar_name" class="form-control" placeholder="Calendar name" required></p>
+                        <p><input type="text" name="calendar_desc" class="form-control" placeholder="Description" required></p>
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
+                  </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="modal fade" id="myDivModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add division</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form action="{% url 'save-division' %}" method="post">
+                      {% csrf_token %}
+                        <p><input type="text" name="division_name" class="form-control" placeholder="Division name" required></p>
+                        <p><input type="text" name="division_desc" class="form-control" placeholder="Description" required></p>
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
+                  </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div> <!-- end of app  -->
+
+    <hr>
+
+    <h2>Events List</h2>
     <ul>
-    {% for event in events %}
-        <p>{{ event.title }} - {{ event.start }} - {{ event.end }}</p>
+    {% for val in eventsList %}
+        <p>{{ val.event_title }} - {{ val.event_desc }}</p>
     {% endfor %}
     </ul>
+
+   </div>
 {% endblock %}

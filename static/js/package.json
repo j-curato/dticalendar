@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "dticalendar": "file:../..",
+    "vue": "^2.6.14"
+  },
+  "name": "dticalendar",
+  "version": "1.0.0",
+  "description": "DTI Calendar System",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/j-curato/dticalendar.git"
+  },
+  "keywords": [
+    "DTICalendar"
+  ],
+  "author": "Avelino",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/j-curato/dticalendar/issues"
+  },
+  "homepage": "https://github.com/j-curato/dticalendar#readme"
+}
