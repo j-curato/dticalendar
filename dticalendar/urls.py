@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from users.views import get_events
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -23,5 +24,6 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('schedule/', include('schedule.urls')),
     path('', include('divisions.urls')),
-    path('', include('calendars.urls'))
+    path('', include('calendars.urls')),
+    path('get_events/', get_events, name='get_events'),
 ]

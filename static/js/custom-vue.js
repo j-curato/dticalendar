@@ -1,3 +1,5 @@
+//import axios from 'axios'; // Import axios library
+
 const app = Vue.createApp({
     data() {
         return {
@@ -27,8 +29,10 @@ const app = Vue.createApp({
         // Call the updateDateFields method on page load
         this.updateStartDateFields();
         this.updateEndDateFields();
+
     },
     methods: {
+
         showModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $('#myModal').modal('show');
@@ -41,6 +45,11 @@ const app = Vue.createApp({
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $('#myCalModal').modal('show');
         },
+        showEditEventModal(eventId) {
+            // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
+            $('#editEventModal').modal('show');
+            console.log(eventId);
+        },
         onDivisionChange() {
             // Show an alert with the selected division ID
             // alert(`Selected Division ID: ${this.selectedDivisionId}`);
@@ -51,6 +60,17 @@ const app = Vue.createApp({
             const datetimeValue = this.startdate;
             const [date, time] = datetimeValue.split('T');
             const [year, month, day] = date.split('-');
+
+            // Convert year and month to integers
+            const yearInt = parseInt(year, 10);
+            const monthInt = parseInt(month, 10);
+            const dayInt = parseInt(day, 10);
+
+            // Array of month names
+            const monthNames = [
+                'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
+                'September', 'October', 'November', 'December'
+            ];
 
             // Convert the time to a Date object
             const timeValue = new Date(`2000-01-01T${time}`);
@@ -69,16 +89,32 @@ const app = Vue.createApp({
             const formattedHours = hours12 < 10 ? `0${hours12}` : `${hours12}`;
             const formattedMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
 
-            this.dayStart = day;
-            this.monthStart = month;
-            this.yearStart = year;
+            // Create a formatted date string
+            const formattedDate = `${monthNames[monthInt - 1]} ${dayInt}, ${yearInt}`;
+
+            this.dayStart = day.toString(); // Convert back to string
+            this.monthStart = month.toString(); // Convert back to string
+            this.yearStart = year.toString(); // Convert back to string
             this.timeStart = `${formattedHours}:${formattedMinutes} ${amOrPm}`;
+            this.dateStartSearchable = formattedDate;
+            //this.dateStartSearchable = `${year}-${month}-${day}`;
         },
         updateEndDateFields() {
 
             const enddatetimeValue = this.enddate;
             const [datePart, timePart] = enddatetimeValue.split('T');
             const [endyear, endmonth, endday] = datePart.split('-');
+
+            // Convert year and month to integers
+            const endyearInt = parseInt(endyear, 10);
+            const endmonthInt = parseInt(endmonth, 10);
+            const enddayInt = parseInt(endday, 10); 
+
+            // Array of month names
+            const endmonthNames = [
+                'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
+                'September', 'October', 'November', 'December'
+            ];
           
             // Convert the time to a Date object
             const endtimeValue = new Date(`2000-01-01T${timePart}`);
@@ -99,14 +135,54 @@ const app = Vue.createApp({
           
             // Combine the formatted time with AM/PM
             this.formattedTimeEnd = `${endformattedHours}:${endformattedMinutes} ${period}`;
+
+            // Create a formatted date string
+            const endformattedDate = `${endmonthNames[endmonthInt - 1]} ${enddayInt}, ${endyearInt}`;
           
-            this.dayEnd = endday;
-            this.monthEnd = endmonth;
-            this.yearEnd = endyear;
+            this.dayEnd = endday.toString(); // Convert back to string
+            this.monthEnd = endmonth.toString(); // Convert back to string
+            this.yearEnd = endyear.toString(); // Convert back to string
             this.timeEnd = `${endformattedHours}:${endformattedMinutes} ${period}`;
+            this.dateEndSearchable = endformattedDate;
+            //this.dateEndSearchable = `${endyear}-${endmonth}-${endday}`;
 
           },
     },
+    mounted() {
+
+        $(function() {
+            $("#event-title-input, #editEvent-title-input").autocomplete({
+                source: 'suggest_event_titles',
+                minLength: 1,  // Minimum number of characters before triggering autocomplete
+                
+            });
+
+            $("#tag-id").autocomplete({
+                source: 'suggest_event_titless',
+                minLength: 1,  // Minimum number of characters before triggering autocomplete
+            });
+
+            //Datatables serverside for displaying events
+            $('#eventsTable').DataTable({
+                'processing': true,
+                'serverSide': true,
+                'ajax': {
+                    'url': '/get_events/',  // Replace with your API endpoint
+                    'type': 'GET',
+                },
+                'columns': [
+                    {'data': 'id'},
+                    {'data': 'event_title', 'searchable': true, 'orderable': true},
+                    {'data': 'event_desc', 'searchable': true, 'orderable': true},
+                    {'data': 'whole_date_start_searchable', 'searchable': true, 'orderable': true},
+                    {'data': 'whole_date_end_searchable', 'searchable': true, 'orderable': true},
+                    // Add more columns as needed
+                ]
+            });
+        });
+
+    }
+
 });
 
 app.mount('#app');

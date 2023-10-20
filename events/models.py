@@ -23,7 +23,16 @@ class Event(models.Model):
 	event_year_end = models.CharField(max_length=10) 
 	event_time_end = models.CharField(max_length=50)
 	whole_date_start = models.DateField(default=date.today)
+	whole_date_start_searchable = models.CharField(max_length=20, blank=True, null=True)
 	whole_date_end = models.DateField(default=date.today)
+	whole_date_end_searchable = models.CharField(max_length=20, blank=True, null=True)
 	file_attachment = models.FileField(upload_to='media/', null=True, blank=True)
 	created_at = models.DateField(default=date.today)
 	updated_at = models.DateField(default=date.today)
+
+	def serialize(self):
+		# define how you serialized the Event Object
+		return {
+			'id': self.id,
+			'event_title': self.event_title,
+		}

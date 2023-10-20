@@ -1,0 +1,28 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>jQuery UI Autocomplete - Default functionality</title>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+  <script src="{% static 'js/vue.global.js' %}"></script>
+  
+</head>
+<body>
+ 
+  <div id="app">
+ 
+  <form action="{% url 'save-event' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+      <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
+      <p><input type="text" name="event_title" id="tag-id" class="form-control" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titless' %}" required></p>
+  </form>
+</div>
+<script src="{% static 'js/custom-vue.js' %}"></script>
+</body>
+
+</html>

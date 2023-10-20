@@ -49,10 +49,65 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                    <form action="{% url 'save-event' %}" method="post" enctype="multipart/form-data">
+                    <form action="{% url 'profile' %}" method="post" enctype="multipart/form-data">
                       {% csrf_token %}
                         <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
-                        <p><input type="text" name="event_title" class="form-control" placeholder="Event title" required></p>
+                        <p><input type="text" name="event_title" id="event-title-input" class="form-control" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
+                        <p><input type="text" name="event_location" class="form-control" placeholder="Location" required></p>
+                        <p><select name="division_id" class="form-control form-select" aria-label="Default select example" v-model="selectedDivisionId" @change="onDivisionChange">
+                          <option value="0" selected>Select Division</option>
+                          {% for val in divisionList %}
+                          <option value="{{ val.id }}">{{ val.division_name }}</option>
+                          {% endfor %}
+                        </select></p>
+                        <p><select name="calendar_id" class="form-control form-select" aria-label="Default select example">
+                          <option selected>Select Calendar</option>
+                          {% for val in calendarList %}
+                          <option value="{{ val.id }}">{{ val.calendar_name }}</option>
+                          {% endfor %}
+                        </select></p>
+                        <p><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="startdate" @change="updateStartDateFields" required></p>
+                        <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="dayStart" style="display:none;"></p>
+                        <p><input type="text" name="event_month_start" class="form-control" placeholder="Month Start"  v-model="monthStart" style="display:none;"></p>
+                        <p><input type="text" name="event_year_start" class="form-control" placeholder="Year Start"  v-model="yearStart" style="display:none;"></p>
+                        <p><input type="text" name="event_time_start" class="form-control" placeholder="Time Start"  v-model="timeStart" style="display:none;"></p>
+                         <p><input type="text" name="whole_date_start_searchable" class="form-control" v-model="dateStartSearchable" style="display:none;"></p>
+                        <!-- <p><input type="time" name="" class="form-control" placeholder="Time start" required></p> -->
+                        <p><input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="enddate" @change="updateEndDateFields" required></p>
+                        <!-- <p><input type="time" name="" class="form-control" placeholder="Time end" required></p> -->
+                        <p><input type="text" name="event_day_end" class="form-control" v-model="dayEnd" placeholder="Day End" style="display: none;"></p>
+                        <p><input type="text" name="event_month_end" class="form-control" v-model="monthEnd" placeholder="Month End" style="display: none;"></p>
+                        <p><input type="text" name="event_year_end" class="form-control" v-model="yearEnd" placeholder="Year end" style="display: none;"></p>
+                        <p><input type="text" name="event_time_end" class="form-control" v-model="timeEnd" placeholder="Time end" style="display: none;"></p>
+                        <p><input type="text" name="whole_date_end_searchable" class="form-control" v-model="dateEndSearchable" style="display:none;"></p>
+                        <p><textarea name="event_desc" class="form-control" id="id-desc" placeholder="Add a description"></textarea></p>
+                        <p><textarea name="participants" class="form-control" id="id-participants" placeholder="Participants"></textarea></p>
+                        <p><input type="file" name="file_attachment" class="form-control" ></p>
+                  
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
+                  </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- modal for editing events -->
+
+            <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form action="{% url 'profile' %}" method="post" enctype="multipart/form-data">
+                      {% csrf_token %}
+                        <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
+                        <p><input type="text" name="event_title" id="editEvent-title-input" class="form-control" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
                         <p><input type="text" name="event_location" class="form-control" placeholder="Location" required></p>
                         <p><select name="division_id" class="form-control form-select" aria-label="Default select example" v-model="selectedDivisionId" @change="onDivisionChange">
                           <option value="0" selected>Select Division</option>
@@ -137,16 +192,34 @@
               </div>
             </div>
 
-          </div> <!-- end of app  -->
-
     <hr>
 
-    <h2>Events List</h2>
-    <ul>
-    {% for val in eventsList %}
-        <p>{{ val.event_title }} - {{ val.event_desc }}</p>
-    {% endfor %}
-    </ul>
+      <!-- <h2>Events List</h2>
+     
+      <ul>
+        {% for val in eventsList %}
+            <p><a @click="showEditEventModal" style="cursor: pointer;">{{ val.event_title }} - {{ val.event_desc }}</a></p>
+        </li>
+        {% endfor %}
+      </ul> -->
+
+      <table id="eventsTable" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Event Title</th>
+                <th>Event Description</th>
+                <th>Date Start</th>
+                <th>Date End</th>
+                <!-- Add more columns as needed -->
+            </tr>
+        </thead>
+        
+    </table>
+
+
+    </div> <!-- end of app  -->
 
    </div>
 {% endblock %}
+

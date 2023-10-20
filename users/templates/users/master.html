@@ -4,12 +4,43 @@
     <head>
         <meta charset="UTF-8">
         <title>Profile</title>  
+        
+        <!--datatables server-side-->
+        <script src="{% static 'js/jquery-3.7.0.js' %}"></script>
+        <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+        <link rel="stylesheet" type="text/css" href="{% static 'css/jquery.dataTables.min.css' %}">
+
+        <!--CSS Bootstrap-->
         {% load bootstrap4 %}
         {% bootstrap_css %}
-        {% bootstrap_javascript jquery='full' %}
-
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+        
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+        
+    
+        <!--vue.js-->
         <script src="{% static 'js/vue.global.js' %}"></script>
+        
+        
+        <style type="text/css">
+
+            .ui-autocomplete-input{
+            z-index: 9999 !important;
+        }
+
+        /* Apply a higher z-index to the modal dialog */
+        .modal-dialog{
+            z-index: 1050 !important; /* Adjust this value if necessary */
+        }
+
+        /* Apply a higher z-index to the autocomplete suggestions */
+        .ui-autocomplete {
+            z-index: 9999 !important; /* Should be higher than the modal */
+        }
+
+       
+    </style>
         
     </head> 
     
@@ -24,7 +55,7 @@
         </div>
         
         <script src="{% static 'js/custom-vue.js' %}"></script>
-
+        
     </body>
 
 </html>
