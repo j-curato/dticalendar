@@ -51,21 +51,64 @@
                   <div class="modal-body">
                     <form action="{% url 'profile' %}" method="post" enctype="multipart/form-data">
                       {% csrf_token %}
-                        <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
-                        <p><input type="text" name="event_title" id="event-title-input" class="form-control" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
-                        <p><input type="text" name="event_location" class="form-control" placeholder="Location" required></p>
-                        <p><select name="division_id" class="form-control form-select" aria-label="Default select example" v-model="selectedDivisionId" @change="onDivisionChange">
-                          <option value="0" selected>Select Division</option>
+                        
+                        <p> <!-- to be created with db table office-->
+                          <select name="office" class="form-control" aria-label="Default select example" required>
+                          <option >Select Office</option>
+                          <option value="RO" >REGIONAL OFFICE</option>
+                          <option value="ADN">AGUSAN DEL NORTE</option>
+                          <option value="ADS">AGUSAN DEL SUR</option>
+                          <option value="SDN">SURIGAO DEL NORTE</option>
+                          <option value="SDS">SURIGAO DEL SUR</option>
+                          <option value="PDI">PROVINCE OF DINAGAT ISLANDS</option>
+                        </select>
+                      </p>
+                        <p><select name="division_id" class="form-control form-select" aria-label="Default select example" v-model="selectedDivisionId" @change="onDivisionChange" required>
+                          <option value="0">Select Division</option>
                           {% for val in divisionList %}
                           <option value="{{ val.id }}">{{ val.division_name }}</option>
                           {% endfor %}
                         </select></p>
-                        <p><select name="calendar_id" class="form-control form-select" aria-label="Default select example">
-                          <option selected>Select Calendar</option>
-                          {% for val in calendarList %}
-                          <option value="{{ val.id }}">{{ val.calendar_name }}</option>
-                          {% endfor %}
-                        </select></p>
+
+                        <p> <!-- to be created with db table unit-->
+                          <select name="unit" class="form-control form-select" aria-label="Default select example" required>
+                          <option value="0">Select Unit</option>
+                          <option value="NC" >Negosyo Center</option>
+                          <option value="EDU">Enterprise Development Unit</option>
+                          <option value="TPU">Trade Promotion Unit</option>
+                          <option value="CARP">Comprehensive Agrarian Reform Program</option>
+                        </select>
+                      </p>
+
+                        <p> <!-- to be created with db table Org_outcome-->
+                          <select name="org_outcome" class="form-control form-select" aria-label="Default select example" required>
+                          <option value="0">Select Organizational Outcome</option>
+                          <option value="OO1" >OO1</option>
+                          <option value="OO2">OO2</option>
+                          <option value="OO3">OO3</option>
+                        </select>
+                       </p>
+
+                       <p> <!-- to be created with db table PAPs-->
+                        <select name="paps" class="form-control form-select" aria-label="Default select example" required>
+                        <option value="0">Select PAPs</option>
+                        <option value="PAPs 1" >PAPs 1</option>
+                        <option value="PAPs 2">PAPs 2</option>
+                        <option value="PAPs 3">PAPs 3</option>
+                      </select>
+                     </p>
+
+                       <p><select name="calendar_id" class="form-control form-select" aria-label="Default select example" required>
+                        <option>Select Calendar</option>
+                        {% for val in calendarList %}
+                        <option value="{{ val.id }}">{{ val.calendar_name }}</option>
+                        {% endfor %}
+                      </select></p>
+
+                        <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
+                        <p><input type="text" name="event_title" class="form-control" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
+                        <p><input type="text" name="event_location" class="form-control" placeholder="Location" required></p>
+
                         <p><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="startdate" @change="updateStartDateFields" required></p>
                         <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="dayStart" style="display:none;"></p>
                         <p><input type="text" name="event_month_start" class="form-control" placeholder="Month Start"  v-model="monthStart" style="display:none;"></p>
@@ -80,9 +123,9 @@
                         <p><input type="text" name="event_year_end" class="form-control" v-model="yearEnd" placeholder="Year end" style="display: none;"></p>
                         <p><input type="text" name="event_time_end" class="form-control" v-model="timeEnd" placeholder="Time end" style="display: none;"></p>
                         <p><input type="text" name="whole_date_end_searchable" class="form-control" v-model="dateEndSearchable" style="display:none;"></p>
-                        <p><textarea name="event_desc" class="form-control" id="id-desc" placeholder="Add a description"></textarea></p>
-                        <p><textarea name="participants" class="form-control" id="id-participants" placeholder="Participants"></textarea></p>
-                        <p><input type="file" name="file_attachment" class="form-control" ></p>
+                        <p><textarea name="event_desc" class="form-control" placeholder="Add a description"></textarea></p>
+                        <p><textarea name="participants" class="form-control" placeholder="Participants"></textarea></p>
+                        <p><input type="file" name="file_attachment" class="form-control"></p>
                   
                   <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">Save</button>
@@ -106,36 +149,79 @@
                   <div class="modal-body">
                     <form action="{% url 'profile' %}" method="post" enctype="multipart/form-data">
                       {% csrf_token %}
-                        <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
-                        <p><input type="text" name="event_title" id="editEvent-title-input" class="form-control" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
-                        <p><input type="text" name="event_location" class="form-control" placeholder="Location" required></p>
-                        <p><select name="division_id" class="form-control form-select" aria-label="Default select example" v-model="selectedDivisionId" @change="onDivisionChange">
-                          <option value="0" selected>Select Division</option>
+
+                        <p> <!-- to be created with db table office-->
+                          <select name="office" class="form-control" id="editOffice-id" aria-label="Default select example" required>
+                          <option >Select Office</option>
+                          <option value="RO" >REGIONAL OFFICE</option>
+                          <option value="ADN">AGUSAN DEL NORTE</option>
+                          <option value="ADS">AGUSAN DEL SUR</option>
+                          <option value="SDN">SURIGAO DEL NORTE</option>
+                          <option value="SDS">SURIGAO DEL SUR</option>
+                          <option value="PDI">PROVINCE OF DINAGAT ISLANDS</option>
+                        </select>
+                      </p>
+                        <p><select name="division_id" class="form-control form-select" id="editDivision-id" aria-label="Default select example" v-model="selectedDivisionId" @change="onDivisionChange" required>
+                          <option value="0">Select Division</option>
                           {% for val in divisionList %}
                           <option value="{{ val.id }}">{{ val.division_name }}</option>
                           {% endfor %}
                         </select></p>
-                        <p><select name="calendar_id" class="form-control form-select" aria-label="Default select example">
-                          <option selected>Select Calendar</option>
-                          {% for val in calendarList %}
-                          <option value="{{ val.id }}">{{ val.calendar_name }}</option>
-                          {% endfor %}
-                        </select></p>
-                        <p><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="startdate" @change="updateStartDateFields" required></p>
+
+                        <p> <!-- to be created with db table unit-->
+                          <select name="unit" class="form-control form-select" id="editUnit-id" aria-label="Default select example" required>
+                          <option value="0">Select Unit</option>
+                          <option value="NC" >Negosyo Center</option>
+                          <option value="EDU">Enterprise Development Unit</option>
+                          <option value="TPU">Trade Promotion Unit</option>
+                          <option value="CARP">Comprehensive Agrarian Reform Program</option>
+                        </select>
+                      </p>
+
+                        <p> <!-- to be created with db table Org_outcome-->
+                          <select name="org_outcome" class="form-control form-select" id="editOrgOutcome-id" aria-label="Default select example" required>
+                          <option value="0">Select Organizational Outcome</option>
+                          <option value="OO1" >OO1</option>
+                          <option value="OO2">OO2</option>
+                          <option value="OO3">OO3</option>
+                        </select>
+                      </p>
+
+                      <p> <!-- to be created with db table PAPs-->
+                        <select name="paps" class="form-control form-select" id="editPAPs-id" aria-label="Default select example" required>
+                        <option value="0">Select PAPs</option>
+                        <option value="PAPs 1" >PAPs 1</option>
+                        <option value="PAPs 2">PAPs 2</option>
+                        <option value="PAPs 3">PAPs 3</option>
+                      </select>
+                    </p>
+
+                      <p><select name="calendar_id" class="form-control form-select" id="editCalendar-id" aria-label="Default select example" required>
+                        <option>Select Calendar</option>
+                        {% for val in calendarList %}
+                        <option value="{{ val.id }}">{{ val.calendar_name }}</option>
+                        {% endfor %}
+                      </select></p>
+
+                        <p><input type="text" name="user_id" class="form-control" id="editUser-id" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
+                        <p><input type="text" name="event_title" class="form-control" id="editEventTitle-id" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
+                        <p><input type="text" name="event_location" class="form-control" id="editEventLocation-id" placeholder="Location" required></p>
+                        
+                        <p><input type="datetime-local" name="whole_date_start" class="form-control" id="editWholeDateStart-id" placeholder="Event Start" v-model="startdate" @change="updateStartDateFields" required></p>
                         <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="dayStart" style="display:none;"></p>
                         <p><input type="text" name="event_month_start" class="form-control" placeholder="Month Start"  v-model="monthStart" style="display:none;"></p>
                         <p><input type="text" name="event_year_start" class="form-control" placeholder="Year Start"  v-model="yearStart" style="display:none;"></p>
                         <p><input type="text" name="event_time_start" class="form-control" placeholder="Time Start"  v-model="timeStart" style="display:none;"></p>
                         <!-- <p><input type="time" name="" class="form-control" placeholder="Time start" required></p> -->
-                        <p><input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="enddate" @change="updateEndDateFields" required></p>
+                        <p><input type="datetime-local" name="whole_date_end" class="form-control" id="editWholeDateEnd-id" placeholder="Event End" v-model="enddate" @change="updateEndDateFields" required></p>
                         <!-- <p><input type="time" name="" class="form-control" placeholder="Time end" required></p> -->
                         <p><input type="text" name="event_day_end" class="form-control" v-model="dayEnd" placeholder="Day End" style="display: none;"></p>
                         <p><input type="text" name="event_month_end" class="form-control" v-model="monthEnd" placeholder="Month End" style="display: none;"></p>
                         <p><input type="text" name="event_year_end" class="form-control" v-model="yearEnd" placeholder="Year end" style="display: none;"></p>
                         <p><input type="text" name="event_time_end" class="form-control" v-model="timeEnd" placeholder="Time end" style="display: none;"></p>
-                        <p><textarea name="event_desc" class="form-control" id="id-desc" placeholder="Add a description"></textarea></p>
-                        <p><textarea name="participants" class="form-control" id="id-participants" placeholder="Participants"></textarea></p>
-                        <p><input type="file" name="file_attachment" class="form-control" ></p>
+                        <p><textarea name="event_desc" class="form-control"  id="editEventDesc-id" placeholder="Add a description"></textarea></p>
+                        <p><textarea name="participants" class="form-control" id="editParticipants-id" placeholder="Participants"></textarea></p>
+                        <p><input type="file" name="file_attachment" class="form-control" id="editFileAttachment-id" ></p>
                   
                   <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">Save</button>
@@ -214,7 +300,16 @@
                 <!-- Add more columns as needed -->
             </tr>
         </thead>
-        
+        <tfoot>
+          <tr>
+            <th>ID</th>
+            <th>Event Title</th>
+            <th>Event Description</th>
+            <th>Date Start</th>
+            <th>Date End</th>
+              
+          </tr>
+      </tfoot>
     </table>
 
 

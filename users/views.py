@@ -92,6 +92,10 @@ def profile(request):
         event.file_attachment = request.FILES['file_attachment']
         event.whole_date_start_searchable = request.POST['whole_date_start_searchable']
         event.whole_date_end_searchable = request.POST['whole_date_end_searchable']
+        event.office = request.POST['office'].upper()
+        event.org_outcome = request.POST['org_outcome'].upper()
+        event.paps = request.POST['paps'].upper()
+        event.unit = request.POST['unit'].upper()
         event.save()
 
         messages.success(request, 'Event saved successfully.')
@@ -166,9 +170,47 @@ def get_events(request):
         return JsonResponse(response_data)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+    # method to get the event details and return it as JSON and display it in the modal #editEventModal
+def get_event_details(request):
+    try:
+        # Get the event ID from the GET parameters
+        event_id = request.GET.get('event_id')
 
+        # Get the event details from the database
+        event = Event.objects.get(pk=event_id)
 
+        # Prepare the JSON response
+        response_data = {
+            'id': event.id,
+            'event_title': event.event_title,
+            'event_desc': event.event_desc,
+            'whole_date_start_searchable': event.whole_date_start_searchable,
+            'whole_date_end_searchable': event.whole_date_end_searchable,
+            'event_location': event.event_location,
+            'participants': event.participants,
+            'file_attachment': event.file_attachment.url,
+            'event_day_start': event.event_day_start,
+            'event_month_start': event.event_month_start,
+            'event_year_start': event.event_year_start,
+            'event_time_start': event.event_time_start,
+            'event_day_end': event.event_day_end,
+            'event_month_end': event.event_month_end,
+            'event_year_end': event.event_year_end,
+            'event_time_end': event.event_time_end,
+            'office': event.office,
+            'org_outcome': event.org_outcome,
+            'paps': event.paps,
+            'unit': event.unit
+        }
+ 
+        return JsonResponse(response_data)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)  
+        
 
+        
+        
 # save event to the database
 # def save_event(request):
 #     if request.method == 'POST':

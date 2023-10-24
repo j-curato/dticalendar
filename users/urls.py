@@ -12,5 +12,6 @@ urlpatterns = [
     path('autocomplete/suggest_event_titless/', views.suggest_event_title_auto, name='suggest_event_titless'),
     path('profile/suggest_event_titles/', views.profile, name='suggest_event_titles'),
     #path('get_events/', views.get_events, name='get_events'),
+    #path('get_event_details/', views.get_event_details, name='get_event_details'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 ]

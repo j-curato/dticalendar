@@ -150,6 +150,8 @@ const app = Vue.createApp({
     },
     mounted() {
 
+        var table; //declare the table variable globally
+
         $(function() {
             $("#event-title-input, #editEvent-title-input").autocomplete({
                 source: 'suggest_event_titles',
@@ -163,23 +165,65 @@ const app = Vue.createApp({
             });
 
             //Datatables serverside for displaying events
-            $('#eventsTable').DataTable({
+            table = $('#eventsTable').DataTable({
                 'processing': true,
                 'serverSide': true,
-                'ajax': {
+                'ajax': { 
                     'url': '/get_events/',  // Replace with your API endpoint
                     'type': 'GET',
                 },
+                'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
+                'buttons': [
+                    'copy', 'csv', 'excel', 'pdf', 'print' // Add the export buttons you need
+                ],
                 'columns': [
-                    {'data': 'id'},
-                    {'data': 'event_title', 'searchable': true, 'orderable': true},
-                    {'data': 'event_desc', 'searchable': true, 'orderable': true},
-                    {'data': 'whole_date_start_searchable', 'searchable': true, 'orderable': true},
-                    {'data': 'whole_date_end_searchable', 'searchable': true, 'orderable': true},
+                    {'data': 'id', 'sortable': true, 'searchable': false},
+                    {'data': 'event_title', 'searchable': true, 'sortable': true},
+                    {'data': 'event_desc', 'searchable': true, 'sortable': true},
+                    {'data': 'whole_date_start_searchable', 'searchable': true, 'sortable': true},
+                    {'data': 'whole_date_end_searchable', 'searchable': true, 'sortable': true},
                     // Add more columns as needed
-                ]
-            });
-        });
+                ],
+                'order': [[0, 'desc']], // Order by ID column, descending
+               
+            }); // end of the $('#eventsTable').DataTable()
+
+            $('#eventsTable tbody').on('click', 'tr', function () {
+                var data = table.row(this).data();
+                if (data) {
+                    console.log('Selected Data:', data.id);
+                    //query the database for the event details using the event id and display it in the #editEventModal
+                    $.ajax({
+                        url: '/get_event_details/',
+                        type: 'GET',
+                        data: {
+                            'event_id': data.id,
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+                            console.log(data);
+                            //populate the editEventModal with the event details
+                            $("#editOffice-id").val(data.office);
+                            $("#editDivision-id").val(data.division_id);
+                            $("#editUnit-id").val(data.unit);
+                            $("#editOrgOutcome-id").val(data.org_outcome);
+                            $("#editPAPs-id").val(data.paps);
+                            $("#editCalendar-id").val(data.calendar_id);
+                            $("#editUser-id").val(data.user_id);
+                            $("#editEventTitle-id").val(data.event_title);
+                            $("#editEventLocation-id").val(data.event_location);
+                            $("#editEventDesc-id").val(data.event_desc);
+                            $("#editParticipants-id").val(data.participants);
+                            $("#editWholeDateStart-id").val(data.event_date_start);
+                            $("#editWholeDateEnd-id").val(data.event_date_end);
+                            $("#editFileAttachment-id").text(data.file_attachment); 
+                            $('#editEventModal').modal('show');
+                        }
+                    }); // end of the $.ajax()
+                }
+            }); // end of the $('#eventsTable tbody')
+
+        }); // end of the function
 
     }
 

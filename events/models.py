@@ -9,7 +9,11 @@ from datetime import date
 class Event(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
 	calendar = models.ForeignKey(Calendar, on_delete=models.CASCADE)
+	office = models.CharField(max_length=500, null=True, blank=True)
 	division = models.ForeignKey(Division, on_delete=models.CASCADE)
+	unit = models.CharField(max_length=500, null=True, blank=True)
+	paps = models.CharField(max_length=500, null=True, blank=True)
+	org_outcome = models.CharField(max_length=500, null=True, blank=True)
 	event_title = models.CharField(max_length=500)
 	event_desc = models.CharField(max_length=1000)
 	participants = models.CharField(max_length=500)
