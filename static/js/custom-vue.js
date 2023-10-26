@@ -35,7 +35,8 @@ const app = Vue.createApp({
 
         showModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
-            $('#myModal').modal('show');
+            // $('#myModal').modal('show');
+            $("#exampleModalToggle").modal('show'); // Show the modal on page load
         },
         showDivModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
@@ -44,6 +45,9 @@ const app = Vue.createApp({
         showCalModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $('#myCalModal').modal('show');
+        },
+        showNextEventDetailsModal() {
+            $("#exampleModalToggle2").modal('show'); // Show the modal on page load
         },
         showEditEventModal(eventId) {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
@@ -153,7 +157,8 @@ const app = Vue.createApp({
         var table; //declare the table variable globally
 
         $(function() {
-            $("#event-title-input, #editEvent-title-input").autocomplete({
+
+            $("#event-title-input, #editEventTitle-id").autocomplete({
                 source: 'suggest_event_titles',
                 minLength: 1,  // Minimum number of characters before triggering autocomplete
                 

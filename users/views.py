@@ -49,18 +49,22 @@ def login_request(request):
 
 def profile(request):
 
-    if request.META.get("HTTP_X_REQUESTED_WITH") == "XMLHttpRequest":
-        q = request.GET.get('term', '')
-        events = Event.objects.filter(event_title__icontains=q)[:20]
-        results = []
-        for event in events:
-            event_json = {
-                'id': event.id,
-                'label': event.event_title,
-                'value': event.event_title,
-            }
-            results.append(event_json)
-        return JsonResponse(results, safe=False)
+    # Check if the user is authenticated
+    if not request.user.is_authenticated:
+        return redirect('login')
+    else:
+        if request.META.get("HTTP_X_REQUESTED_WITH") == "XMLHttpRequest":
+            q = request.GET.get('term', '')
+            events = Event.objects.filter(event_title__icontains=q)[:20]
+            results = []
+            for event in events:
+                event_json = {
+                    'id': event.id,
+                    'label': event.event_title,
+                    'value': event.event_title,
+                }
+                results.append(event_json)
+            return JsonResponse(results, safe=False)
 
     if request.method == 'POST':
         # Get the selected calendar's ID from the POST data
@@ -207,9 +211,6 @@ def get_event_details(request):
         return JsonResponse(response_data)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)  
-        
-
-        
         
 # save event to the database
 # def save_event(request):

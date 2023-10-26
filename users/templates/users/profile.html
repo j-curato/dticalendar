@@ -34,13 +34,136 @@
         </div>
       {% endif %}
 
+    
        <div id="app">
         
         <button @click="showModal" class="btn btn-primary"><i class="bi bi-calendar-event"></i> New Event</button>&nbsp;
         <button @click="showCalModal" class="btn btn-primary"><i class="bi bi-calendar-check"></i> Calendar Category</button>&nbsp;
         <button @click="showDivModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Division</button>&nbsp;
-          
-            <!-- Modal -->
+
+
+         <!-- Toggle 2 Modals to register an Event -->
+
+       <div class="modal fade" id="exampleModalToggle" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalToggleLabel">Add Event</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <span style="font-weight:bold; color:blue;">Step 1/2</span>
+              <address></address>
+              <form action="{% url 'profile' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                  
+                  <p> <!-- to be created with db table office-->
+                    <select name="office" class="form-control form-select" aria-label="Default select example" required>
+                    <option >Select Office</option>
+                    <option value="RO" >REGIONAL OFFICE</option>
+                    <option value="ADN">AGUSAN DEL NORTE</option>
+                    <option value="ADS">AGUSAN DEL SUR</option>
+                    <option value="SDN">SURIGAO DEL NORTE</option>
+                    <option value="SDS">SURIGAO DEL SUR</option>
+                    <option value="PDI">PROVINCE OF DINAGAT ISLANDS</option>
+                  </select>
+                </p>
+                  <p><select name="division_id" class="form-control form-select" aria-label="Default select example" v-model="selectedDivisionId" @change="onDivisionChange" required>
+                    <option value="0">Select Division</option>
+                    {% for val in divisionList %}
+                    <option value="{{ val.id }}">{{ val.division_name }}</option>
+                    {% endfor %}
+                  </select></p>
+
+                  <p> <!-- to be created with db table unit-->
+                    <select name="unit" class="form-control form-select" aria-label="Default select example" required>
+                    <option value="0">Select Unit</option>
+                    <option value="NC" >Negosyo Center</option>
+                    <option value="EDU">Enterprise Development Unit</option>
+                    <option value="TPU">Trade Promotion Unit</option>
+                    <option value="CARP">Comprehensive Agrarian Reform Program</option>
+                  </select>
+                </p>
+
+                  <p> <!-- to be created with db table Org_outcome-->
+                    <select name="org_outcome" class="form-control form-select" aria-label="Default select example" required>
+                    <option value="0">Select Organizational Outcome</option>
+                    <option value="OO1" >OO1</option>
+                    <option value="OO2">OO2</option>
+                    <option value="OO3">OO3</option>
+                  </select>
+                 </p>
+
+                 <p> <!-- to be created with db table PAPs-->
+                  <select name="paps" class="form-control form-select" aria-label="Default select example" required>
+                  <option value="0">Select PAPs</option>
+                  <option value="PAPs 1" >PAPs 1</option>
+                  <option value="PAPs 2">PAPs 2</option>
+                  <option value="PAPs 3">PAPs 3</option>
+                </select>
+               </p>
+
+                 <p><select name="calendar_id" class="form-control form-select" aria-label="Default select example" required>
+                  <option>Select Calendar</option>
+                  {% for val in calendarList %}
+                  <option value="{{ val.id }}">{{ val.calendar_name }}</option>
+                  {% endfor %}
+                </select></p>
+                </form>
+            </div>
+            <div class="modal-footer">
+              <button @click="showNextEventDetailsModal" class="btn btn-primary" data-bs-target="#exampleModalToggle2" data-bs-toggle="modal" data-bs-dismiss="modal">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade" id="exampleModalToggle2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalToggleLabel2">Add Event</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <span style="font-weight:bold; color:blue;">Step 2/2</span>
+              <address></address>
+              <form action="{% url 'profile' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+              <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
+                  <p><input type="text" name="event_title" class="form-control" id="event-title-input" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
+                  <p><input type="text" name="event_location" class="form-control" placeholder="Province" required></p>
+                  <p><input type="text" name="event_location_lgu" class="form-control" placeholder="LGU" required></p>
+                  <p><input type="text" name="event_location_district" class="form-control" placeholder="District" required></p>
+
+                  <p><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="startdate" @change="updateStartDateFields" required></p>
+                  <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="dayStart" style="display:none;"></p>
+                  <p><input type="text" name="event_month_start" class="form-control" placeholder="Month Start"  v-model="monthStart" style="display:none;"></p>
+                  <p><input type="text" name="event_year_start" class="form-control" placeholder="Year Start"  v-model="yearStart" style="display:none;"></p>
+                  <p><input type="text" name="event_time_start" class="form-control" placeholder="Time Start"  v-model="timeStart" style="display:none;"></p>
+                   <p><input type="text" name="whole_date_start_searchable" class="form-control" v-model="dateStartSearchable" style="display:none;"></p>
+                  <!-- <p><input type="time" name="" class="form-control" placeholder="Time start" required></p> -->
+                  <p><input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="enddate" @change="updateEndDateFields" required></p>
+                  <!-- <p><input type="time" name="" class="form-control" placeholder="Time end" required></p> -->
+                  <p><input type="text" name="event_day_end" class="form-control" v-model="dayEnd" placeholder="Day End" style="display: none;"></p>
+                  <p><input type="text" name="event_month_end" class="form-control" v-model="monthEnd" placeholder="Month End" style="display: none;"></p>
+                  <p><input type="text" name="event_year_end" class="form-control" v-model="yearEnd" placeholder="Year end" style="display: none;"></p>
+                  <p><input type="text" name="event_time_end" class="form-control" v-model="timeEnd" placeholder="Time end" style="display: none;"></p>
+                  <p><input type="text" name="whole_date_end_searchable" class="form-control" v-model="dateEndSearchable" style="display:none;"></p>
+                  <p><textarea name="event_desc" class="form-control" placeholder="Add a description"></textarea></p>
+                  <p><textarea name="participants" class="form-control" placeholder="Participants"></textarea></p>
+                  <p><input type="file" name="file_attachment" class="form-control"></p>
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button @click="showModal" class="btn btn-secondary" data-bs-target="#exampleModalToggle" data-bs-toggle="modal" data-bs-dismiss="modal">Back</button>
+                </div>
+                </form>
+            </div>
+          </div>
+        </div>
+      </div>
+        
+        <!-- Modal -->
             <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog">
                 <div class="modal-content">
@@ -106,8 +229,10 @@
                       </select></p>
 
                         <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
-                        <p><input type="text" name="event_title" class="form-control" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
-                        <p><input type="text" name="event_location" class="form-control" placeholder="Location" required></p>
+                        <p><input type="text" name="event_title" class="form-control" id="event-title-input" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
+                        <p><input type="text" name="event_location" class="form-control" placeholder="Province" required></p>
+                        <p><input type="text" name="event_location_lgu" class="form-control" placeholder="LGU" required></p>
+                        <p><input type="text" name="event_location_district" class="form-control" placeholder="District" required></p>
 
                         <p><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="startdate" @change="updateStartDateFields" required></p>
                         <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="dayStart" style="display:none;"></p>
@@ -307,7 +432,7 @@
             <th>Event Description</th>
             <th>Date Start</th>
             <th>Date End</th>
-              
+               
           </tr>
       </tfoot>
     </table>

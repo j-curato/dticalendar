@@ -16,7 +16,7 @@
  
   <div id="app">
  
-  <form action="{% url 'save-event' %}" method="post" enctype="multipart/form-data">
+  <form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
       <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
       <p><input type="text" name="event_title" id="tag-id" class="form-control" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titless' %}" required></p>
