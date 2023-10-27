@@ -2,7 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('save-calendar', views.save_calendar, name='save-calendar')
+    path('save-calendar', views.save_calendar, name='save-calendar'),
+    path('save-calendar-ajax/', views.save_calendar_ajax, name='save-calendar-ajax/')
     # path('list', views.list, name='list'),
     # path('edit/<int:id>', views.edit, name='edit'),
     # path('update/<int:id>', views.update, name='update'),

@@ -42,21 +42,29 @@
         <button @click="showDivModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Division</button>&nbsp;
 
 
-         <!-- Toggle 2 Modals to register an Event -->
-
-       <div class="modal fade" id="exampleModalToggle" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalToggleLabel">Add Event</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="toast align-items-center text-white bg-primary border-0 hide position-fixed top-0 end-0 p-3 mt-2" id="liveToast" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 1050">
+          <div class="d-flex">
+            <div class="toast-body">
+              Calendar Successfully Added!
             </div>
-            <div class="modal-body">
-              <span style="font-weight:bold; color:blue;">Step 1/2</span>
-              <address></address>
-              <form action="{% url 'profile' %}" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                  
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+
+        <!-- vue.js 2 modal test -->
+
+        <div class="modal fade" id="modal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalToggleLabel">Add Event</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <span style="font-weight:bold; color:blue;">Step 1/2</span>
+                <address></address>
+                <form @submit.prevent="saveData">
+                  <!-- <input v-model="formData.calendar_name" type="text" placeholder="Field 1" required> -->
                   <p> <!-- to be created with db table office-->
                     <select name="office" class="form-control form-select" aria-label="Default select example" required>
                     <option >Select Office</option>
@@ -109,27 +117,29 @@
                   <option value="{{ val.id }}">{{ val.calendar_name }}</option>
                   {% endfor %}
                 </select></p>
+                  
                 </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @click="nextModal">Next</button>
+              </div>
             </div>
-            <div class="modal-footer">
-              <button @click="showNextEventDetailsModal" class="btn btn-primary" data-bs-target="#exampleModalToggle2" data-bs-toggle="modal" data-bs-dismiss="modal">Next</button>
-            </div>
-          </div>
+          </div>  
         </div>
-      </div>
-      <div class="modal fade" id="exampleModalToggle2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalToggleLabel2">Add Event</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <span style="font-weight:bold; color:blue;">Step 2/2</span>
-              <address></address>
-              <form action="{% url 'profile' %}" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-              <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
+      
+        <div class="modal fade" id="modal2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalToggleLabel">Add Event</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <span style="font-weight:bold; color:blue;">Step 2/2</span>
+                <address></address>
+                <form @submit.prevent="saveData">
+                  <!-- <input v-model="formData.calendar_desc" type="text" placeholder="Field 2" required> -->
+                  <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
                   <p><input type="text" name="event_title" class="form-control" id="event-title-input" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
                   <p><input type="text" name="event_location" class="form-control" placeholder="Province" required></p>
                   <p><input type="text" name="event_location_lgu" class="form-control" placeholder="LGU" required></p>
@@ -152,16 +162,19 @@
                   <p><textarea name="event_desc" class="form-control" placeholder="Add a description"></textarea></p>
                   <p><textarea name="participants" class="form-control" placeholder="Participants"></textarea></p>
                   <p><input type="file" name="file_attachment" class="form-control"></p>
-                  <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Save</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button @click="showModal" class="btn btn-secondary" data-bs-target="#exampleModalToggle" data-bs-toggle="modal" data-bs-dismiss="modal">Back</button>
-                </div>
+                  
                 </form>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-primary" @click="saveData">Save</button>
+                <button @click="previousModal" class="btn btn-secondary" data-bs-target="#exampleModalToggle" data-bs-toggle="modal" data-bs-dismiss="modal">Back</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+
+      
         
         <!-- Modal -->
             <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">

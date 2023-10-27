@@ -1,5 +1,3 @@
-//import axios from 'axios'; // Import axios library
-
 const app = Vue.createApp({
     data() {
         return {
@@ -14,6 +12,10 @@ const app = Vue.createApp({
             yearEnd: '',
             timeEnd: '',
             selectedDivisionId: null, // Initialize selectedDivisionId with null
+            formData: {
+                calendar_name: '',
+                calendar_desc: '',
+            }
         };
     },
     created() {
@@ -33,10 +35,51 @@ const app = Vue.createApp({
     },
     methods: {
 
+        nextModal() {
+            $("#modal1").modal("hide");
+            $("#modal2").modal("show");
+        },
+
+        previousModal() {
+            $("#modal2").modal("hide");
+            $("#modal1").modal("show");
+        },
+
+        saveData() {
+            const formData = new FormData();
+            formData.append('calendar_name', this.formData.calendar_name);
+            formData.append('calendar_desc', this.formData.calendar_desc);
+            // Append other form fields as needed
+        
+            fetch("/calendars/save-calendar-ajax/", {
+                method: "POST",
+                body: formData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json(); // Assuming the server returns JSON data
+            })
+            .then(data => {
+                // call the showToast() method to show the toast notification
+                this.showToast();
+                // Handle a successful response
+                console.log("Data saved successfully:", data);
+                // reset the form
+                this.formData.calendar_name = '';
+                this.formData.calendar_desc = '';
+            })
+            .catch(error => {
+                // Handle errors
+                console.error("Error while saving data:", error);
+            });
+        },
+
         showModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             // $('#myModal').modal('show');
-            $("#exampleModalToggle").modal('show'); // Show the modal on page load
+            $("#modal1").modal('show'); // Show the modal on page load
         },
         showDivModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
@@ -53,6 +96,17 @@ const app = Vue.createApp({
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $('#editEventModal').modal('show');
             console.log(eventId);
+        },
+        showToast() {
+            const toastElement = document.getElementById('liveToast');
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        },
+      
+        hideToast() {
+            const toastElement = document.getElementById('liveToast');
+            const toast = new bootstrap.Toast(toastElement);
+            toast.hide();
         },
         onDivisionChange() {
             // Show an alert with the selected division ID

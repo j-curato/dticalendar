@@ -27,5 +27,6 @@ urlpatterns = [
     path('', include('calendars.urls')),
     path('get_events/', get_events, name='get_events'),
     path('get_event_details/', get_event_details, name='get_event_details'),
+    path('calendars/', include('calendars.urls')),
     
 ]
