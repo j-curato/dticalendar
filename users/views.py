@@ -128,9 +128,17 @@ def get_events(request):
         start = int(request.GET.get('start', 0))
         length = int(request.GET.get('length', 10))
         search_value = request.GET.get('search[value]', '')
+        # Declare variables to be used for datatables sorting
+        order_column_index = int(request.GET.get('order[0][column]', 0))
+        order_direction = request.GET.get('order[0][dir]', 'asc')
+
+        
+        # Print the values for debugging
+        print("order_column_index:", order_column_index)
+        print("order_direction:", order_direction)
 
          # Define the columns you want to search on
-        columns = ['event_title', 'event_desc', 'whole_date_start_searchable', 'whole_date_end_searchable']
+        columns = ['id', 'event_title', 'event_desc', 'whole_date_start_searchable', 'whole_date_end_searchable']
 
         #Create a Q object for filtering based on the search_value in all columns
         search_filter = Q()
@@ -143,6 +151,12 @@ def get_events(request):
 
         # Get the total count of events (before filtering)
         total_records = Event.objects.count()
+
+        # Apply sorting based on the column index and direction
+        if order_direction == 'asc':
+            events = events.order_by(columns[order_column_index])
+        else:
+            events = events.order_by(f'-{columns[order_column_index]}')
 
         # Count of records after filtering
         filtered_records = events.count()
