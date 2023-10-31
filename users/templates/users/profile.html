@@ -41,6 +41,7 @@
         <button @click="showCalModal" class="btn btn-primary"><i class="bi bi-calendar-check"></i> Calendar Category</button>&nbsp;
         <button @click="showDivModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Division</button>&nbsp;
 
+        <pre>{{ divisionListVue }}</pre>
 
         <div class="toast align-items-center text-white bg-primary border-0 hide position-fixed top-0 end-0 p-3 mt-2" id="liveToast" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 1050">
           <div class="d-flex">
@@ -54,7 +55,7 @@
         <!-- vue.js 2 modal test -->
 
         <div class="modal fade" id="modal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
-          <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-dialog modal-dialog-slideout">
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalToggleLabel">Add Event</h5>
@@ -66,7 +67,7 @@
                 <form @submit.prevent="saveData">
                   <!-- <input v-model="formData.calendar_name" type="text" placeholder="Field 1" required> -->
                   <p> <!-- to be created with db table office-->
-                    <select name="office" class="form-control form-select" aria-label="Default select example" required>
+                    <select name="office" v-model="formData.office" class="form-control form-select" aria-label="Default select example" required>
                     <option >Select Office</option>
                     <option value="RO" >REGIONAL OFFICE</option>
                     <option value="ADN">AGUSAN DEL NORTE</option>
@@ -75,48 +76,59 @@
                     <option value="SDS">SURIGAO DEL SUR</option>
                     <option value="PDI">PROVINCE OF DINAGAT ISLANDS</option>
                   </select>
+                 </p>
+
+                 <p>
+                  <select name="division_id" class="form-control form-select" id="division-id" aria-label="Default select example" v-model="formData.division_id" @change="onDivisionChange" required>
+                  <option value="0">Select Division</option>
+                  <option v-for="val in divisionListVue" :value="val.id">{{ val.division_name }}</option>
+                 </select>
                 </p>
-                  <p><select name="division_id" class="form-control form-select" aria-label="Default select example" v-model="selectedDivisionId" @change="onDivisionChange" required>
-                    <option value="0">Select Division</option>
-                    {% for val in divisionList %}
-                    <option value="{{ val.id }}">{{ val.division_name }}</option>
-                    {% endfor %}
-                  </select></p>
+
+                 <p>
+                  <!-- <input type="text" name="division_name" id="division-name-id" v-model="formData.division_name" class="form-control" placeholder="Division Name" required> -->
+                  <input type="text" id="division-name-id" v-model="formData.division_name" class="form-control" placeholder="Division Name" required>
+                 </p>
 
                   <p> <!-- to be created with db table unit-->
-                    <select name="unit" class="form-control form-select" aria-label="Default select example" required>
-                    <option value="0">Select Unit</option>
-                    <option value="NC" >Negosyo Center</option>
-                    <option value="EDU">Enterprise Development Unit</option>
-                    <option value="TPU">Trade Promotion Unit</option>
-                    <option value="CARP">Comprehensive Agrarian Reform Program</option>
-                  </select>
+                    <select name="unit" v-model="formData.unit" class="form-control form-select" aria-label="Default select example" required>
+                      <option value="0">Select Unit</option>
+                      <option value="NC" >Negosyo Center</option>
+                      <option value="EDU">Enterprise Development Unit</option>
+                      <option value="TPU">Trade Promotion Unit</option>
+                      <option value="CARP">Comprehensive Agrarian Reform Program</option>
+                    </select>
                 </p>
 
                   <p> <!-- to be created with db table Org_outcome-->
-                    <select name="org_outcome" class="form-control form-select" aria-label="Default select example" required>
+                   <select name="org_outcome" v-model="formData.org_outcome" class="form-control form-select" aria-label="Default select example" required>
                     <option value="0">Select Organizational Outcome</option>
                     <option value="OO1" >OO1</option>
                     <option value="OO2">OO2</option>
                     <option value="OO3">OO3</option>
-                  </select>
+                   </select>
                  </p>
 
                  <p> <!-- to be created with db table PAPs-->
-                  <select name="paps" class="form-control form-select" aria-label="Default select example" required>
-                  <option value="0">Select PAPs</option>
-                  <option value="PAPs 1" >PAPs 1</option>
-                  <option value="PAPs 2">PAPs 2</option>
-                  <option value="PAPs 3">PAPs 3</option>
-                </select>
-               </p>
+                  <select name="paps" v-model="formData.paps" class="form-control form-select" aria-label="Default select example" required>
+                    <option value="0">Select PAPs</option>
+                    <option value="PAPs 1" >PAPs 1</option>
+                    <option value="PAPs 2">PAPs 2</option>
+                    <option value="PAPs 3">PAPs 3</option>
+                  </select>
+                 </p>
 
-                 <p><select name="calendar_id" class="form-control form-select" aria-label="Default select example" required>
-                  <option>Select Calendar</option>
-                  {% for val in calendarList %}
-                  <option value="{{ val.id }}">{{ val.calendar_name }}</option>
-                  {% endfor %}
-                </select></p>
+                 <p>
+                  <select name="calendar_id" v-model="formData.calendar_id" class="form-control form-select" id="calendar-id" aria-label="Default select example" @change="onCalendarChange" required>
+                    <option value="0">Select Calendar</option>
+                    <option v-for="val in calendarListVue" :value="val.id">{{ val.calendar_name }}</option>
+                  </select>
+                </p>
+
+                <p>
+                  <!-- <input type="text" name="calendar_name" v-model="formData.calendar_name" class="form-control" id="calendar-name-id" placeholder="Calendar Name" required> -->
+                  <input type="text" id="calendar-name-id" v-model="formData.calendar_name" class="form-control" placeholder="Calendar Name" required>
+                </p>
                   
                 </form>
               </div>
@@ -128,7 +140,7 @@
         </div>
       
         <div class="modal fade" id="modal2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
-          <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-dialog modal-dialog-slideout">
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalToggleLabel">Add Event</h5>

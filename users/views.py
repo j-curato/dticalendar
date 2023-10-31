@@ -302,6 +302,19 @@ def suggest_event_title_auto(request):
 def autocomplete(request):
     return render(request, 'users/autocomplete.html')
 
+# function to get the list of divisions
+def get_divisions(request):
+    divisions = Division.objects.all()
+    data = [{'id': division.id, 'division_name': division.division_name} for division in divisions]
+    return JsonResponse(data, safe=False)
+   
+
+# function to get the list of calendars
+def get_calendars(request):
+    calendars = Calendar.objects.all()
+    data = [{'id': calendar.id, 'calendar_name': calendar.calendar_name} for calendar in calendars]
+    return JsonResponse(data, safe=False)
+
 
     
 

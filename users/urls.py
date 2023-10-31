@@ -14,4 +14,6 @@ urlpatterns = [
     #path('get_events/', views.get_events, name='get_events'),
     #path('get_event_details/', views.get_event_details, name='get_event_details'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('api/divisions/', views.get_divisions, name='get_divisions'),
+    path('api/calendars/', views.get_calendars, name='get_calendars'),
 ]

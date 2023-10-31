@@ -1,3 +1,4 @@
+
 const app = Vue.createApp({
     data() {
         return {
@@ -11,11 +12,14 @@ const app = Vue.createApp({
             monthEnd: '', 
             yearEnd: '',
             timeEnd: '',
-            selectedDivisionId: null, // Initialize selectedDivisionId with null
+            divisionListVue: [], // Initialize divisionList with an empty array
+            calendarListVue: [], // Initialize calendarList with an empty array
             formData: {
-                calendar_name: '',
-                calendar_desc: '',
-            }
+                division_id: 0, // Initialize division_id with 0
+                division_name: '', // Initialize with an empty string
+                calendar_id: null, // Initialize calendar_id with 0
+                calendar_name: '', // Initialize with an empty string
+            },
         };
     },
     created() {
@@ -108,10 +112,46 @@ const app = Vue.createApp({
             const toast = new bootstrap.Toast(toastElement);
             toast.hide();
         },
+        // Function to fetch division data
+        fetchDivisionData() {
+            fetch('/users/api/divisions/') // Replace with the actual API endpoint
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                this.divisionListVue = data;
+                console.log(this.divisionListVue);
+            })
+            .catch(error => {
+                console.error('Error fetching division data:', error);
+            });
+        },
+        // Function to fetch calendar data
+        fetchCalendarData() {
+            fetch('/users/api/calendars/') // Replace with the actual API endpoint
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                this.calendarListVue = data;
+                console.log(this.calendarListVue);
+            })
+            .catch(error => {
+                console.error('Error fetching calendar data:', error);
+            });
+        },
         onDivisionChange() {
-            // Show an alert with the selected division ID
-            // alert(`Selected Division ID: ${this.selectedDivisionId}`);
-            console.log(this.selectedDivisionId);
+            //console.log('Selected Division ID:', this.formData.division_id);
+            //console.log(this.divisionListVue);
+            
+            const selectedDivision = this.divisionListVue.find(item => item.id === this.formData.division_id);
+            this.formData.division_name = selectedDivision ? selectedDivision.division_name : '';
+            
+          },
+        onCalendarChange() {
+            //console.log('Selected Calendar ID:', this.formData.calendar_id);
+            //console.log(this.calendarListVue);
+            const selectedCalendar = this.calendarListVue.find(item => item.id === this.formData.calendar_id);
+            this.formData.calendar_name = selectedCalendar ? selectedCalendar.calendar_name : '';
+            
         },
         updateStartDateFields() {
             // Split the datetime value and update individual fields
@@ -284,7 +324,11 @@ const app = Vue.createApp({
 
         }); // end of the function
 
-    }
+         // Fetch division and calendar data when the component is mounted
+        this.fetchDivisionData();
+        this.fetchCalendarData();
+
+    } // end of the mounted() function
 
 });
 
