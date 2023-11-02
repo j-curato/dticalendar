@@ -1,7 +1,12 @@
 
+// var app = new Vue({
+//     delimiters: ['{[', ']}'], // Change Vue.js delimiters to avoid conflicts with Django template tags
+//     el: '#app',
 const app = Vue.createApp({
+    delimiters: ['{[', ']}'], // Change Vue.js delimiters to avoid conflicts with Django template tags
     data() {
         return {
+            message: 'Hello Vue!',
             startdate: '', // Initialize with an empty string
             dayStart: '',   // Initialize with empty strings
             monthStart: '',
