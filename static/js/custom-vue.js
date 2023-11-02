@@ -1,4 +1,3 @@
-
 // var app = new Vue({
 //     delimiters: ['{[', ']}'], // Change Vue.js delimiters to avoid conflicts with Django template tags
 //     el: '#app',
@@ -7,16 +6,7 @@ const app = Vue.createApp({
     data() {
         return {
             message: 'Hello Vue!',
-            startdate: '', // Initialize with an empty string
-            dayStart: '',   // Initialize with empty strings
-            monthStart: '',
-            yearStart: '',
-            timeStart: '',
-            enddate: '', // Initialize with an empty string
-            dayEnd: '',   // Initialize with empty strings
-            monthEnd: '', 
-            yearEnd: '',
-            timeEnd: '',
+            
             divisionListVue: [], // Initialize divisionList with an empty array
             calendarListVue: [], // Initialize calendarList with an empty array
             formData: {
@@ -24,7 +14,30 @@ const app = Vue.createApp({
                 division_name: '', // Initialize with an empty string
                 calendar_id: null, // Initialize calendar_id with 0
                 calendar_name: '', // Initialize with an empty string
-            },
+                whole_date_start: '', // Initialize with an empty string
+                event_day_start: '',   // Initialize with empty strings
+                event_month_start: '',
+                event_year_start: '',
+                event_time_start: '',
+                whole_date_end: '', // Initialize with an empty string
+                event_day_end: '',   // Initialize with empty strings
+                event_month_end: '', 
+                event_year_end: '',
+                event_time_end: '',
+                whole_date_start_searchable: '', // Initialize with an empty string
+                whole_date_end_searchable: '', // Initialize with an empty string
+                event_title: '', // Initialize with an empty string
+                event_location: '', // Initialize with an empty string
+                event_desc: '', // Initialize with an empty string
+                participants: '', // Initialize with an empty string
+                file_attachment: null, // Initialize with null
+                office: '', // Initialize with an empty string
+                unit: '', // Initialize with an empty string
+                org_outcome: '', // Initialize with an empty string
+                paps: '', // Initialize with an empty string
+                user_id: '', // Initialize with an empty string
+                calendar_id: '', // Initialize with an empty string
+            }, // end of formData
         };
     },
     created() {
@@ -33,10 +46,10 @@ const app = Vue.createApp({
         const manilaOffset = 8 * 60; // UTC+8 offset for Manila
         now.setMinutes(now.getMinutes() + manilaOffset);
         const isoDate = now.toISOString().slice(0, 16); // Format: "YYYY-MM-DDTHH:mm"
-        this.startdate = isoDate;
-        this.enddate = isoDate;
+        this.formData.whole_date_start = isoDate;
+        this.formData.whole_date_end = isoDate;
         // Set the default selected to "Select Division"
-        this.selectedDivisionId = 0;
+        this.formData.division_id = 0;
         // Call the updateDateFields method on page load
         this.updateStartDateFields();
         this.updateEndDateFields();
@@ -84,6 +97,100 @@ const app = Vue.createApp({
                 console.error("Error while saving data:", error);
             });
         },
+        // Function to save event data
+        saveEventData() {
+            const formData = new FormData();
+            formData.append('office', this.formData.office);
+            formData.append('division_id', this.formData.division_id);
+            formData.append('unit', this.formData.unit);
+            formData.append('org_outcome', this.formData.org_outcome);
+            formData.append('paps', this.formData.paps);
+            formData.append('calendar_id', this.formData.calendar_id);
+            formData.append('user_id', this.formData.user_id);
+            formData.append('event_title', this.formData.event_title);
+            formData.append('event_location', this.formData.event_location);
+            formData.append('event_desc', this.formData.event_desc);
+            formData.append('participants', this.formData.participants);
+            formData.append('event_date_start', this.formData.event_date_start);
+            formData.append('event_date_end', this.formData.event_date_end);
+            formData.append('file_attachment', this.formData.file_attachment);
+            formData.append('event_day_start', this.formData.event_day_start);
+            formData.append('event_month_start', this.formData.event_month_start);
+            formData.append('event_year_start', this.formData.event_year_start);
+            formData.append('event_time_start', this.formData.event_time_start);
+            formData.append('event_day_end', this.formData.event_day_end);
+            formData.append('event_month_end', this.formData.event_month_end);
+            formData.append('event_year_end', this.formData.event_year_end);
+            formData.append('event_time_end', this.formData.event_time_end);
+            formData.append('whole_date_start', this.formData.whole_date_start);
+            formData.append('whole_date_end', this.formData.whole_date_end);
+            formData.append('whole_date_start_searchable', this.formData.whole_date_start_searchable);
+            formData.append('whole_date_end_searchable', this.formData.whole_date_end_searchable);
+            formData.append('calendar_name', this.formData.calendar_name);
+            formData.append('event_location_district', this.formData.event_location_district);
+            formData.append('event_location_lgu', this.formData.event_location_lgu);
+            
+            // ajax call to save the event data
+            fetch("/events/save-event-ajax/", {
+                method: "POST",
+                body: formData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json(); // Assuming the server returns JSON data
+            })
+            .then(data => {
+                // if message is true, then show the toast notification
+                if (data.message) {
+                // call the showToast() method to show the toast notification
+                this.showToast();
+                // Handle a successful response
+                console.log("Data saved successfully:", data);
+                // reset the myEventForm using the reset() method
+                document.getElementById("myEventForm").reset();
+                // reset the form data
+                this.formData.office = '';
+                this.formData.division_id = 0;
+                this.formData.unit = '';
+                this.formData.org_outcome = '';
+                this.formData.paps = '';
+                this.formData.calendar_id = '';
+                this.formData.user_id = '';
+                this.formData.event_title = '';
+                this.formData.event_location = '';
+                this.formData.event_desc = '';
+                this.formData.participants = '';
+                this.formData.event_date_start = '';
+                this.formData.event_date_end = '';
+                this.formData.file_attachment = null;
+                this.formData.event_day_start = '';
+                this.formData.event_month_start = '';
+                this.formData.event_year_start = '';
+                this.formData.event_time_start = '';
+                this.formData.event_day_end = '';
+                this.formData.event_month_end = '';
+                this.formData.event_year_end = '';
+                this.formData.event_time_end = '';
+                this.formData.whole_date_start = '';
+                this.formData.whole_date_end = '';
+                this.formData.whole_date_start_searchable = '';
+                this.formData.whole_date_end_searchable = '';
+
+            } // end of if (data.message)
+            else {
+                // Handle a failed response
+                console.log("Data save failed:", data);
+            }
+            
+           }) // end of the first .then()
+
+            .catch(error => {
+                // Handle errors
+                console.error("Error while saving data:", error);
+            });
+        }, // end of saveEventData() function
 
         showModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
@@ -160,7 +267,7 @@ const app = Vue.createApp({
         },
         updateStartDateFields() {
             // Split the datetime value and update individual fields
-            const datetimeValue = this.startdate;
+            const datetimeValue = this.formData.whole_date_start;
             const [date, time] = datetimeValue.split('T');
             const [year, month, day] = date.split('-');
 
@@ -195,16 +302,16 @@ const app = Vue.createApp({
             // Create a formatted date string
             const formattedDate = `${monthNames[monthInt - 1]} ${dayInt}, ${yearInt}`;
 
-            this.dayStart = day.toString(); // Convert back to string
-            this.monthStart = month.toString(); // Convert back to string
-            this.yearStart = year.toString(); // Convert back to string
-            this.timeStart = `${formattedHours}:${formattedMinutes} ${amOrPm}`;
-            this.dateStartSearchable = formattedDate;
+            this.formData.event_day_start = day.toString(); // Convert back to string
+            this.formData.event_month_start = month.toString(); // Convert back to string
+            this.formData.event_year_start = year.toString(); // Convert back to string
+            this.formData.event_time_start = `${formattedHours}:${formattedMinutes} ${amOrPm}`;
+            this.formData.whole_date_start_searchable = formattedDate;
             //this.dateStartSearchable = `${year}-${month}-${day}`;
         },
         updateEndDateFields() {
 
-            const enddatetimeValue = this.enddate;
+            const enddatetimeValue = this.formData.whole_date_end;
             const [datePart, timePart] = enddatetimeValue.split('T');
             const [endyear, endmonth, endday] = datePart.split('-');
 
@@ -242,11 +349,11 @@ const app = Vue.createApp({
             // Create a formatted date string
             const endformattedDate = `${endmonthNames[endmonthInt - 1]} ${enddayInt}, ${endyearInt}`;
           
-            this.dayEnd = endday.toString(); // Convert back to string
-            this.monthEnd = endmonth.toString(); // Convert back to string
-            this.yearEnd = endyear.toString(); // Convert back to string
-            this.timeEnd = `${endformattedHours}:${endformattedMinutes} ${period}`;
-            this.dateEndSearchable = endformattedDate;
+            this.formData.event_day_end = endday.toString(); // Convert back to string
+            this.formData.event_month_end = endmonth.toString(); // Convert back to string
+            this.formData.event_year_end = endyear.toString(); // Convert back to string
+            this.formData.event_time_end = `${endformattedHours}:${endformattedMinutes} ${period}`;
+            this.formData.whole_date_end_searchable = endformattedDate;
             //this.dateEndSearchable = `${endyear}-${endmonth}-${endday}`;
 
           },
