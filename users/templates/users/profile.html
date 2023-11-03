@@ -66,7 +66,7 @@
               <div class="modal-body">
                 <span style="font-weight:bold; color:blue;">Step 1/2</span>
                 <address></address>
-                <form @submit.prevent="saveEventData" >
+                <form @submit.prevent="saveEventData" enctype="multipart/form-data">
                   <!-- <input v-model="formData.calendar_name" type="text" placeholder="Field 1" required> -->
                   <p> <!-- to be created with db table office-->
                     <select name="office" v-model="formData.office" class="form-control form-select" aria-label="Default select example" required>
@@ -151,9 +151,9 @@
               <div class="modal-body">
                 <span style="font-weight:bold; color:blue;">Step 2/2</span>
                 <address></address>
-                <form @submit.prevent="saveEventData">
+                <form @submit.prevent="saveEventData" enctype="multipart/form-data">
                   <!-- <input v-model="formData.calendar_desc" type="text" placeholder="Field 2" required> -->
-                  <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" v-model="formData.user_id" style="display: none;"></p>
+                  <p><input type="text" name="user_id" class="form-control" placeholder="Event title" v-model="formData.user_id" style="display: none;"></p>
                   <p><input type="text" name="event_title" class="form-control" id="event-title-input" placeholder="Event title" v-model="formData.event_title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
                   <p><input type="text" name="event_location" class="form-control" v-model="formData.event_location" placeholder="Province" required></p>
                   <p><input type="text" name="event_location_lgu" class="form-control" v-model="formData.event_location_lgu" placeholder="LGU" required></p>
@@ -175,7 +175,9 @@
                   <p><input type="text" name="whole_date_end_searchable" class="form-control" v-model="formData.whole_date_end_searchable" style="display:none;"></p>
                   <p><textarea name="event_desc" class="form-control" v-model="formData.event_desc" placeholder="Add a description"></textarea></p>
                   <p><textarea name="participants" class="form-control" v-model="formData.participants" placeholder="Participants"></textarea></p>
-                  <p><input type="file" name="file_attachment" v-model="formData.file_attachment" class="form-control"></p>
+                  <!-- <p><input type="file" name="file_attachment" v-model="formData.file_attachment" class="form-control"></p> -->
+                  <p><input type="file" name="file_attachment" class="form-control" @change="handleFileChange"></p>
+                  
 
                   <div class="modal-footer">
                     <button class="btn btn-primary">Save</button>

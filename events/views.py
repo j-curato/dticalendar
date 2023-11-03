@@ -29,6 +29,7 @@ def save_event_ajax(request):
              division = get_object_or_404(Division, pk=division_id)
 
         event = Event()
+        # assign to event.user the current logged-in user id
         event.user = request.user
         event.event_title = request.POST['event_title'].upper()
         event.event_desc = request.POST['event_desc'].upper()
@@ -46,7 +47,8 @@ def save_event_ajax(request):
         event.whole_date_end = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
         event.calendar = calendar
         event.division = division
-        event.file_attachment = request.FILES['file_attachment']
+        #event.file_attachment = request.FILES['file_attachment']
+        event.file_attachment = request.FILES.get('file_attachment')
         event.whole_date_start_searchable = request.POST['whole_date_start_searchable']
         event.whole_date_end_searchable = request.POST['whole_date_end_searchable']
         event.office = request.POST['office']

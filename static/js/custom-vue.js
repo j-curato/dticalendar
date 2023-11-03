@@ -6,7 +6,7 @@ const app = Vue.createApp({
     data() {
         return {
             message: 'Hello Vue!',
-            
+            selectedFile: null, // Initialize selectedFile with null
             divisionListVue: [], // Initialize divisionList with an empty array
             calendarListVue: [], // Initialize calendarList with an empty array
             formData: {
@@ -97,6 +97,18 @@ const app = Vue.createApp({
                 console.error("Error while saving data:", error);
             });
         },
+        // Function to handle file upload
+        handleFileChange(event) {
+            // Access the selected file from the event
+            const selectedFile = event.target.files[0];
+        
+            // Now you can do something with the selected file, like storing it in your component's data
+            this.formData.file_attachment = selectedFile;
+        
+            // Optionally, you can show the selected file's name to the user
+            this.selectedFileName = selectedFile.name;
+            //this.selectedFileName = selectedFile ? selectedFile.name : '';
+          },
         // Function to save event data
         saveEventData() {
             const formData = new FormData();
@@ -111,9 +123,11 @@ const app = Vue.createApp({
             formData.append('event_location', this.formData.event_location);
             formData.append('event_desc', this.formData.event_desc);
             formData.append('participants', this.formData.participants);
-            formData.append('event_date_start', this.formData.event_date_start);
-            formData.append('event_date_end', this.formData.event_date_end);
-            formData.append('file_attachment', this.formData.file_attachment);
+            //formData.append('event_date_start', this.formData.event_date_start);
+            //formData.append('event_date_end', this.formData.event_date_end);
+            //formData.append('file_attachment', this.formData.file_attachment); this code is not working because v-model doesn't work for input type files
+            // Handle the file input separately
+            formData.append('file_attachment', this.selectedFileName);
             formData.append('event_day_start', this.formData.event_day_start);
             formData.append('event_month_start', this.formData.event_month_start);
             formData.append('event_year_start', this.formData.event_year_start);
@@ -127,6 +141,7 @@ const app = Vue.createApp({
             formData.append('whole_date_start_searchable', this.formData.whole_date_start_searchable);
             formData.append('whole_date_end_searchable', this.formData.whole_date_end_searchable);
             formData.append('calendar_name', this.formData.calendar_name);
+            formData.append('division_name', this.formData.division_name);
             formData.append('event_location_district', this.formData.event_location_district);
             formData.append('event_location_lgu', this.formData.event_location_lgu);
             
@@ -162,8 +177,8 @@ const app = Vue.createApp({
                 this.formData.event_location = '';
                 this.formData.event_desc = '';
                 this.formData.participants = '';
-                this.formData.event_date_start = '';
-                this.formData.event_date_end = '';
+                //this.formData.event_date_start = '';
+                //this.formData.event_date_end = '';
                 this.formData.file_attachment = null;
                 this.formData.event_day_start = '';
                 this.formData.event_month_start = '';
@@ -357,7 +372,7 @@ const app = Vue.createApp({
             //this.dateEndSearchable = `${endyear}-${endmonth}-${endday}`;
 
           },
-    },
+    }, // end of methods
     mounted() {
 
         var table; //declare the table variable globally
@@ -425,8 +440,8 @@ const app = Vue.createApp({
                             $("#editEventLocation-id").val(data.event_location);
                             $("#editEventDesc-id").val(data.event_desc);
                             $("#editParticipants-id").val(data.participants);
-                            $("#editWholeDateStart-id").val(data.event_date_start);
-                            $("#editWholeDateEnd-id").val(data.event_date_end);
+                            //$("#editWholeDateStart-id").val(data.event_date_start);
+                            //$("#editWholeDateEnd-id").val(data.event_date_end);
                             $("#editFileAttachment-id").text(data.file_attachment); 
                             $('#editEventModal').modal('show');
                         }
