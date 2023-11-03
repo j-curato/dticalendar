@@ -22,6 +22,7 @@ class Event(models.Model):
 	event_location = models.CharField(max_length=255,blank=True, null=True)
 	event_location_lgu = models.CharField(max_length=255,blank=True, null=True)
 	event_location_district = models.CharField(max_length=255,blank=True, null=True)
+	event_location_barangay = models.CharField(max_length=255,blank=True, null=True)
 	event_day_start = models.CharField(max_length=10)
 	event_month_start = models.CharField(max_length=10)
 	event_year_start = models.CharField(max_length=10)

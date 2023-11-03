@@ -44,7 +44,9 @@ INSTALLED_APPS = [
     'events',
     'users',
     'schedule',
-    'bootstrap4'
+    'bootstrap4',
+    'orgoutcomes',
+    'paps',
 ]
 
 MIDDLEWARE = [

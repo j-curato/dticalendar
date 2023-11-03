@@ -47,23 +47,24 @@ def save_event_ajax(request):
         event.whole_date_end = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
         event.calendar = calendar
         event.division = division
-        #event.file_attachment = request.FILES['file_attachment']
-        event.file_attachment = request.FILES.get('file_attachment')
+        event.file_attachment = request.FILES['file_attachment']
+        #event.file_attachment = request.FILES.get('file_attachment')
         event.whole_date_start_searchable = request.POST['whole_date_start_searchable']
         event.whole_date_end_searchable = request.POST['whole_date_end_searchable']
-        event.office = request.POST['office']
-        event.org_outcome = request.POST['org_outcome']
-        event.paps = request.POST['paps']
-        event.unit = request.POST['unit']
-        event.division_name = request.POST['division_name']
+        event.office = request.POST['office'].upper()
+        event.org_outcome = request.POST['org_outcome'].upper()
+        event.paps = request.POST['paps'].upper()
+        event.unit = request.POST['unit'].upper()
+        event.division_name = request.POST['division_name'].upper()
         event.whole_dateStart_with_time = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
         event.whole_dateEnd_with_time = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
-        event.actual_outcome = "PENDING"
-        event.calendar_name = request.POST['calendar_name']
-        event.event_location_district = request.POST['event_location_district']
-        event.event_location_lgu = request.POST['event_location_lgu']
-        event.event_status = "PENDING"
-        event.expected_outcome = "PENDING"
+        event.actual_outcome = "PENDING".upper()
+        event.calendar_name = request.POST['calendar_name'].upper()
+        event.event_location_district = request.POST['event_location_district'].upper()
+        event.event_location_lgu = request.POST['event_location_lgu'].upper()
+        event.event_location_barangay = request.POST['event_location_barangay'].upper()
+        event.event_status = "PENDING".upper()
+        event.expected_outcome = "PENDING".upper()
         event.save()
         return JsonResponse({'message': 'True'})
     else:

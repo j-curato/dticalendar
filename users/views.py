@@ -138,7 +138,7 @@ def get_events(request):
         print("order_direction:", order_direction)
 
          # Define the columns you want to search on
-        columns = ['id', 'event_title', 'event_desc', 'whole_date_start_searchable', 'whole_date_end_searchable']
+        columns = ['id', 'event_title', 'event_desc', 'office', 'division_name', 'unit', 'whole_date_start_searchable', 'whole_date_end_searchable']
 
         #Create a Q object for filtering based on the search_value in all columns
         search_filter = Q()
@@ -171,6 +171,9 @@ def get_events(request):
                 'id': event.id,
                 'event_title': event.event_title,
                 'event_desc': event.event_desc,
+                'office': event.office,
+                'division_name': event.division_name,
+                'unit': event.unit,
                 # whole date start format should be like January 01, 2023
                 'whole_date_start_searchable': event.whole_date_start_searchable,
                 'whole_date_end_searchable': event.whole_date_end_searchable

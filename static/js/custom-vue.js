@@ -28,15 +28,18 @@ const app = Vue.createApp({
                 whole_date_end_searchable: '', // Initialize with an empty string
                 event_title: '', // Initialize with an empty string
                 event_location: '', // Initialize with an empty string
+                event_location_district: '', // Initialize with an empty string
+                event_location_lgu: '', // Initialize with an empty string
+                event_location_barangay: '', // Initialize with an empty string
                 event_desc: '', // Initialize with an empty string
                 participants: '', // Initialize with an empty string
                 file_attachment: null, // Initialize with null
-                office: '', // Initialize with an empty string
-                unit: '', // Initialize with an empty string
-                org_outcome: '', // Initialize with an empty string
-                paps: '', // Initialize with an empty string
+                office: 0, // Initialize with an empty string
+                unit: 0, // Initialize with an empty string
+                org_outcome: 0, // Initialize with an empty string
+                paps: 0, // Initialize with an empty string
                 user_id: '', // Initialize with an empty string
-                calendar_id: '', // Initialize with an empty string
+                calendar_id: 0, // Initialize with an empty string
             }, // end of formData
         };
     },
@@ -106,7 +109,7 @@ const app = Vue.createApp({
             this.formData.file_attachment = selectedFile;
         
             // Optionally, you can show the selected file's name to the user
-            this.selectedFileName = selectedFile.name;
+            //this.selectedFileName = selectedFile.name;
             //this.selectedFileName = selectedFile ? selectedFile.name : '';
           },
         // Function to save event data
@@ -123,11 +126,10 @@ const app = Vue.createApp({
             formData.append('event_location', this.formData.event_location);
             formData.append('event_desc', this.formData.event_desc);
             formData.append('participants', this.formData.participants);
-            //formData.append('event_date_start', this.formData.event_date_start);
-            //formData.append('event_date_end', this.formData.event_date_end);
             //formData.append('file_attachment', this.formData.file_attachment); this code is not working because v-model doesn't work for input type files
             // Handle the file input separately
-            formData.append('file_attachment', this.selectedFileName);
+            //formData.append('file_attachment', this.$refs.file_attachment.files[0]);
+            formData.append('file_attachment', this.formData.file_attachment);
             formData.append('event_day_start', this.formData.event_day_start);
             formData.append('event_month_start', this.formData.event_month_start);
             formData.append('event_year_start', this.formData.event_year_start);
@@ -144,6 +146,7 @@ const app = Vue.createApp({
             formData.append('division_name', this.formData.division_name);
             formData.append('event_location_district', this.formData.event_location_district);
             formData.append('event_location_lgu', this.formData.event_location_lgu);
+            formData.append('event_location_barangay', this.formData.event_location_barangay);
             
             // ajax call to save the event data
             fetch("/events/save-event-ajax/", {
@@ -161,24 +164,22 @@ const app = Vue.createApp({
                 if (data.message) {
                 // call the showToast() method to show the toast notification
                 this.showToast();
+                // refresh the server-side datatables events table
+                $('#eventsTable').DataTable().ajax.reload();
                 // Handle a successful response
                 console.log("Data saved successfully:", data);
-                // reset the myEventForm using the reset() method
-                document.getElementById("myEventForm").reset();
                 // reset the form data
-                this.formData.office = '';
+                this.formData.office = 0;
                 this.formData.division_id = 0;
-                this.formData.unit = '';
-                this.formData.org_outcome = '';
-                this.formData.paps = '';
-                this.formData.calendar_id = '';
+                this.formData.unit = 0;
+                this.formData.org_outcome = 0;
+                this.formData.paps = 0;
+                this.formData.calendar_id = 0;
                 this.formData.user_id = '';
                 this.formData.event_title = '';
                 this.formData.event_location = '';
                 this.formData.event_desc = '';
                 this.formData.participants = '';
-                //this.formData.event_date_start = '';
-                //this.formData.event_date_end = '';
                 this.formData.file_attachment = null;
                 this.formData.event_day_start = '';
                 this.formData.event_month_start = '';
@@ -192,6 +193,11 @@ const app = Vue.createApp({
                 this.formData.whole_date_end = '';
                 this.formData.whole_date_start_searchable = '';
                 this.formData.whole_date_end_searchable = '';
+                this.formData.calendar_name = '';
+                this.formData.division_name = '';
+                this.formData.event_location_district = '';
+                this.formData.event_location_lgu = '';
+                this.formData.event_location_barangay = '';
 
             } // end of if (data.message)
             else {
@@ -227,6 +233,16 @@ const app = Vue.createApp({
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $('#editEventModal').modal('show');
             console.log(eventId);
+        },
+        // Org Outcome modal
+        showOrgModal() {
+            // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
+            $('#orgOutcomeModal').modal('show');
+        },
+        // PAPs modal
+        showPapsModal() {
+            // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
+            $('#papsModal').modal('show');
         },
         showToast() {
             const toastElement = document.getElementById('liveToast');
@@ -406,6 +422,9 @@ const app = Vue.createApp({
                     {'data': 'id', 'sortable': true, 'searchable': false},
                     {'data': 'event_title', 'searchable': true, 'sortable': true},
                     {'data': 'event_desc', 'searchable': true, 'sortable': true},
+                    {'data': 'office', 'searchable': true, 'sortable': true},
+                    {'data': 'division_name', 'searchable': true, 'sortable': true},
+                    {'data': 'unit', 'searchable': true, 'sortable': true},
                     {'data': 'whole_date_start_searchable', 'searchable': true, 'sortable': true},
                     {'data': 'whole_date_end_searchable', 'searchable': true, 'sortable': true},
                     // Add more columns as needed

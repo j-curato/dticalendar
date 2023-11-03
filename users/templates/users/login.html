@@ -7,15 +7,19 @@
    
     <div class="container" style="width: 50%; margin: 0 auto; margin-top: 30%;">
         <h2>Login</h2>
+        <address></address>
         {{ error_message }}
         <form method="post">
             {% csrf_token %}
             <div class="form-group">
-                <input type="text" name="username" placeholder="Username" class="form-control" required>
+                <input type="text" name="username" placeholder="Username" class="form-control" style="width: 70%;" required>
             </div>
+            <!--Put a div separator-->
+           <address></address>
             <div class="form-group">
-                <input type="password" name="password" placeholder="Password" class="form-control" required>
+                <input type="password" name="password" placeholder="Password" class="form-control" style="width: 70%;" required>
             </div>
+            <address></address>
             {{ form.errors }}
             <button type="submit" class="btn btn-primary">Login</button>
         </form>
