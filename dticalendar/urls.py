@@ -22,7 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('employees/', include('employees.urls')),
     path('users/', include('users.urls')),
-    path('schedule/', include('schedule.urls')),
     path('', include('divisions.urls')),
     path('', include('calendars.urls')),
     path('get_events/', get_events, name='get_events'),

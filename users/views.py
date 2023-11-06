@@ -8,6 +8,7 @@ from events.models import Event
 from django.db.models import Q
 from calendars.models import Calendar
 from divisions.models import Division
+from orgoutcomes.models import OrgOutcome
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.shortcuts import redirect
@@ -112,10 +113,12 @@ def profile(request):
 
     # Handle regular HTML request
     events = Event.objects.all()
-    calList = Calendar.objects.all()
-    divList = Division.objects.all()
+    ooList = OrgOutcome.objects.all()
+    #calList = Calendar.objects.all()
+    #divList = Division.objects.all()
+    
 
-    return render(request, 'users/profile.html', {'eventsList': events, 'calendarList': calList, 'divisionList': divList, 'msgvar': msgvar})
+    return render(request, 'users/profile.html', {'eventsList': events, 'ooList':ooList, 'msgvar': msgvar})
 
 
 # method to display event details using datatable server side processing

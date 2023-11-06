@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'divisions',
     'events',
     'users',
-    'schedule',
     'bootstrap4',
     'orgoutcomes',
     'paps',
@@ -89,8 +88,8 @@ DATABASES = {
         #'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'db_appcal',
-        'USER': 'root',
-        'PASSWORD': 'P@ssw0rd',
+        'USER': 'postgres',
+        'PASSWORD': 'jun61614_dti',
         'HOST': 'localhost', # Or your PostgreSQL server's address
         'PORT':'5432', # Default PostgreSQL port
     }

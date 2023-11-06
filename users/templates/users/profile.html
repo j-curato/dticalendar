@@ -48,7 +48,7 @@
         <div class="toast align-items-center text-white bg-primary border-0 hide position-fixed top-0 end-0 p-3 mt-2" id="liveToast" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 1050">
           <div class="d-flex">
             <div class="toast-body">
-              Event Successfully Saved!
+              {[ message ]}
             </div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
           </div>
@@ -194,108 +194,7 @@
           </div>
         </div>
 
-      
-        
-        <!-- Modal -->
-            <!-- <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Add event</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    <form action="{% url 'profile' %}" method="post" enctype="multipart/form-data">
-                      {% csrf_token %}
-                        
-                        <p> 
-                          <select name="office" class="form-control" aria-label="Default select example" required>
-                          <option >Select Office</option>
-                          <option value="RO" >REGIONAL OFFICE</option>
-                          <option value="ADN">AGUSAN DEL NORTE</option>
-                          <option value="ADS">AGUSAN DEL SUR</option>
-                          <option value="SDN">SURIGAO DEL NORTE</option>
-                          <option value="SDS">SURIGAO DEL SUR</option>
-                          <option value="PDI">PROVINCE OF DINAGAT ISLANDS</option>
-                        </select>
-                      </p>
-                        <p><select name="division_id" class="form-control form-select" aria-label="Default select example" v-model="selectedDivisionId" @change="onDivisionChange" required>
-                          <option value="0">Select Division</option>
-                          {% for val in divisionList %}
-                          <option value="{{ val.id }}">{{ val.division_name }}</option>
-                          {% endfor %}
-                        </select></p>
-
-                        <p> 
-                          <select name="unit" class="form-control form-select" aria-label="Default select example" required>
-                          <option value="0">Select Unit</option>
-                          <option value="NC" >Negosyo Center</option>
-                          <option value="EDU">Enterprise Development Unit</option>
-                          <option value="TPU">Trade Promotion Unit</option>
-                          <option value="CARP">Comprehensive Agrarian Reform Program</option>
-                        </select>
-                      </p>
-
-                        <p> 
-                          <select name="org_outcome" class="form-control form-select" aria-label="Default select example" required>
-                          <option value="0">Select Organizational Outcome</option>
-                          <option value="OO1" >OO1</option>
-                          <option value="OO2">OO2</option>
-                          <option value="OO3">OO3</option>
-                        </select>
-                       </p>
-
-                       <p> 
-                        <select name="paps" class="form-control form-select" aria-label="Default select example" required>
-                        <option value="0">Select PAPs</option>
-                        <option value="PAPs 1" >PAPs 1</option>
-                        <option value="PAPs 2">PAPs 2</option>
-                        <option value="PAPs 3">PAPs 3</option>
-                      </select>
-                     </p>
-
-                       <p><select name="calendar_id" class="form-control form-select" aria-label="Default select example" required>
-                        <option>Select Calendar</option>
-                        {% for val in calendarList %}
-                        <option value="{{ val.id }}">{{ val.calendar_name }}</option>
-                        {% endfor %}
-                      </select></p>
-
-                        <p><input type="text" name="user_id" class="form-control" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
-                        <p><input type="text" name="event_title" class="form-control" id="event-title-input" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
-                        <p><input type="text" name="event_location" class="form-control" placeholder="Province" required></p>
-                        <p><input type="text" name="event_location_lgu" class="form-control" placeholder="LGU" required></p>
-                        <p><input type="text" name="event_location_district" class="form-control" placeholder="District" required></p>
-
-                        <p><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="startdate" @change="updateStartDateFields" required></p>
-                        <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="event_day_start" style="display:none;"></p>
-                        <p><input type="text" name="event_month_start" class="form-control" placeholder="Month Start"  v-model="monthStart" style="display:none;"></p>
-                        <p><input type="text" name="event_year_start" class="form-control" placeholder="Year Start"  v-model="yearStart" style="display:none;"></p>
-                        <p><input type="text" name="event_time_start" class="form-control" placeholder="Time Start"  v-model="timeStart" style="display:none;"></p>
-                         <p><input type="text" name="whole_date_start_searchable" class="form-control" v-model="dateStartSearchable" style="display:none;"></p>
-                       
-                        <p><input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="enddate" @change="updateEndDateFields" required></p>
-                       
-                        <p><input type="text" name="event_day_end" class="form-control" v-model="dayEnd" placeholder="Day End" style="display: none;"></p>
-                        <p><input type="text" name="event_month_end" class="form-control" v-model="monthEnd" placeholder="Month End" style="display: none;"></p>
-                        <p><input type="text" name="event_year_end" class="form-control" v-model="yearEnd" placeholder="Year end" style="display: none;"></p>
-                        <p><input type="text" name="event_time_end" class="form-control" v-model="timeEnd" placeholder="Time end" style="display: none;"></p>
-                        <p><input type="text" name="whole_date_end_searchable" class="form-control" v-model="dateEndSearchable" style="display:none;"></p>
-                        <p><textarea name="event_desc" class="form-control" placeholder="Add a description"></textarea></p>
-                        <p><textarea name="participants" class="form-control" placeholder="Participants"></textarea></p>
-                        <p><input type="file" name="file_attachment" class="form-control"></p>
-                  
-                  <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Save</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  </div>
-                  </form>
-                  </div>
-                </div>
-              </div>
-            </div> -->
-
-            <!-- modal for editing events -->
+          <!-- modal for editing events -->
 
             <!-- <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog">
@@ -393,21 +292,22 @@
 
             <!-- Organizational Outcome Modal-->
             <div class="modal fade" id="orgOutcomeModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog">
+              <div class="modal-dialog modal-dialog-slideout">
                 <div class="modal-content">
                   <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Add Organizational Outcome</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                    <form action="" method="post">
+                    <form @submit.prevent="saveOoData" enctype="multipart/form-data">
                       {% csrf_token %}
-                        <p><input type="text" name="org_outcome" class="form-control" placeholder="Org Outcome" required></p>
-                        <p><input type="text" name="description" class="form-control" placeholder="Description" required></p>
-                  <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Save</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  </div>
+                        <p><input type="text" name="org_outcome" class="form-control" v-model="orgFormData.org_outcome" placeholder="Org Outcome" required></p>
+                        <p><input type="text" name="description" class="form-control" v-model="orgFormData.description" placeholder="Description" required></p>
+
+                        <div class="modal-footer">
+                          <button class="btn btn-primary">Save</button>
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
                   </form>
                   </div>
                 </div>
@@ -418,29 +318,31 @@
             <!--PAPs Modal-->
 
             <div class="modal fade" id="papsModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog">
+              <div class="modal-dialog modal-dialog-slideout">
                 <div class="modal-content">
                   <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Add Programs and Projects</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                    <form action="" method="post">
+                    <form @submit.prevent="savePapsData" enctype="multipart/form-data">
                       {% csrf_token %}
-                        <p><input type="text" name="pap" class="form-control" placeholder="PAPs" required></p>
-                        <p><input type="text" name="description" class="form-control" placeholder="Description" required></p>
+                        <p><input type="text" name="pap" class="form-control" placeholder="PAPs" v-model="papsFormData.pap" required></p>
+                        <p><input type="text" name="description" class="form-control" v-model="papsFormData.description" placeholder="Description" required></p>
+                        <!-- Dropdown using loop for ooList = OrgOutcome.objects.all() -->
                         <p>
-                          <select name="office" class="form-control form-select" aria-label="Default select example" required>
-                          <option value="0">Select Organizational Outcome</option>
-                          <option value="OO1">OO1</option>
-                          <option value="OO2">OO2</option>
-                          <option value="OO3">OO3</option>
-                          <option value="OO4">OO4</option>
-                          <option value="GOOD GOVERNANCE">GOOD GOVERNANCE</option>
+                          <select name="org_outcome" class="form-control form-select" id="orgOutcome-id" v-model="papsFormData.org_outcome_id" aria-label="Default select example" @change="onOoChange" required>
+                            <option value="0">Select Organizational Outcome</option>
+                            {% for val in ooList %}
+                            <option value="{{ val.id }}">{{ val.org_outcome }}</option>
+                            {% endfor %}
                           </select>
                         </p>
+                        <p>
+                          <input type="text" name="oo_name" class="form-control" id="oo-name-id" v-model="papsFormData.oo_name">
+                        </p>
                         <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save</button>
+                          <button class="btn btn-primary">Save</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                       </div>
                      </form>

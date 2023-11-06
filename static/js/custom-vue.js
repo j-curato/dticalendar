@@ -5,7 +5,7 @@ const app = Vue.createApp({
     delimiters: ['{[', ']}'], // Change Vue.js delimiters to avoid conflicts with Django template tags
     data() {
         return {
-            message: 'Hello Vue!',
+            message: '',
             selectedFile: null, // Initialize selectedFile with null
             divisionListVue: [], // Initialize divisionList with an empty array
             calendarListVue: [], // Initialize calendarList with an empty array
@@ -41,6 +41,18 @@ const app = Vue.createApp({
                 user_id: '', // Initialize with an empty string
                 calendar_id: 0, // Initialize with an empty string
             }, // end of formData
+            // initialize the Org Outcome form data
+            orgFormData: {
+                org_outcome: '', // Initialize with an empty string
+                description: '', // Initialize with an empty string
+            },
+            // initialize papsFormData
+            papsFormData: {
+                pap: '', // Initialize with an empty string
+                description: '', // Initialize with an empty string
+                org_outcome_id: 0,
+                oo_name: '',
+            },
         };
     },
     created() {
@@ -89,6 +101,7 @@ const app = Vue.createApp({
             .then(data => {
                 // call the showToast() method to show the toast notification
                 this.showToast();
+                // 
                 // Handle a successful response
                 console.log("Data saved successfully:", data);
                 // reset the form
@@ -162,6 +175,8 @@ const app = Vue.createApp({
             .then(data => {
                 // if message is true, then show the toast notification
                 if (data.message) {
+                // call the showToast() method and change the toast message to "Event saved successfully!"
+                this.message = "Event saved successfully!";
                 // call the showToast() method to show the toast notification
                 this.showToast();
                 // refresh the server-side datatables events table
@@ -212,6 +227,91 @@ const app = Vue.createApp({
                 console.error("Error while saving data:", error);
             });
         }, // end of saveEventData() function
+
+        // function to save org outcome data
+        saveOoData() {
+            const orgFormData = new FormData();
+            orgFormData.append('org_outcome', this.orgFormData.org_outcome);
+            orgFormData.append('description', this.orgFormData.description);
+            // ajax call to save the org outcome data
+            fetch("/orgoutcomes/save-org-outcome-ajax/", {
+                method: "POST",
+                body: orgFormData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json(); // Assuming the server returns JSON data
+            })
+            .then(data => {
+                // if message is true, then show the toast notification
+                if (data.message) {
+                // call the showToast() method and change the toast message to "Org Outcome saved successfully!"
+                this.message = "Org Outcome saved successfully!";
+                // call the showToast() method to show the toast notification
+                this.showToast();
+                console.log("Data saved successfully:", data);
+                // reset the form data
+                this.orgFormData.org_outcome = '';
+                this.orgFormData.description = '';
+            } // end of if (data.message)
+            else {
+                // Handle a failed response
+                console.log("Data save failed:", data);
+            }
+            }) // end of the first .then()
+            .catch(error => {
+                // Handle errors
+                console.error("Error while saving data:", error);
+            });
+        }, // end of saveOrgOutcomeData() function
+
+        // function to save paps data
+        savePapsData() {
+            const papsFormData = new FormData();
+            papsFormData.append('pap', this.papsFormData.pap);
+            papsFormData.append('description', this.papsFormData.description);
+            papsFormData.append('org_outcome_id', this.papsFormData.org_outcome_id);
+            papsFormData.append('oo_name', this.papsFormData.oo_name);
+
+            alert(this.papsFormData.oo_name);
+            // ajax call to save the paps data
+            fetch("/paps/save-paps-ajax/", {
+                method: "POST",
+                body: papsFormData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json(); // Assuming the server returns JSON data
+            })
+            .then(data => {
+                // if message is true, then show the toast notification
+                if (data.message) {
+                // call the showToast() method and change the toast message to "PAPs saved successfully!"
+                this.message = "PAP data saved successfully!";
+                // call the showToast() method to show the toast notification
+                this.showToast();
+                console.log("Data saved successfully:", data.message);
+                // reset the form data
+                this.papsFormData.pap = '';
+                this.papsFormData.description = '';
+                this.papsFormData.org_outcome_id = 0;
+                this.papsFormData.oo_name = '';
+            } // end of if (data.message)
+            else {
+                // Handle a failed response
+                console.log("Data save failed:", data.message);
+            }
+            }
+            ) // end of the first .then()
+            .catch(error => {
+                // Handle errors
+                console.error("Error while saving data:", error);
+            });
+        }, // end of savePapsData() function
 
         showModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
@@ -287,6 +387,9 @@ const app = Vue.createApp({
             
             const selectedDivision = this.divisionListVue.find(item => item.id === this.formData.division_id);
             this.formData.division_name = selectedDivision ? selectedDivision.division_name : '';
+
+           //var divText = $("#division-id option:selected").text();
+           //this.formData.division_name = divText;
             
           },
         onCalendarChange() {
@@ -387,7 +490,13 @@ const app = Vue.createApp({
             this.formData.whole_date_end_searchable = endformattedDate;
             //this.dateEndSearchable = `${endyear}-${endmonth}-${endday}`;
 
-          },
+          }, // end of updateEndDateFields() function
+          // onOoChange function
+          onOoChange() {
+            // get the selected org outcome text value with id="orgOutcome-id-id" and assign the text value to input type='text' id='oo-name-id'
+            var ooText = $("#orgOutcome-id option:selected").text();
+            this.papsFormData.oo_name = ooText;
+            },
     }, // end of methods
     mounted() {
 

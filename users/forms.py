@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from schedule.models import Event
 from django.contrib.auth import password_validation
 
 class UserRegisterForm(UserCreationForm):
@@ -29,10 +28,4 @@ class UserRegisterForm(UserCreationForm):
         model = User
         fields = ['username', 'email', 'password1', 'password2']
 
-
-# Event Form
-class EventForm(forms.ModelForm):
-    class Meta:
-        model = Event
-        fields = ['title', 'description', 'start', 'end']
 
