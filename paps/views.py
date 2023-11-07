@@ -27,3 +27,9 @@ def save_paps_ajax(request):
             return JsonResponse({'message': 'True'})
         else:
             return JsonResponse({'message': 'False'})
+        
+# get paps list using ajax and return json response and save to data variable
+def get_papsList(request):
+    papsList = Pap.objects.all()
+    data = [{'id': pap.id, 'pap': pap.pap, 'org_outcome_id': pap.org_outcome_id} for pap in papsList]
+    return JsonResponse(data, safe=False)

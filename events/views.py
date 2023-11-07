@@ -6,8 +6,10 @@ from django.http import JsonResponse
 from calendars.models import Calendar
 from divisions.models import Division
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
 from .models import Event
 
 # @api_view(['GET'])
@@ -69,4 +71,89 @@ def save_event_ajax(request):
         return JsonResponse({'message': 'True'})
     else:
         return JsonResponse({'message': 'False'})
+    
+    # method to fetch the event table data and display it in the following field order - whole_date_start_searchable, event_title, office.
+    # but the office data is divided into 5 fields that is based on its values. Namely: RO, ADN, ADS, SDN, SDS and PDI
+    # display the data in event_display.html
+
+def get_eventsList(request):
+    events = Event.objects.all()
+    return render(request, 'events/event_display.html', {'events': events})
+
+
+# method to display event details using datatable server side processing
+def fetch_events_ajax(request):
+    try:
+        # Filter the events based on DataTables parameters
+        # This includes pagination and filtering based on search
+        # term, if provided by DataTables.
+        draw = int(request.GET.get('draw', 1))
+        start = int(request.GET.get('start', 0))
+        length = int(request.GET.get('length', 10))
+        search_value = request.GET.get('search[value]', '')
+        # Declare variables to be used for datatables sorting
+        order_column_index = int(request.GET.get('order[0][column]', 0))
+        order_direction = request.GET.get('order[0][dir]', 'asc')
+
+        
+        # Print the values for debugging
+        print("order_column_index:", order_column_index)
+        print("order_direction:", order_direction)
+
+         # Define the columns you want to search on
+        columns = ['id', 'event_title', 'event_desc', 'office', 'division_name', 'unit', 'whole_date_start_searchable', 'whole_date_end_searchable']
+
+        #Create a Q object for filtering based on the search_value in all columns
+        search_filter = Q()
+        for col in columns:
+            search_filter |= Q(**{f'{col}__icontains': search_value})
+
+
+        # Filter the events based on the search_value
+        events = Event.objects.filter(search_filter)
+
+        # Get the total count of events (before filtering)
+        total_records = Event.objects.count()
+
+        # Apply sorting based on the column index and direction
+        if order_direction == 'asc':
+            events = events.order_by(columns[order_column_index])
+        else:
+            events = events.order_by(f'-{columns[order_column_index]}')
+
+        # Count of records after filtering
+        filtered_records = events.count()
+
+        # Slice the events based on DataTables pagination
+        events = events[start:start + length]
+
+        # Format the data for DataTables
+        data = []
+        for event in events:
+            data.append({
+                'id': event.id,
+                'event_title': event.event_title,
+                'event_desc': event.event_desc,
+                'office': event.office,
+                'division_name': event.division_name,
+                'unit': event.unit,
+                # whole date start format should be like January 01, 2023
+                'whole_date_start_searchable': event.whole_date_start_searchable,
+                'whole_date_end_searchable': event.whole_date_end_searchable
+                # Add more fields as needed
+            })
+
+        # Prepare the JSON response
+        response_data = {
+            'draw': draw,
+            'recordsTotal': total_records,
+            'recordsFiltered': filtered_records,
+            'data': data
+        }
+
+        return JsonResponse(response_data)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+    
 

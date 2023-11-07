@@ -17,3 +17,8 @@ def save_orgOutcome(request):
     else:
         return JsonResponse({'message': 'False'})
     
+# get org outcome list using ajax and return json response and save to data variable
+def get_ooList(request):
+    ooList = OrgOutcome.objects.all()
+    data = [{'id': oo.id, 'org_outcome': oo.org_outcome} for oo in ooList]
+    return JsonResponse(data, safe=False)
