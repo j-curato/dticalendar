@@ -635,24 +635,24 @@ const app = Vue.createApp({
                 'copy', 'csv', 'excel', 'pdf', 'print' // Add the export buttons you need
             ],
             'columns': [
-                {'data': 'whole_date_start_searchable', 'sortable': true, 'searchable': false},
-                {'data': 'event_title', 'searchable': true, 'sortable': true},
-                {'data': 'event_desc', 'searchable': true, 'sortable': true},
-                {'data': 'event_title', 'searchable': true, 'sortable': true},
-                {'data': 'event_title', 'searchable': true, 'sortable': true},
-                {'data': 'event_title', 'searchable': true, 'sortable': true},
-                {'data': 'event_title', 'searchable': true, 'sortable': true},
-                {'data': 'event_title', 'searchable': true, 'sortable': true},
+                {'data': 'whole_date_start', 'sortable': true, 'searchable': true},
+                {'data': 'whole_date_start_searchable', 'sortable': true, 'searchable': true},
+                {'data': 'RO', 'sortable': true, 'searchable': true},
+                {'data': 'ADN', 'sortable': true, 'searchable': true},
+                {'data': 'ADS', 'sortable': true, 'searchable': true},
+                {'data': 'SDN', 'sortable': true, 'searchable': true},
+                {'data': 'SDS', 'sortable': true, 'searchable': true},
+                {'data': 'PDI', 'sortable': true, 'searchable': true},
                 // Add more columns as needed
             ],
-            'order': [[0, 'desc']], // Order by ID column, descending
+            'order': [[0, 'asc']], // Order by ID column, descending
             
             }); // end of the $('#eventsTable').DataTable()
         
 
          // Fetch division and calendar data when the component is mounted
         this.fetchDivisionData();
-        this.fetchCalendarData();
+        this.fetchCalendarData(); 
         // org outcome data
         this.fetchOrgOutcomeData();
         // paps data

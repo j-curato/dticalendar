@@ -3,6 +3,7 @@
 # from .serializers import EventSerializer
 from django.http import HttpResponse
 from django.http import JsonResponse
+from django.db import connection
 from calendars.models import Calendar
 from divisions.models import Division
 from django.shortcuts import get_object_or_404
@@ -84,70 +85,44 @@ def get_eventsList(request):
 # method to display event details using datatable server side processing
 def fetch_events_ajax(request):
     try:
-        # Filter the events based on DataTables parameters
-        # This includes pagination and filtering based on search
-        # term, if provided by DataTables.
         draw = int(request.GET.get('draw', 1))
         start = int(request.GET.get('start', 0))
         length = int(request.GET.get('length', 10))
-        search_value = request.GET.get('search[value]', '')
-        # Declare variables to be used for datatables sorting
-        order_column_index = int(request.GET.get('order[0][column]', 0))
-        order_direction = request.GET.get('order[0][dir]', 'asc')
 
-        
-        # Print the values for debugging
-        print("order_column_index:", order_column_index)
-        print("order_direction:", order_direction)
+        query = """
+        SELECT *
+        FROM crosstab(
+          'SELECT whole_date_start, whole_date_start_searchable, office, COUNT(event_title) AS event_count
+           FROM events_event
+           GROUP BY whole_date_start, whole_date_start_searchable, office
+           ORDER BY 1,2,3',
+           'SELECT unnest(ARRAY[''RO'', ''ADN'', ''ADS'', ''SDN'', ''SDS'', ''PDI''])'
+        ) AS ct (whole_date_start date, whole_date_start_searchable text, RO int, ADN int, ADS int, SDN int, SDS int, PDI int);
+        """
+       
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
 
-         # Define the columns you want to search on
-        columns = ['id', 'event_title', 'event_desc', 'office', 'division_name', 'unit', 'whole_date_start_searchable', 'whole_date_end_searchable']
-
-        #Create a Q object for filtering based on the search_value in all columns
-        search_filter = Q()
-        for col in columns:
-            search_filter |= Q(**{f'{col}__icontains': search_value})
-
-
-        # Filter the events based on the search_value
-        events = Event.objects.filter(search_filter)
-
-        # Get the total count of events (before filtering)
-        total_records = Event.objects.count()
-
-        # Apply sorting based on the column index and direction
-        if order_direction == 'asc':
-            events = events.order_by(columns[order_column_index])
-        else:
-            events = events.order_by(f'-{columns[order_column_index]}')
-
-        # Count of records after filtering
-        filtered_records = events.count()
-
-        # Slice the events based on DataTables pagination
-        events = events[start:start + length]
-
-        # Format the data for DataTables
+        # Convert the result into a list of dictionaries
         data = []
-        for event in events:
+        for row in result[start:start + length]:
             data.append({
-                'id': event.id,
-                'event_title': event.event_title,
-                'event_desc': event.event_desc,
-                'office': event.office,
-                'division_name': event.division_name,
-                'unit': event.unit,
-                # whole date start format should be like January 01, 2023
-                'whole_date_start_searchable': event.whole_date_start_searchable,
-                'whole_date_end_searchable': event.whole_date_end_searchable
+                'whole_date_start': row[0].strftime('%Y-%m-%d'),  # Format as needed
+                'whole_date_start_searchable': row[1],
+                'RO': row[2],
+                'ADN': row[3],
+                'ADS': row[4],
+                'SDN': row[5],
+                'SDS': row[6],
+                'PDI': row[7],
                 # Add more fields as needed
             })
 
-        # Prepare the JSON response
         response_data = {
             'draw': draw,
-            'recordsTotal': total_records,
-            'recordsFiltered': filtered_records,
+            'recordsTotal': len(result),
+            'recordsFiltered': len(result),
             'data': data
         }
 
