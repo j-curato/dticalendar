@@ -88,6 +88,10 @@ def fetch_events_ajax(request):
         draw = int(request.GET.get('draw', 1))
         start = int(request.GET.get('start', 0))
         length = int(request.GET.get('length', 10))
+        search_value = request.GET.get('search[value]', '')
+
+        # Define the columns you want to search on
+        columns = ['whole_date_start_searchable']
 
         query = """
         SELECT *
@@ -99,14 +103,14 @@ def fetch_events_ajax(request):
            'SELECT unnest(ARRAY[''RO'', ''ADN'', ''ADS'', ''SDN'', ''SDS'', ''PDI''])'
         ) AS ct (whole_date_start date, whole_date_start_searchable text, RO int, ADN int, ADS int, SDN int, SDS int, PDI int);
         """
-       
+
         with connection.cursor() as cursor:
             cursor.execute(query)
             result = cursor.fetchall()
 
         # Convert the result into a list of dictionaries
         data = []
-        for row in result[start:start + length]:
+        for row in result:
             data.append({
                 'whole_date_start': row[0].strftime('%Y-%m-%d'),  # Format as needed
                 'whole_date_start_searchable': row[1],
@@ -119,16 +123,23 @@ def fetch_events_ajax(request):
                 # Add more fields as needed
             })
 
+        # Apply the search filter to the data
+        filtered_data = [entry for entry in data if any(search_value.lower() in entry[col].lower() for col in columns)]
+
         response_data = {
             'draw': draw,
-            'recordsTotal': len(result),
-            'recordsFiltered': len(result),
-            'data': data
+            'recordsTotal': len(data),
+            'recordsFiltered': len(filtered_data),
+            'data': filtered_data[start:start + length]
         }
 
         return JsonResponse(response_data)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+
+
 
     
 
