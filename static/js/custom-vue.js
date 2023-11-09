@@ -237,6 +237,40 @@ const app = Vue.createApp({
             });
         }, // end of saveEventData() function
 
+        // Function to load datatable with the selected id="dtioffice"
+        loadFiltDatatable() {
+            var tablevar;
+            // get the selected office id
+            var officeId = $("#dtioffice option:selected").val();
+            //Datatables serverside for displaying events
+            tablevar = $('#eventsTable').DataTable({
+                        'processing': true,
+                        'serverSide': true,
+                        'ajax': {
+                            'url': '/get_events/',  // Replace with your API endpoint
+                            'type': 'GET',
+                            'data': {
+                                'office_id': officeId,
+                            },
+                        },
+                        'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
+                        'buttons': [
+                            'copy', 'csv', 'excel', 'pdf', 'print' // Add the export buttons you need
+                        ],
+                        'columns': [
+                            {'data': 'id', 'sortable': true, 'searchable': false},
+                            {'data': 'event_title', 'searchable': true, 'sortable': true},
+                            {'data': 'event_desc', 'searchable': true, 'sortable': true},
+                            {'data': 'office', 'searchable': true, 'sortable': true},
+                            {'data': 'division_name', 'searchable': true, 'sortable': true},
+                            {'data': 'unit', 'searchable': true, 'sortable': true},
+                            {'data': 'whole_date_start_searchable', 'searchable': true, 'sortable': true},
+                            {'data': 'whole_date_end_searchable', 'searchable': true, 'sortable': true},
+                            // Add more columns as needed
+                        ],
+                        'order': [[0, 'desc']], // Order by ID column, descending
+                    }); // end of the $('#eventsTable').DataTable()
+        }, // end of loadFiltDatatable() function
         // function to save org outcome data
         saveOoData() {
             const orgFormData = new FormData();
@@ -423,6 +457,8 @@ const app = Vue.createApp({
             this.filteredPAPs = this.papsListVue.filter(pap => pap.org_outcome_id === this.formData.org_outcome);
             console.log(this.filteredPAPs);
         },
+        // Function to filter datatable events data by office, division and unit
+          
         onDivisionChange() {
             //console.log('Selected Division ID:', this.formData.division_id);
             //console.log(this.divisionListVue);
@@ -635,7 +671,7 @@ const app = Vue.createApp({
                 'copy', 'csv', 'excel', 'pdf', 'print' // Add the export buttons you need
             ],
             'columns': [
-                {'data': 'whole_date_start', 'sortable': true, 'searchable': true},
+                {'data': 'whole_date_start', 'sortable': true, 'searchable': true, 'visible': false},
                 {'data': 'whole_date_start_searchable', 'sortable': true, 'searchable': true},
                 {'data': 'RO', 'sortable': true, 'searchable': true},
                 {'data': 'ADN', 'sortable': true, 'searchable': true},

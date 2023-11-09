@@ -78,8 +78,9 @@ def save_event_ajax(request):
     # display the data in event_display.html
 
 def get_eventsList(request):
+    txturl = 'events'
     events = Event.objects.all()
-    return render(request, 'events/event_display.html', {'events': events})
+    return render(request, 'events/event_display.html', {'events': events, 'txturl': txturl})
 
 
 # method to display event details using datatable server side processing
@@ -136,6 +137,14 @@ def fetch_events_ajax(request):
         return JsonResponse(response_data)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+    # load division datatables html page - events_display_div.html
+def load_div_datatbl_html(request):
+    txturl = 'events'
+    divisions = Division.objects.all()
+    return render(request, 'events/events_display_div.html', {'divisions': divisions, 'txturl': txturl})
+        
+
 
 
 

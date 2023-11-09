@@ -3,7 +3,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Profile</title>  
+        <title>Events Display Portal</title>  
         
         <!--datatables server-side-->
         <script src="{% static 'js/jquery-3.7.0.js' %}"></script>
@@ -76,15 +76,110 @@
     
     <body>
 
-        <div class="container">
+    <div class="container">
 
+    <br>
+    <div class="modal fade" id="showOfficeModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-slideout">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Filter Function</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form action="" enctype="multipart/form-data">
+                {% csrf_token %}
+                  <p>
+                    <select id="dtioffice" class="form-control form-select">
+                        <option value="0">Select Office</option>
+                        <option value="RO">RO</option>
+                        <option value="ADN">ADN</option>
+                        <option value="ADS">ADS</option>
+                        <option value="SDN">SDN</option>
+                        <option value="SDS">SDS</option>
+                        <option value="PDI">PDI</option>
+                    </select>
+                  </p>
+                  <div class="modal-footer">
+                    <button class="btn btn-primary">Filter</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
+            </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--by division modal filter-->
+      <div class="modal fade" id="showDtiDivModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-slideout">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Filter Function</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form enctype="multipart/form-data">
+                {% csrf_token %}
+                  <p>
+                    <select id="dtidivision" class="form-control form-select">
+                        <option value="0">Select Division</option>
+                        <option value="SDD">SME Development Division (SDD)</option>
+                        <option value="IDD">Industry Development Division (IDD)</option>
+                        <option value="CPD">Consumer Protection Division (CPD)</option>
+                        <option value="FAD">Finance and Admin Division (FAD)</option>
+                    </select>
+                  </p>
+                  <div class="modal-footer">
+                    <button class="btn btn-primary">Filter</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
+            </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      
+      <div id="{%if txturl == 'events'%}appEvents{%else%}app{% endif %}">
+
+            {% if txturl == 'events' %}
+                <br>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4>DTI Caraga Calendar of Events</h4>
+                    </div>
+                </div>
+                <br>
+            
+                <!-- div for the select tag to show filter by function -->
+                <div class="row">
+                    <div class="col-md-4">
+                        <p>
+                            <select id="filterBy" class="form-control form-select" @change="filterEventsDatatbl">
+                                <option value="0">Filter by</option>
+                                <option value="office">Office</option>
+                                <option value="division">Division</option>
+                                <option value="unit">Unit</option>
+                            </select>
+                        </p>
+                    </div>
+                </div>
+                <br>
+            {% endif %}
+            
             {% block content %}
             
             {% endblock %}
 
         </div>
+
+        </div>
         
         <script src="{% static 'js/custom-vue.js' %}"></script>
+       {% if txturl == 'events' %}
+        <script src="{% static 'js/custom-events-vue.js' %}"></script>
+       {% endif %}
         
     </body>
 
