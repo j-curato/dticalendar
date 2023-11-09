@@ -9,6 +9,9 @@ const app = Vue.createApp({
             selectedFile: null, // Initialize selectedFile with null
             divisionListVue: [], // Initialize divisionList with an empty array
             calendarListVue: [], // Initialize calendarList with an empty array
+            ooListVue: [], // Initialize orgOutcomeList with an empty array
+            papsListVue: [], // Initialize papsList with an empty array
+            filteredPAPs: [], // Initialize filteredPAPs with an empty array
             formData: {
                 division_id: 0, // Initialize division_id with 0
                 division_name: '', // Initialize with an empty string
@@ -27,7 +30,7 @@ const app = Vue.createApp({
                 whole_date_start_searchable: '', // Initialize with an empty string
                 whole_date_end_searchable: '', // Initialize with an empty string
                 event_title: '', // Initialize with an empty string
-                event_location: '', // Initialize with an empty string
+                event_location: 0, // Initialize with an empty string
                 event_location_district: '', // Initialize with an empty string
                 event_location_lgu: '', // Initialize with an empty string
                 event_location_barangay: '', // Initialize with an empty string
@@ -127,12 +130,18 @@ const app = Vue.createApp({
           },
         // Function to save event data
         saveEventData() {
+
+            // Get the selected Organizational Outcome text
+            const orgOutcomeText = this.ooListVue.find(item => item.id === this.formData.org_outcome).org_outcome;
+            // Get the selected PAPs text
+            const papsText = this.papsListVue.find(item => item.id === this.formData.paps).pap;
+            
             const formData = new FormData();
             formData.append('office', this.formData.office);
             formData.append('division_id', this.formData.division_id);
             formData.append('unit', this.formData.unit);
-            formData.append('org_outcome', this.formData.org_outcome);
-            formData.append('paps', this.formData.paps);
+            formData.append('org_outcome', orgOutcomeText);
+            formData.append('paps', papsText);
             formData.append('calendar_id', this.formData.calendar_id);
             formData.append('user_id', this.formData.user_id);
             formData.append('event_title', this.formData.event_title);
@@ -228,6 +237,40 @@ const app = Vue.createApp({
             });
         }, // end of saveEventData() function
 
+        // Function to load datatable with the selected id="dtioffice"
+        loadFiltDatatable() {
+            var tablevar;
+            // get the selected office id
+            var officeId = $("#dtioffice option:selected").val();
+            //Datatables serverside for displaying events
+            tablevar = $('#eventsTable').DataTable({
+                        'processing': true,
+                        'serverSide': true,
+                        'ajax': {
+                            'url': '/get_events/',  // Replace with your API endpoint
+                            'type': 'GET',
+                            'data': {
+                                'office_id': officeId,
+                            },
+                        },
+                        'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
+                        'buttons': [
+                            'copy', 'csv', 'excel', 'pdf', 'print' // Add the export buttons you need
+                        ],
+                        'columns': [
+                            {'data': 'id', 'sortable': true, 'searchable': false},
+                            {'data': 'event_title', 'searchable': true, 'sortable': true},
+                            {'data': 'event_desc', 'searchable': true, 'sortable': true},
+                            {'data': 'office', 'searchable': true, 'sortable': true},
+                            {'data': 'division_name', 'searchable': true, 'sortable': true},
+                            {'data': 'unit', 'searchable': true, 'sortable': true},
+                            {'data': 'whole_date_start_searchable', 'searchable': true, 'sortable': true},
+                            {'data': 'whole_date_end_searchable', 'searchable': true, 'sortable': true},
+                            // Add more columns as needed
+                        ],
+                        'order': [[0, 'desc']], // Order by ID column, descending
+                    }); // end of the $('#eventsTable').DataTable()
+        }, // end of loadFiltDatatable() function
         // function to save org outcome data
         saveOoData() {
             const orgFormData = new FormData();
@@ -274,8 +317,7 @@ const app = Vue.createApp({
             papsFormData.append('description', this.papsFormData.description);
             papsFormData.append('org_outcome_id', this.papsFormData.org_outcome_id);
             papsFormData.append('oo_name', this.papsFormData.oo_name);
-
-            alert(this.papsFormData.oo_name);
+            //alert(this.papsFormData.oo_name);
             // ajax call to save the paps data
             fetch("/paps/save-paps-ajax/", {
                 method: "POST",
@@ -381,6 +423,42 @@ const app = Vue.createApp({
                 console.error('Error fetching calendar data:', error);
             });
         },
+        // Function to fetch org outcome data
+        fetchOrgOutcomeData() {
+            fetch('/orgoutcomes/api/get-ooList/') // Replace with the actual API endpoint
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                this.ooListVue = data;
+                console.log(this.ooListVue);
+            })
+            .catch(error => {
+                console.error('Error fetching org outcome data:', error);
+            });
+        },
+        // Function to fetch paps data
+        fetchPapsData() {
+            fetch('/paps/api/get-papsList/') // Replace with the actual API endpoint
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                this.filteredPAPs = data;
+                this.papsListVue = data;
+                console.log(this.filteredPAPs);
+            })
+            .catch(error => {
+                console.error('Error fetching paps data:', error);
+            });
+        },
+        // Function to filter paps data
+        updatePAPs() {
+            // Filter the papsListVue array to only include items that match the selected org outcome
+            //this.filteredPAPs = this.papsListVue.filter(item => item.org_outcome_id === this.papsFormData.org_outcome_id);
+            this.filteredPAPs = this.papsListVue.filter(pap => pap.org_outcome_id === this.formData.org_outcome);
+            console.log(this.filteredPAPs);
+        },
+        // Function to filter datatable events data by office, division and unit
+          
         onDivisionChange() {
             //console.log('Selected Division ID:', this.formData.division_id);
             //console.log(this.divisionListVue);
@@ -501,6 +579,7 @@ const app = Vue.createApp({
     mounted() {
 
         var table; //declare the table variable globally
+        var tableEvents; //declare the table variable globally
 
         $(function() {
 
@@ -579,9 +658,41 @@ const app = Vue.createApp({
 
         }); // end of the function
 
+        //Datatables serverside for displaying events in different field sequence
+        tableEvents = $('#eventsDisplayTable').DataTable({
+            'processing': true,
+            'serverSide': true,
+            'ajax': { 
+                'url': '/events/fetch-events-ajax/',  // Replace with your API endpoint
+                'type': 'GET', 
+            },
+            'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
+            'buttons': [
+                'copy', 'csv', 'excel', 'pdf', 'print' // Add the export buttons you need
+            ],
+            'columns': [
+                {'data': 'whole_date_start', 'sortable': true, 'searchable': true, 'visible': false},
+                {'data': 'whole_date_start_searchable', 'sortable': true, 'searchable': true},
+                {'data': 'RO', 'sortable': true, 'searchable': true},
+                {'data': 'ADN', 'sortable': true, 'searchable': true},
+                {'data': 'ADS', 'sortable': true, 'searchable': true},
+                {'data': 'SDN', 'sortable': true, 'searchable': true},
+                {'data': 'SDS', 'sortable': true, 'searchable': true},
+                {'data': 'PDI', 'sortable': true, 'searchable': true},
+                // Add more columns as needed
+            ],
+            'order': [[0, 'asc']], // Order by ID column, descending
+            
+            }); // end of the $('#eventsTable').DataTable()
+        
+
          // Fetch division and calendar data when the component is mounted
         this.fetchDivisionData();
-        this.fetchCalendarData();
+        this.fetchCalendarData(); 
+        // org outcome data
+        this.fetchOrgOutcomeData();
+        // paps data
+        this.fetchPapsData();
 
     } // end of the mounted() function
 

@@ -34,9 +34,6 @@
         </div>
       {% endif %}
 
-    
-       <div id="app">
-        
         <button @click="showModal" class="btn btn-primary"><i class="bi bi-calendar-event"></i> New Event</button>&nbsp;
         <button @click="showCalModal" class="btn btn-primary"><i class="bi bi-calendar-check"></i> Calendar Category</button>&nbsp;
         <button @click="showDivModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Division</button>&nbsp;
@@ -104,20 +101,16 @@
                 </p>
 
                   <p> <!-- to be created with db table Org_outcome-->
-                   <select name="org_outcome" v-model="formData.org_outcome" class="form-control form-select" aria-label="Default select example" required>
+                   <select name="org_outcome" v-model="formData.org_outcome" @change="updatePAPs" class="form-control form-select" aria-label="Default select example" required>
                     <option value="0">Select Organizational Outcome</option>
-                    <option value="OO1" >OO1</option>
-                    <option value="OO2">OO2</option>
-                    <option value="OO3">OO3</option>
+                    <option v-for="val in ooListVue" :value="val.id">{[ val.org_outcome ]}</option>
                    </select>
                  </p>
 
                  <p> <!-- to be created with db table PAPs-->
                   <select name="paps" v-model="formData.paps" class="form-control form-select" aria-label="Default select example" required>
                     <option value="0">Select PAPs</option>
-                    <option value="PAPs 1" >PAPs 1</option>
-                    <option value="PAPs 2">PAPs 2</option>
-                    <option value="PAPs 3">PAPs 3</option>
+                    <option v-for="val in filteredPAPs" :value="val.id">{[ val.pap ]}</option>
                   </select>
                  </p>
 
@@ -156,10 +149,19 @@
                   <!-- <input v-model="formData.calendar_desc" type="text" placeholder="Field 2" required> -->
                   <p><input type="text" name="user_id" class="form-control" placeholder="Event title" v-model="formData.user_id" style="display: none;"></p>
                   <p><input type="text" name="event_title" class="form-control" id="event-title-input" placeholder="Event title" v-model="formData.event_title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
-                  <p><input type="text" name="event_location" class="form-control" v-model="formData.event_location" placeholder="Event-Location" required></p>
-                  <p><input type="text" name="event_location_lgu" class="form-control" v-model="formData.event_location_lgu" placeholder="Event-LGU" required></p>
-                  <p><input type="text" name="event_location_district" class="form-control" v-model="formData.event_location_district" placeholder="Event-District" required></p>
-                  <p><input type="text" name="event_location_barangay" class="form-control" v-model="formData.event_location_barangay" placeholder="Event-Barangay" required></p>
+                  <p>
+                      <select name="event_location" v-model="formData.event_location" class="form-control form-select" required>
+                        <option value="0">Select Province</option>
+                        <option value="Agusan del Norte">Agusan del Norte</option>
+                        <option value="Agusan del Sur">Agusan del Sur</option>
+                        <option value="Surigao del Norte">Surigao del Norte</option>
+                        <option value="Surigao del Sur">Surigao del Sur</option>
+                        <option value="Dinagat Islands">Province of Dinagat Islands</option>
+                      </select>
+                  </p>
+                  <p><input type="text" name="event_location_lgu" class="form-control" v-model="formData.event_location_lgu" placeholder="LGU" required></p>
+                  <p><input type="text" name="event_location_district" class="form-control" v-model="formData.event_location_district" placeholder="District" required></p>
+                  <p><input type="text" name="event_location_barangay" class="form-control" v-model="formData.event_location_barangay" placeholder="Barangay" required></p>
 
                   <p><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="formData.whole_date_start" @change="updateStartDateFields" @input="updateStartDateFields" required></p>
                   <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="formData.event_day_start" style="display:none;"></p>
@@ -339,7 +341,7 @@
                           </select>
                         </p>
                         <p>
-                          <input type="text" name="oo_name" class="form-control" id="oo-name-id" v-model="papsFormData.oo_name">
+                          <input type="text" name="oo_name" class="form-control" id="oo-name-id" v-model="papsFormData.oo_name" style="display: none;">
                         </p>
                         <div class="modal-footer">
                           <button class="btn btn-primary">Save</button>
@@ -354,7 +356,7 @@
             <!-- end PAPs modal -->
 
             <div class="modal fade" id="myCalModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog">
+              <div class="modal-dialog modal-dialog-slideout">
                 <div class="modal-content">
                   <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Add calendar</h5>
@@ -377,7 +379,7 @@
 
 
             <div class="modal fade" id="myDivModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog">
+              <div class="modal-dialog modal-dialog-slideout">
                 <div class="modal-content">
                   <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Add division</h5>
@@ -409,7 +411,7 @@
         {% endfor %}
       </ul> -->
 
-      <table id="eventsTable" class="display" style="width:100%">
+    <table id="eventsTable" class="display" style="width:100%">
         <thead>
             <tr>
                 <th>ID</th>
@@ -437,10 +439,6 @@
           </tr>
       </tfoot>
     </table>
-
-
-    </div> <!-- end of app  -->
-
    </div>
 {% endblock %}
 

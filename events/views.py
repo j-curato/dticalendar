@@ -3,11 +3,14 @@
 # from .serializers import EventSerializer
 from django.http import HttpResponse
 from django.http import JsonResponse
+from django.db import connection
 from calendars.models import Calendar
 from divisions.models import Division
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
 from .models import Event
 
 # @api_view(['GET'])
@@ -69,4 +72,83 @@ def save_event_ajax(request):
         return JsonResponse({'message': 'True'})
     else:
         return JsonResponse({'message': 'False'})
+    
+    # method to fetch the event table data and display it in the following field order - whole_date_start_searchable, event_title, office.
+    # but the office data is divided into 5 fields that is based on its values. Namely: RO, ADN, ADS, SDN, SDS and PDI
+    # display the data in event_display.html
+
+def get_eventsList(request):
+    txturl = 'events'
+    events = Event.objects.all()
+    return render(request, 'events/event_display.html', {'events': events, 'txturl': txturl})
+
+
+# method to display event details using datatable server side processing
+def fetch_events_ajax(request):
+    try:
+        draw = int(request.GET.get('draw', 1))
+        start = int(request.GET.get('start', 0))
+        length = int(request.GET.get('length', 10))
+        search_value = request.GET.get('search[value]', '')
+
+        # Define the columns you want to search on
+        columns = ['whole_date_start_searchable']
+
+        query = """
+        SELECT *
+        FROM crosstab(
+          'SELECT whole_date_start, whole_date_start_searchable, office, COUNT(event_title) AS event_count
+           FROM events_event
+           GROUP BY whole_date_start, whole_date_start_searchable, office
+           ORDER BY 1,2,3',
+           'SELECT unnest(ARRAY[''RO'', ''ADN'', ''ADS'', ''SDN'', ''SDS'', ''PDI''])'
+        ) AS ct (whole_date_start date, whole_date_start_searchable text, RO int, ADN int, ADS int, SDN int, SDS int, PDI int);
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        # Convert the result into a list of dictionaries
+        data = []
+        for row in result:
+            data.append({
+                'whole_date_start': row[0].strftime('%Y-%m-%d'),  # Format as needed
+                'whole_date_start_searchable': row[1],
+                'RO': row[2],
+                'ADN': row[3],
+                'ADS': row[4],
+                'SDN': row[5],
+                'SDS': row[6],
+                'PDI': row[7],
+                # Add more fields as needed
+            })
+
+        # Apply the search filter to the data
+        filtered_data = [entry for entry in data if any(search_value.lower() in entry[col].lower() for col in columns)]
+
+        response_data = {
+            'draw': draw,
+            'recordsTotal': len(data),
+            'recordsFiltered': len(filtered_data),
+            'data': filtered_data[start:start + length]
+        }
+
+        return JsonResponse(response_data)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+    # load division datatables html page - events_display_div.html
+def load_div_datatbl_html(request):
+    txturl = 'events'
+    divisions = Division.objects.all()
+    return render(request, 'events/events_display_div.html', {'divisions': divisions, 'txturl': txturl})
+        
+
+
+
+
+
+
+    
 

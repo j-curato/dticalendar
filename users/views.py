@@ -49,7 +49,7 @@ def login_request(request):
     return render(request, 'users/login.html', {'form': form})
 
 def profile(request):
-
+    txturl = 'users'
     # Check if the user is authenticated
     if not request.user.is_authenticated:
         return redirect('login')
@@ -114,11 +114,12 @@ def profile(request):
     # Handle regular HTML request
     events = Event.objects.all()
     ooList = OrgOutcome.objects.all()
+    papsList = Event.objects.all()
     #calList = Calendar.objects.all()
     #divList = Division.objects.all()
     
 
-    return render(request, 'users/profile.html', {'eventsList': events, 'ooList':ooList, 'msgvar': msgvar})
+    return render(request, 'users/profile.html', {'eventsList': events, 'ooList': ooList, 'papList': papsList, 'msgvar': msgvar, 'txturl': txturl})
 
 
 # method to display event details using datatable server side processing

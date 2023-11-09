@@ -1,0 +1,35 @@
+{% extends 'users/master.html' %}
+
+{{ txturl }}
+
+{% block content %}
+
+    <table id="eventsDivDisplayTable" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th style="display:none;">Date</th>
+                <th>Event Date</th>
+                <th>RO</th>
+                <th>ADN</th>
+                <th>ADS</th>
+                <th>SDN</th>
+                <th>SDS</th>
+                <th>PDI</th>        
+                <!-- Add more columns as needed -->
+            </tr>
+        </thead>
+        <tfoot>
+        <tr>
+            <th style="display:none;">Date</th>
+            <th>Event Date</th>
+            <th>RO</th>
+            <th>ADN</th>
+            <th>ADS</th>
+            <th>SDN</th>
+            <th>SDS</th>
+            <th>PDI</th>
+        </tr>
+    </tfoot>
+    </table>
+
+{% endblock %}
