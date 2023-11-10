@@ -12,7 +12,6 @@ const appEvents = Vue.createApp({
 
     },
     methods: {
-
         filterEventsDatatbl() {
             // show the value of the selected option with and assign to a variable
             var filtertxt = $("#filterBy option:selected").val();
@@ -34,7 +33,7 @@ const appEvents = Vue.createApp({
       
         $(function() {
 
-            table = $('#eventsDivDisplayTable').DataTable({
+            table = $('#eventsDisplayTable').DataTable({
                 'processing': true,
                 'serverSide': true,
                 'ajax': { 

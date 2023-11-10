@@ -31,44 +31,54 @@ def save_event_ajax(request):
              calendar = get_object_or_404(Calendar, pk=calendar_id)
              division = get_object_or_404(Division, pk=division_id)
 
-        event = Event()
-        # assign to event.user the current logged-in user id
-        event.user = request.user
-        event.event_title = request.POST['event_title'].upper()
-        event.event_desc = request.POST['event_desc'].upper()
-        event.participants = request.POST['participants'].upper()
-        event.event_location = request.POST['event_location'].upper()
-        event.event_day_start = request.POST['event_day_start']
-        event.event_month_start = request.POST['event_month_start']
-        event.event_year_start = request.POST['event_year_start']
-        event.event_time_start = request.POST['event_time_start']
-        event.event_day_end = request.POST['event_day_end']
-        event.event_month_end = request.POST['event_month_end']
-        event.event_year_end = request.POST['event_year_end']
-        event.event_time_end = request.POST['event_time_end']
-        event.whole_date_start = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
-        event.whole_date_end = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
-        event.calendar = calendar
-        event.division = division
-        event.file_attachment = request.FILES['file_attachment']
-        #event.file_attachment = request.FILES.get('file_attachment')
-        event.whole_date_start_searchable = request.POST['whole_date_start_searchable']
-        event.whole_date_end_searchable = request.POST['whole_date_end_searchable']
-        event.office = request.POST['office'].upper()
-        event.org_outcome = request.POST['org_outcome'].upper()
-        event.paps = request.POST['paps'].upper()
-        event.unit = request.POST['unit'].upper()
-        event.division_name = request.POST['division_name'].upper()
-        event.whole_dateStart_with_time = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
-        event.whole_dateEnd_with_time = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
-        event.actual_outcome = "PENDING".upper()
-        event.calendar_name = request.POST['calendar_name'].upper()
-        event.event_location_district = request.POST['event_location_district'].upper()
-        event.event_location_lgu = request.POST['event_location_lgu'].upper()
-        event.event_location_barangay = request.POST['event_location_barangay'].upper()
-        event.event_status = "PENDING".upper()
-        event.expected_outcome = "PENDING".upper()
-        event.save()
+        # set variables to use for multiple records to be saved if the event is recurring
+        start_date = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
+        end_date = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
+        day_duration = timezone.timedelta(days=1)
+
+        # use while loop to save multiple records if the event is recurring
+        while start_date <= end_date:
+            event = Event()
+            # assign to event.user the current logged-in user id
+            event.user = request.user
+            event.event_title = request.POST['event_title'].upper()
+            event.event_desc = request.POST['event_desc'].upper()
+            event.participants = request.POST['participants'].upper()
+            event.event_location = request.POST['event_location'].upper()
+            event.event_day_start = start_date.day
+            event.event_month_start = start_date.month
+            event.event_year_start = start_date.year
+            event.event_time_start = request.POST['event_time_start']
+            event.event_day_end = request.POST['event_day_end']
+            event.event_month_end = request.POST['event_month_end']
+            event.event_year_end = request.POST['event_year_end']
+            event.event_time_end = request.POST['event_time_end']
+            event.whole_date_start = start_date
+            event.whole_date_end = end_date
+            event.calendar = calendar
+            event.division = division
+            event.file_attachment = request.FILES['file_attachment']
+            #event.file_attachment = request.FILES.get('file_attachment')
+            event.whole_date_start_searchable = start_date.strftime("%B %d, %Y")
+            event.whole_date_end_searchable = request.POST['whole_date_end_searchable']
+            event.office = request.POST['office'].upper()
+            event.org_outcome = request.POST['org_outcome'].upper()
+            event.paps = request.POST['paps'].upper()
+            event.unit = request.POST['unit'].upper()
+            event.division_name = request.POST['division_name'].upper()
+            #event.whole_dateStart_with_time = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
+            event.whole_dateStart_with_time = timezone.datetime.strptime(start_date.strftime("%Y-%m-%dT%H:%M"), "%Y-%m-%dT%H:%M")
+            event.whole_dateEnd_with_time = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
+            event.actual_outcome = "PENDING".upper()
+            event.calendar_name = request.POST['calendar_name'].upper()
+            event.event_location_district = request.POST['event_location_district'].upper()
+            event.event_location_lgu = request.POST['event_location_lgu'].upper()
+            event.event_location_barangay = request.POST['event_location_barangay'].upper()
+            event.event_status = "PENDING".upper()
+            event.expected_outcome = "PENDING".upper()
+            event.save()
+            start_date = start_date + day_duration
+
         return JsonResponse({'message': 'True'})
     else:
         return JsonResponse({'message': 'False'})
@@ -95,14 +105,24 @@ def fetch_events_ajax(request):
         columns = ['whole_date_start_searchable']
 
         query = """
-        SELECT *
-        FROM crosstab(
-          'SELECT whole_date_start, whole_date_start_searchable, office, COUNT(event_title) AS event_count
-           FROM events_event
-           GROUP BY whole_date_start, whole_date_start_searchable, office
-           ORDER BY 1,2,3',
-           'SELECT unnest(ARRAY[''RO'', ''ADN'', ''ADS'', ''SDN'', ''SDS'', ''PDI''])'
-        ) AS ct (whole_date_start date, whole_date_start_searchable text, RO int, ADN int, ADS int, SDN int, SDS int, PDI int);
+        SELECT whole_date_start,
+            whole_date_start_searchable,
+            MAX(CASE WHEN office = 'RO' THEN event_titles END) AS RO,
+            MAX(CASE WHEN office = 'ADN' THEN event_titles END) AS ADN,
+            MAX(CASE WHEN office = 'ADS' THEN event_titles END) AS ADS,
+            MAX(CASE WHEN office = 'SDN' THEN event_titles END) AS SDN,
+            MAX(CASE WHEN office = 'SDS' THEN event_titles END) AS SDS,
+            MAX(CASE WHEN office = 'PDI' THEN event_titles END) AS PDI
+        FROM (
+            SELECT whole_date_start,
+                whole_date_start_searchable,
+                office,
+                STRING_AGG(event_title, ', ') AS event_titles
+            FROM events_event
+            GROUP BY whole_date_start, whole_date_start_searchable, office
+        ) AS subquery
+        GROUP BY whole_date_start, whole_date_start_searchable
+        ORDER BY 1, 2;
         """
 
         with connection.cursor() as cursor:

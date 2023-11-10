@@ -121,6 +121,19 @@
             <div class="modal-body">
               <form enctype="multipart/form-data">
                 {% csrf_token %}
+
+                <p>
+                  <select id="dtiofficediv" class="form-control form-select">
+                      <option value="0">Select Office</option>
+                      <option value="RO">RO</option>
+                      <option value="ADN">ADN</option>
+                      <option value="ADS">ADS</option>
+                      <option value="SDN">SDN</option>
+                      <option value="SDS">SDS</option>
+                      <option value="PDI">PDI</option>
+                  </select>
+                </p>
+
                   <p>
                     <select id="dtidivision" class="form-control form-select">
                         <option value="0">Select Division</option>
