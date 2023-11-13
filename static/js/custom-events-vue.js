@@ -30,10 +30,11 @@ const appEvents = Vue.createApp({
     mounted() {
 
         var table; //declare the table variable globally
+        var tblEventsDiv; //declare the table variable globally
       
         $(function() {
 
-            table = $('#eventsDisplayTable').DataTable({
+            table = $('#eventsDisplayTable').DataTable({  
                 'processing': true,
                 'serverSide': true,
                 'ajax': { 
@@ -62,7 +63,7 @@ const appEvents = Vue.createApp({
                         'targets': [2],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">Vacant</span>';
+                                return '<span class="highlight-vacant">empty</span>';
                             } else {
                                 // Replace commas with bullets and add line breaks
                                 var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
@@ -80,7 +81,7 @@ const appEvents = Vue.createApp({
                         'targets': [3],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">Vacant</span>';
+                                return '<span class="highlight-vacant">empty</span>';available
                             } else {
                                 // Replace commas with bullets and add line breaks
                                 var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
@@ -98,7 +99,7 @@ const appEvents = Vue.createApp({
                         'targets': [4],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">Vacant</span>';
+                                return '<span class="highlight-vacant">empty</span>';
                             } else {
                                 // Replace commas with bullets and add line breaks
                                 var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
@@ -116,7 +117,7 @@ const appEvents = Vue.createApp({
                         'targets': [5],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">Vacant</span>';
+                                return '<span class="highlight-vacant">empty</span>';
                             } else {
                                 // Replace commas with bullets and add line breaks
                                 var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
@@ -134,7 +135,7 @@ const appEvents = Vue.createApp({
                         'targets': [6],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">Vacant</span>';
+                                return '<span class="highlight-vacant">empty</span>';
                             } else {
                                 // Replace commas with bullets and add line breaks
                                 var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
@@ -152,7 +153,7 @@ const appEvents = Vue.createApp({
                         'targets': [7],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">Vacant</span>';
+                                return '<span class="highlight-vacant">empty</span>';
                             } else {
                                 // Replace commas with bullets and add line breaks
                                 var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
@@ -178,6 +179,167 @@ const appEvents = Vue.createApp({
                 ],
                 
                 }); // end of the $('#eventsDivDisplayTable').DataTable()
+
+                tblEventsDiv = $('#eventsDivDisplayTable').DataTable({
+                    'processing': true,
+                    'serverSide': true,
+                    'ajax': { 
+                        'url': '/events/fetch-events-by-div-ajax/',  // Replace with your API endpoint
+                        'type': 'GET', 
+                        'data': function (d) {
+                            d.office = $("#office-txt").val();
+                        }
+                    },
+                    'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
+                    'buttons': [
+                        'copy', 'csv', 'excel', 'pdf', 'print' // Add the export buttons you need
+                    ],
+                    'columns': [
+                        {'data': 'whole_date_start', 'sortable': true, 'searchable': true, 'visible': false},
+                        {'data': 'whole_date_start_searchable', 'sortable': true, 'searchable': true},
+                        {'data': 'ORD', 'sortable': true, 'searchable': true},
+                        {'data': 'OARD', 'sortable': true, 'searchable': true},
+                        {'data': 'SDD', 'sortable': true, 'searchable': true},
+                        {'data': 'IDD', 'sortable': true, 'searchable': true},
+                        {'data': 'CPD', 'sortable': true, 'searchable': true},
+                        {'data': 'FAD', 'sortable': true, 'searchable': true},
+                        {'data': 'MSSD', 'sortable': true, 'searchable': true},
+                        
+                        // Add more columns as needed
+                    ],
+                    'order': [[0, 'asc']], // Order by ID column, descending
+                    //apply css style to the columns
+                    'columnDefs': [
+                        {
+                            'targets': [2],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
+                            'render': function (data, type, row) {
+                                if (data === null || data === undefined) {
+                                    return '<span class="highlight-vacant">empty</span>';
+                                } else {
+                                    // Replace commas with bullets and add line breaks
+                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
+                                    
+                                    if (formattedData.includes('<br>')) {
+                                        // If the data contains a line break, apply multiline CSS
+                                        return '<span class="highlight-offices regional-office multiline">&#8226; ' + formattedData + '</span>';
+                                    } else {
+                                        return '<span class="highlight-offices regional-office">&#8226; ' + formattedData + '</span>';
+                                    }
+                                }
+                            },
+                        },
+                        {
+                            'targets': [3],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
+                            'render': function (data, type, row) {
+                                if (data === null || data === undefined) {
+                                    return '<span class="highlight-vacant">empty</span>';available
+                                } else {
+                                    // Replace commas with bullets and add line breaks
+                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
+                                    
+                                    if (formattedData.includes('<br>')) {
+                                        // If the data contains a line break, apply multiline CSS
+                                        return '<span class="highlight-offices po-adn multiline">&#8226; ' + formattedData + '</span>';
+                                    } else {
+                                        return '<span class="highlight-offices po-adn">&#8226; ' + formattedData + '</span>';
+                                    }
+                                }
+                            },
+                        },
+                        {
+                            'targets': [4],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
+                            'render': function (data, type, row) {
+                                if (data === null || data === undefined) {
+                                    return '<span class="highlight-vacant">empty</span>';
+                                } else {
+                                    // Replace commas with bullets and add line breaks
+                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
+                                    
+                                    if (formattedData.includes('<br>')) {
+                                        // If the data contains a line break, apply multiline CSS
+                                        return '<span class="highlight-offices po-ads multiline">&#8226; ' + formattedData + '</span>';
+                                    } else {
+                                        return '<span class="highlight-offices po-ads">&#8226; ' + formattedData + '</span>';
+                                    }
+                                }
+                            },
+                        },
+                        {
+                            'targets': [5],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
+                            'render': function (data, type, row) {
+                                if (data === null || data === undefined) {
+                                    return '<span class="highlight-vacant">empty</span>';
+                                } else {
+                                    // Replace commas with bullets and add line breaks
+                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
+                                    
+                                    if (formattedData.includes('<br>')) {
+                                        // If the data contains a line break, apply multiline CSS
+                                        return '<span class="highlight-offices po-sdn multiline">&#8226; ' + formattedData + '</span>';
+                                    } else {
+                                        return '<span class="highlight-offices po-sdn">&#8226; ' + formattedData + '</span>';
+                                    }
+                                }
+                            },
+                        },
+                        {
+                            'targets': [6],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
+                            'render': function (data, type, row) {
+                                if (data === null || data === undefined) {
+                                    return '<span class="highlight-vacant">empty</span>';
+                                } else {
+                                    // Replace commas with bullets and add line breaks
+                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
+                                    
+                                    if (formattedData.includes('<br>')) {
+                                        // If the data contains a line break, apply multiline CSS
+                                        return '<span class="highlight-offices po-sds multiline">&#8226; ' + formattedData + '</span>';
+                                    } else {
+                                        return '<span class="highlight-offices po-sds">&#8226; ' + formattedData + '</span>';
+                                    }
+                                }
+                            },
+                        },
+                        {
+                            'targets': [7],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
+                            'render': function (data, type, row) {
+                                if (data === null || data === undefined) {
+                                    return '<span class="highlight-vacant">empty</span>';
+                                } else {
+                                    // Replace commas with bullets and add line breaks
+                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
+                                    
+                                    if (formattedData.includes('<br>')) {
+                                        // If the data contains a line break, apply multiline CSS
+                                        return '<span class="highlight-offices po-pdi multiline">&#8226; ' + formattedData + '</span>';
+                                    } else {
+                                        return '<span class="highlight-offices po-pdi">&#8226; ' + formattedData + '</span>';
+                                    }
+                                }
+                            },
+                        },
+                        {
+                            'targets': [8],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
+                            'render': function (data, type, row) {
+                                if (data === null || data === undefined) {
+                                    return '<span class="highlight-vacant">empty</span>';
+                                } else {
+                                    // Replace commas with bullets and add line breaks
+                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
+                                    
+                                    if (formattedData.includes('<br>')) {
+                                        // If the data contains a line break, apply multiline CSS
+                                        return '<span class="highlight-offices po-pdi multiline">&#8226; ' + formattedData + '</span>';
+                                    } else {
+                                        return '<span class="highlight-offices po-pdi">&#8226; ' + formattedData + '</span>';
+                                    }
+                                }
+                            },
+                        },
+                        // Add more 'columnDefs' as needed
+                    ],
+                    
+                    }); // end of the $('#eventsDivDisplayTable').DataTable()
 
         }); // end of the function
 

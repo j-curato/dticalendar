@@ -72,39 +72,42 @@
 
         .highlight-offices{
             text-align: center;
-            font-size: 12px;
-            color:#fff;
+            font-size: 11px;
+            color:#000;
             padding: 4px;
             font-family: Verdana, sans-serif;
-            
         }
 
         .highlight-vacant{
             text-align: center;
             background-color: darkgrey;
-            font-size: 12px;
+            font-size: 11px;
             color: #fff;
             padding: 4px;
             font-family: Verdana, sans-serif;
         } 
-
         .regional-office{
-          background-color: #007bff;
+          background-color:rgb(175, 225, 245);
         }
         .po-adn{
-          background-color: #28a745;
+          background-color: #9efcb4;
         }
         .po-ads{
-          background-color: rgb(238, 161, 46)
+          background-color: rgb(248, 191, 105)
         }
         .po-sdn{
-          background-color: #dc3545;
+          background-color: #f8aab2;
         }
         .po-sds{
-          background-color: blueviolet;
+          background-color: rgb(212, 175, 247);
         }
         .po-pdi{
-          background-color: rgb(252, 40, 164);
+          background-color: rgb(233, 248, 158);
+        }
+        .multiline {
+            white-space: pre-line;  /* Preserve newlines and spaces */
+            margin-bottom: 8px;     /* Add space between lines */
+            padding: 4px;
         }
 
     </style>
@@ -124,10 +127,10 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <form action="" enctype="multipart/form-data">
+              <form action="{% url 'load-div-datatbl-html' %}" enctype="multipart/form-data">
                 {% csrf_token %}
                   <p>
-                    <select id="dtioffice" class="form-control form-select">
+                    <select id="dtioffice" name="dtidivision" class="form-control form-select">
                         <option value="0">Select Office</option>
                         <option value="RO">RO</option>
                         <option value="ADN">ADN</option>
@@ -136,9 +139,9 @@
                         <option value="SDS">SDS</option>
                         <option value="PDI">PDI</option>
                     </select>
-                  </p>
+                   </p>
                   <div class="modal-footer">
-                    <button class="btn btn-primary">Filter</button>
+                    <button type="submit" class="btn btn-primary">Filter</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                   </div>
             </form>

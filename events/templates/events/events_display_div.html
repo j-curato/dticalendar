@@ -2,17 +2,20 @@
 
 {% block content %}
 
+
+    <input type="hidden" id="office-txt" value="{{ officetxt }}">
     <table id="eventsDivDisplayTable" class="display" style="width:100%">
         <thead>
             <tr>
                 <th style="display:none;">Date</th>
                 <th>Event Date</th>
-                <th>RO</th>
-                <th>ADN</th>
-                <th>ADS</th>
-                <th>SDN</th>
-                <th>SDS</th>
-                <th>PDI</th>        
+                <th>ORD</th>
+                <th>OARD</th>
+                <th>SDD</th>
+                <th>IDD</th>
+                <th>CPD</th>
+                <th>FAD</th>        
+                <th>MSSD</th>              
                 <!-- Add more columns as needed -->
             </tr>
         </thead>
@@ -20,12 +23,13 @@
         <tr>
             <th style="display:none;">Date</th>
             <th>Event Date</th>
-            <th>RO</th>
-            <th>ADN</th>
-            <th>ADS</th>
-            <th>SDN</th>
-            <th>SDS</th>
-            <th>PDI</th>
+            <th>ORD</th>
+            <th>OARD</th>
+            <th>SDD</th>
+            <th>IDD</th>
+            <th>CPD</th>
+            <th>FAD</th>        
+            <th>MSSD</th>
         </tr>
     </tfoot>
     </table>

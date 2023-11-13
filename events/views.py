@@ -102,7 +102,9 @@ def fetch_events_ajax(request):
         search_value = request.GET.get('search[value]', '')
 
         # Define the columns you want to search on
-        columns = ['whole_date_start_searchable']
+        # columns = ['whole_date_start_searchable']
+        columns = ['whole_date_start_searchable', 'RO', 'ADN', 'ADS', 'SDN', 'SDS', 'PDI']
+
 
         query = """
         SELECT whole_date_start,
@@ -145,7 +147,12 @@ def fetch_events_ajax(request):
             })
 
         # Apply the search filter to the data
-        filtered_data = [entry for entry in data if any(search_value.lower() in entry[col].lower() for col in columns)]
+        # filtered_data = [entry for entry in data if any(search_value.lower() in entry[col].lower() for col in columns)]
+        filtered_data = [
+            entry for entry in data if any(
+                search_value.lower() in (str(entry[col]).lower() if entry[col] is not None else '') for col in columns
+            )
+        ]
 
         response_data = {
             'draw': draw,
@@ -161,8 +168,84 @@ def fetch_events_ajax(request):
     # load division datatables html page - events_display_div.html
 def load_div_datatbl_html(request):
     txturl = 'events'
+    officetxt = request.GET.get('dtidivision')
     divisions = Division.objects.all()
-    return render(request, 'events/events_display_div.html', {'divisions': divisions, 'txturl': txturl})
+    return render(request, 'events/events_display_div.html', {'divisions': divisions, 'txturl': txturl, 'officetxt': officetxt})
+
+def fetch_events_by_div_ajax(request):
+    try:
+        draw = int(request.GET.get('draw', 1))
+        start = int(request.GET.get('start', 0))
+        length = int(request.GET.get('length', 10))
+        search_value = request.GET.get('search[value]', '')
+        #office_txt = request.GET.get('office', '')
+
+        # Define the columns you want to search on
+        # columns = ['whole_date_start_searchable']
+        columns = ['whole_date_start_searchable', 'ORD', 'OARD', 'SDD', 'IDD', 'CPD', 'FAD', 'MSSD']
+
+        query = """
+        SELECT whole_date_start,
+            whole_date_start_searchable,
+            MAX(CASE WHEN division_name = 'ORD' THEN event_titles END) AS ORD,
+            MAX(CASE WHEN division_name = 'OARD' THEN event_titles END) AS OARD,
+            MAX(CASE WHEN division_name = 'SDD' THEN event_titles END) AS SDD,
+            MAX(CASE WHEN division_name = 'IDD' THEN event_titles END) AS IDD,
+            MAX(CASE WHEN division_name = 'CPD' THEN event_titles END) AS CPD,
+            MAX(CASE WHEN division_name = 'FAD' THEN event_titles END) AS FAD,
+            MAX(CASE WHEN division_name = 'MSSD' THEN event_titles END) AS MSSD
+        FROM (
+            SELECT whole_date_start,
+                whole_date_start_searchable,
+                division_name,
+                STRING_AGG(event_title, ', ') AS event_titles, office
+            FROM events_event
+            WHERE office = %s
+            GROUP BY whole_date_start, whole_date_start_searchable, division_name, office
+        ) AS subquery
+        GROUP BY whole_date_start, whole_date_start_searchable
+        ORDER BY 1;
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [request.GET.get('office')])
+            result = cursor.fetchall()
+
+        # Convert the result into a list of dictionaries
+        data = []
+        for row in result:
+            data.append({
+                'whole_date_start': row[0].strftime('%Y-%m-%d'),  # Format as needed
+                'whole_date_start_searchable': row[1],
+                'ORD': row[2],
+                'OARD': row[3],
+                'SDD': row[4],
+                'IDD': row[5],
+                'CPD': row[6],
+                'FAD': row[7],
+                'MSSD': row[8]
+                # Add more fields as needed
+            })
+
+        # Apply the search filter to the data
+        # filtered_data = [entry for entry in data if any(search_value.lower() in entry[col].lower() for col in columns)]
+        filtered_data = [
+            entry for entry in data if any(
+                search_value.lower() in (str(entry[col]).lower() if entry[col] is not None else '') for col in columns
+            )
+        ]
+
+        response_data = {
+            'draw': draw,
+            'recordsTotal': len(data),
+            'recordsFiltered': len(filtered_data),
+            'data': filtered_data[start:start + length]
+        }
+
+        return JsonResponse(response_data)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
         
 
 
