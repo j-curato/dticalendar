@@ -168,9 +168,16 @@ def fetch_events_ajax(request):
     # load division datatables html page - events_display_div.html
 def load_div_datatbl_html(request):
     txturl = 'events'
-    officetxt = request.GET.get('dtidivision')
+    officetxt = request.GET.get('dtioffice')
     divisions = Division.objects.all()
     return render(request, 'events/events_display_div.html', {'divisions': divisions, 'txturl': txturl, 'officetxt': officetxt})
+
+def load_unit_datatbl_html(request):
+    txturl = 'events'
+    officetxt = request.GET.get('dtiofficeparam')
+    divtxt = request.GET.get('dtidivision')
+    divisions = Division.objects.all()
+    return render(request, 'events/events_display_unit.html', {'divisions': divisions, 'txturl': txturl, 'officetxt': officetxt, 'divtxt': divtxt})
 
 def fetch_events_by_div_ajax(request):
     try:
@@ -245,6 +252,81 @@ def fetch_events_by_div_ajax(request):
         return JsonResponse(response_data)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+    # get events by unit
+def fetch_events_by_unit_ajax(request):
+    try:
+        draw = int(request.GET.get('draw', 1))
+        start = int(request.GET.get('start', 0))
+        length = int(request.GET.get('length', 10))
+        search_value = request.GET.get('search[value]', '')
+        #office_txt = request.GET.get('office', '')
+
+        # Define the columns you want to search on
+        # columns = ['whole_date_start_searchable']
+        columns = ['whole_date_start_searchable', 'NC', 'EDU', 'TPU', 'CARP', 'GAD', 'PLANNING']
+
+        query = """
+        SELECT whole_date_start,
+            whole_date_start_searchable, 
+            MAX(CASE WHEN unit = 'NC' THEN event_titles END) AS NC,
+            MAX(CASE WHEN unit = 'EDU' THEN event_titles END) AS EDU,
+            MAX(CASE WHEN unit = 'TPU' THEN event_titles END) AS TPU,
+            MAX(CASE WHEN unit = 'CARP' THEN event_titles END) AS CARP,
+            MAX(CASE WHEN unit = 'GAD' THEN event_titles END) AS GAD,
+            MAX(CASE WHEN unit = 'PLANNING' THEN event_titles END) AS PLANNING
+        FROM (
+            SELECT whole_date_start,
+                whole_date_start_searchable,
+                unit,
+                STRING_AGG(event_title, ', ') AS event_titles, division_name, office
+            FROM events_event
+            WHERE division_name = %s AND office = %s
+            GROUP BY whole_date_start, whole_date_start_searchable, unit, division_name, office
+        ) AS subquery
+        GROUP BY whole_date_start, whole_date_start_searchable
+        ORDER BY 1;
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [request.GET.get('division'), request.GET.get('office')])
+            result = cursor.fetchall()
+
+        # Convert the result into a list of dictionaries
+        data = []
+        for row in result:
+            data.append({
+                'whole_date_start': row[0].strftime('%Y-%m-%d'),  # Format as needed
+                'whole_date_start_searchable': row[1],
+                'NC': row[2],
+                'EDU': row[3],
+                'TPU': row[4],
+                'CARP': row[5],
+                'GAD': row[6],
+                'PLANNING': row[7]
+                # Add more fields as needed
+            })
+            
+        # Apply the search filter to the data
+        # filtered_data = [entry for entry in data if any(search_value.lower() in entry[col].lower() for col in columns)]
+        filtered_data = [
+            entry for entry in data if any(
+                search_value.lower() in (str(entry[col]).lower() if entry[col] is not None else '') for col in columns
+            )
+        ]
+
+        response_data = {
+            'draw': draw,
+            'recordsTotal': len(data),
+            'recordsFiltered': len(filtered_data),
+            'data': filtered_data[start:start + length]
+        }
+
+        return JsonResponse(response_data)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+
 
         
 

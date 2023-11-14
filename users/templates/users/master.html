@@ -130,7 +130,7 @@
               <form action="{% url 'load-div-datatbl-html' %}" enctype="multipart/form-data">
                 {% csrf_token %}
                   <p>
-                    <select id="dtioffice" name="dtidivision" class="form-control form-select">
+                    <select id="dtioffice" name="dtioffice" class="form-control form-select">
                         <option value="0">Select Office</option>
                         <option value="RO">RO</option>
                         <option value="ADN">ADN</option>
@@ -159,11 +159,11 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <form enctype="multipart/form-data">
+              <form action="{% url 'load-unit-datatbl-html' %}" enctype="multipart/form-data">
                 {% csrf_token %}
 
                 <p>
-                  <select id="dtiofficediv" class="form-control form-select">
+                  <select id="dtiofficediv" name="dtiofficeparam" class="form-control form-select">
                       <option value="0">Select Office</option>
                       <option value="RO">RO</option>
                       <option value="ADN">ADN</option>
@@ -175,7 +175,7 @@
                 </p>
 
                   <p>
-                    <select id="dtidivision" class="form-control form-select">
+                    <select id="dtidivision" name="dtidivision" class="form-control form-select">
                         <option value="0">Select Division</option>
                         <option value="SDD">SME Development Division (SDD)</option>
                         <option value="IDD">Industry Development Division (IDD)</option>
@@ -184,7 +184,7 @@
                     </select>
                   </p>
                   <div class="modal-footer">
-                    <button class="btn btn-primary">Filter</button>
+                    <button type="submit" class="btn btn-primary">Filter</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                   </div>
             </form>

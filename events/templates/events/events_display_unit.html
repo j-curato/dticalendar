@@ -1,0 +1,36 @@
+{% extends 'users/master.html' %}
+
+{% block content %}
+
+
+    <input type="hidden" id="office-txt" value="{{ officetxt }}">
+    <input type="hidden" id="div-txt" value="{{ divtxt }}">
+    <table id="eventsUnitDisplayTable" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th style="display:none;">Date</th>
+                <th>Event Date</th>
+                <th>NC</th>
+                <th>EDU</th>
+                <th>TPU</th>
+                <th>CARP</th>
+                <th>GAD</th>
+                <th>ADMIN/PLANNING</th>             
+                <!-- Add more columns as needed -->
+            </tr>
+        </thead>
+        <tfoot>
+        <tr>
+            <th style="display:none;">Date</th>
+            <th>Event Date</th>
+            <th>NC</th>
+            <th>EDU</th>
+            <th>TPU</th>
+            <th>CARP</th>
+            <th>GAD</th>
+            <th>ADMIN/PLANNING</th> 
+        </tr>
+    </tfoot>
+    </table>
+
+{% endblock %}
