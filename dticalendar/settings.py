@@ -46,6 +46,9 @@ INSTALLED_APPS = [
     'bootstrap4',
     'orgoutcomes',
     'paps',
+    'regions',
+    'provinces',
+    'lgus',
 ]
 
 MIDDLEWARE = [

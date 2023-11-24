@@ -21,8 +21,8 @@ const appEvents = Vue.createApp({
             }else if (filtertxt == 'unit') {
                 $('#showDtiDivModal').modal('show');
             }else{
-                //do nothing
-                console.log('do nothing');
+                //redirect to the events page
+                window.location.href = "/events/get_eventsList/";
             }
         },
 
