@@ -173,14 +173,15 @@ def get_events(request):
         for event in events:
             data.append({
                 'id': event.id,
+                'whole_date_start_searchable': event.whole_date_start_searchable,
+                'whole_date_end_searchable': event.whole_date_end_searchable,
                 'event_title': event.event_title,
                 'event_desc': event.event_desc,
                 'office': event.office,
                 'division_name': event.division_name,
                 'unit': event.unit,
+                'event_code': event.event_code,
                 # whole date start format should be like January 01, 2023
-                'whole_date_start_searchable': event.whole_date_start_searchable,
-                'whole_date_end_searchable': event.whole_date_end_searchable
                 # Add more fields as needed
             })
 

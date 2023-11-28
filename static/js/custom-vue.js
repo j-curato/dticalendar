@@ -169,6 +169,8 @@ const app = Vue.createApp({
             formData.append('event_location_district', this.formData.event_location_district);
             formData.append('event_location_lgu', this.formData.event_location_lgu);
             formData.append('event_location_barangay', this.formData.event_location_barangay);
+            // assign 10 randomly generated alphanumeric with special characters to the formData.event_code
+            formData.append('event_code', Math.random().toString(36).slice(2));
             
             // ajax call to save the event data
             fetch("/events/save-event-ajax/", {
@@ -608,13 +610,14 @@ const app = Vue.createApp({
                 ],
                 'columns': [
                     {'data': 'id', 'sortable': true, 'searchable': false},
+                    {'data': 'whole_date_start_searchable', 'searchable': true, 'sortable': true},
+                    {'data': 'whole_date_end_searchable', 'searchable': true, 'sortable': true},
                     {'data': 'event_title', 'searchable': true, 'sortable': true},
                     {'data': 'event_desc', 'searchable': true, 'sortable': true},
                     {'data': 'office', 'searchable': true, 'sortable': true},
                     {'data': 'division_name', 'searchable': true, 'sortable': true},
                     {'data': 'unit', 'searchable': true, 'sortable': true},
-                    {'data': 'whole_date_start_searchable', 'searchable': true, 'sortable': true},
-                    {'data': 'whole_date_end_searchable', 'searchable': true, 'sortable': true},
+                    {'data': 'event_code', 'searchable': true, 'sortable': true},
                     // Add more columns as needed
                 ],
                 'order': [[0, 'desc']], // Order by ID column, descending

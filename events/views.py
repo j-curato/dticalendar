@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from .models import Event
+# make_random_password is a method from django.contrib.auth.models
 
 # @api_view(['GET'])
 # def get_events(request):
@@ -76,6 +77,7 @@ def save_event_ajax(request):
             event.event_location_barangay = request.POST['event_location_barangay'].upper()
             event.event_status = "PENDING".upper()
             event.expected_outcome = "PENDING".upper()
+            event.event_code = request.POST['event_code']
             event.save()
             start_date = start_date + day_duration
 
