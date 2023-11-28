@@ -56,13 +56,15 @@ def profile(request):
     else:
         if request.META.get("HTTP_X_REQUESTED_WITH") == "XMLHttpRequest":
             q = request.GET.get('term', '')
-            events = Event.objects.filter(event_title__icontains=q)[:20]
+            events = Event.objects.filter(event_title__icontains=q).values('event_title').distinct()[:20]
             results = []
             for event in events:
                 event_json = {
-                    'id': event.id,
-                    'label': event.event_title,
-                    'value': event.event_title,
+                    #'id': event.id,
+                    #'label': event.event_title,
+                    #'value': event.event_title,
+                    'lable': event['event_title'],
+                    'value': event['event_title'],
                 }
                 results.append(event_json)
             return JsonResponse(results, safe=False)
