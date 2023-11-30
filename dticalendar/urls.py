@@ -30,5 +30,7 @@ urlpatterns = [
     path('events/', include('events.urls')),
     path('paps/', include('paps.urls')),
     path('orgoutcomes/', include('orgoutcomes.urls')),
+    path('provinces/', include('provinces.urls')),
+    path('lgus/', include('lgus.urls')),
     
 ]

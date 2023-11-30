@@ -11,7 +11,10 @@ const app = Vue.createApp({
             calendarListVue: [], // Initialize calendarList with an empty array
             ooListVue: [], // Initialize orgOutcomeList with an empty array
             papsListVue: [], // Initialize papsList with an empty array
+            provincesListVue: [], // Initialize provincesList with an empty array
+            lguListVue: [], // Initialize lguList with an empty array
             filteredPAPs: [], // Initialize filteredPAPs with an empty array
+            filteredLGUs: [], // Initialize filteredLGUs with an empty array
             formData: {
                 division_id: 0, // Initialize division_id with 0
                 division_name: '', // Initialize with an empty string
@@ -32,7 +35,7 @@ const app = Vue.createApp({
                 event_title: '', // Initialize with an empty string
                 event_location: 0, // Initialize with an empty string
                 event_location_district: '', // Initialize with an empty string
-                event_location_lgu: '', // Initialize with an empty string
+                event_location_lgu: 0, // Initialize with an empty string
                 event_location_barangay: '', // Initialize with an empty string
                 event_desc: '', // Initialize with an empty string
                 participants: '', // Initialize with an empty string
@@ -452,6 +455,33 @@ const app = Vue.createApp({
                 console.error('Error fetching paps data:', error);
             });
         },
+        // Function to fetch provinces data
+        fetchProvincesData() {
+            fetch('/provinces/api/get-provincesList/') // Replace with the actual API endpoint
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                this.provincesListVue = data;
+                console.log(this.provincesListVue);
+            })
+            .catch(error => {
+                console.error('Error fetching provinces data:', error);
+            });
+        },
+        // function to fetch lgu data
+        fetchLguData() {
+            fetch('/lgus/api/get-lguList/') // Replace with the actual API endpoint
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                this.filteredLGUs = data;
+                this.lguListVue = data;
+                console.log(this.filteredLGUs);
+            })
+            .catch(error => {
+                console.error('Error fetching lgu data:', error);
+            });
+        },
         // Function to filter paps data
         updatePAPs() {
             // Filter the papsListVue array to only include items that match the selected org outcome
@@ -459,8 +489,15 @@ const app = Vue.createApp({
             this.filteredPAPs = this.papsListVue.filter(pap => pap.org_outcome_id === this.formData.org_outcome);
             console.log(this.filteredPAPs);
         },
+        // Function to filter lgu  data
+        updateLGUs() {
+            // Filter the lguListVue array to only include items that match the selected province
+            //this.filteredLGUs = this.lguListVue.filter(item => item.province_id === this.formData.event_location);
+            this.filteredLGUs = this.lguListVue.filter(lgu => lgu.province_id === this.formData.event_location);
+            console.log(this.filteredLGUs);
+            console.log(this.formData.event_location);
+        },
         // Function to filter datatable events data by office, division and unit
-          
         onDivisionChange() {
             //console.log('Selected Division ID:', this.formData.division_id);
             //console.log(this.divisionListVue);
@@ -696,7 +733,10 @@ const app = Vue.createApp({
         this.fetchOrgOutcomeData();
         // paps data
         this.fetchPapsData();
-
+        // fetch provinces data
+        this.fetchProvincesData();
+        // fetch lgu data
+        this.fetchLguData();
     } // end of the mounted() function
 
 });

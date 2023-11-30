@@ -9,6 +9,7 @@ from django.db.models import Q
 from calendars.models import Calendar
 from divisions.models import Division
 from orgoutcomes.models import OrgOutcome
+from provinces.models import Province
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.shortcuts import redirect
@@ -117,11 +118,13 @@ def profile(request):
     events = Event.objects.all()
     ooList = OrgOutcome.objects.all()
     papsList = Event.objects.all()
+    # load Province object from the database into provinceList variable sorted in ascending order
+    provinceList = Province.objects.all().order_by('province_name')
     #calList = Calendar.objects.all()
     #divList = Division.objects.all()
     
 
-    return render(request, 'users/profile.html', {'eventsList': events, 'ooList': ooList, 'papList': papsList, 'msgvar': msgvar, 'txturl': txturl})
+    return render(request, 'users/profile.html', {'eventsList': events, 'ooList': ooList, 'papList': papsList, 'provinceList': provinceList, 'msgvar': msgvar, 'txturl': txturl})
 
 
 # method to display event details using datatable server side processing

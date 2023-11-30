@@ -114,12 +114,12 @@
                   </select>
                  </p>
 
-                 <p>
+                 <!-- <p>
                   <select name="calendar_id" v-model="formData.calendar_id" class="form-control form-select" id="calendar-id" aria-label="Default select example" @change="onCalendarChange" required>
                     <option value="0">Select Calendar</option>
                     <option v-for="val in calendarListVue" :value="val.id">{[ val.calendar_name ]}</option>
                   </select>
-                </p>
+                </p> -->
 
                 <p>
                   <!-- <input type="text" name="calendar_name" v-model="formData.calendar_name" class="form-control" id="calendar-name-id" placeholder="Calendar Name" required> -->
@@ -150,16 +150,19 @@
                   <p><input type="text" name="user_id" class="form-control" placeholder="Event title" v-model="formData.user_id" style="display: none;"></p>
                   <p><input type="text" name="event_title" class="form-control" id="event-title-input" placeholder="Event title" v-model="formData.event_title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
                   <p>
-                      <select name="event_location" v-model="formData.event_location" class="form-control form-select" required>
+                      <select name="event_location" v-model="formData.event_location" @change="updateLGUs" class="form-control form-select" required>
                         <option value="0">Select Province</option>
-                        <option value="Agusan del Norte">Agusan del Norte</option>
-                        <option value="Agusan del Sur">Agusan del Sur</option>
-                        <option value="Surigao del Norte">Surigao del Norte</option>
-                        <option value="Surigao del Sur">Surigao del Sur</option>
-                        <option value="Dinagat Islands">Province of Dinagat Islands</option>
+                        <!-- use loop to load values from provinceList -->
+                        <option v-for="val in provincesListVue" :value="val.id">{[ val.province ]}</option>
                       </select>
                   </p>
-                  <p><input type="text" name="event_location_lgu" class="form-control" v-model="formData.event_location_lgu" placeholder="LGU" required></p>
+                  <!-- <p><input type="text" name="event_location_lgu" class="form-control" v-model="formData.event_location_lgu" placeholder="LGU" required></p> -->
+                  <p>
+                    <select name="event_location_lgu" v-model="formData.event_location_lgu" class="form-control form-select" required>
+                      <option value="0">Select LGU</option>
+                      <option v-for="val in filteredLGUs" :value="val.id">{[ val.lgu ]}</option>
+                    </select>
+                  </p>
                   <p><input type="text" name="event_location_district" class="form-control" v-model="formData.event_location_district" placeholder="District" required></p>
                   <p><input type="text" name="event_location_barangay" class="form-control" v-model="formData.event_location_barangay" placeholder="Barangay" required></p>
 
