@@ -158,7 +158,7 @@
                   </p>
                   <!-- <p><input type="text" name="event_location_lgu" class="form-control" v-model="formData.event_location_lgu" placeholder="LGU" required></p> -->
                   <p>
-                    <select name="event_location_lgu" v-model="formData.event_location_lgu" class="form-control form-select" required>
+                    <select name="event_location_lgu" v-model="formData.event_location_lgu" class="form-control form-select" id="event-location-lgu-id" @change="updateDistrict" required>
                       <option value="0">Select LGU</option>
                       <option v-for="val in filteredLGUs" :value="val.id">{[ val.lgu ]}</option>
                     </select>

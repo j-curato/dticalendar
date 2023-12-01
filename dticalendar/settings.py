@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'regions',
     'provinces',
     'lgus',
+    'barangays',
 ]
 
 MIDDLEWARE = [

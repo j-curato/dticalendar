@@ -488,6 +488,8 @@ const app = Vue.createApp({
             //this.filteredPAPs = this.papsListVue.filter(item => item.org_outcome_id === this.papsFormData.org_outcome_id);
             this.filteredPAPs = this.papsListVue.filter(pap => pap.org_outcome_id === this.formData.org_outcome);
             console.log(this.filteredPAPs);
+            // reset the formData.paps to 0
+            this.formData.paps = 0;
         },
         // Function to filter lgu  data
         updateLGUs() {
@@ -496,6 +498,31 @@ const app = Vue.createApp({
             this.filteredLGUs = this.lguListVue.filter(lgu => lgu.province_id === this.formData.event_location);
             console.log(this.filteredLGUs);
             console.log(this.formData.event_location);
+            // reset the formData.event_location_lgu to 0
+            this.formData.event_location_lgu = 0;
+            // reset the formData.event_location_district to ''
+            this.formData.event_location_district = '';
+        },
+        // function to fetch district data in the lgu database based on the selected lgu
+        updateDistrict() {
+            // get the selected lgu id
+            var lguId = $("#event-location-lgu-id option:selected").val();
+            // ajax call to fetch the districts data
+            fetch('/lgus/api/get-districtsList/', {
+                method: "POST",
+                body: lguId,
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                // assign the district name to the formData.event_location_district
+                this.formData.event_location_district = data[0].district;
+                console.log(this.formData.event_location_district);
+                console.log('df');
+            })
+            .catch(error => {
+                console.error('Error fetching districts data:', error);
+            });
         },
         // Function to filter datatable events data by office, division and unit
         onDivisionChange() {
