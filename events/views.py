@@ -11,6 +11,8 @@ from django.db.models import Q
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
+from django.http import FileResponse
+from mimetypes import guess_type
 from .models import Event
 # make_random_password is a method from django.contrib.auth.models
 
@@ -327,6 +329,18 @@ def fetch_events_by_unit_ajax(request):
         return JsonResponse(response_data)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+    # method to download files from the media folder
+def download_file(request, id):
+    event = get_object_or_404(Event, pk=id)
+    file_path = event.file_attachment.path
+
+    try:
+        return FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
+    except FileNotFoundError:
+        return HttpResponse('File not found', status=404)
+
+
     
 
 

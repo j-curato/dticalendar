@@ -11,4 +11,6 @@ urlpatterns = [
     path('load-unit-datatbl-html/', views.load_unit_datatbl_html, name='load-unit-datatbl-html'),
     path('fetch-events-by-div-ajax/', views.fetch_events_by_div_ajax, name='fetch-events-by-div-ajax'),
     path('fetch-events-by-unit-ajax/', views.fetch_events_by_unit_ajax, name='fetch-events-by-unit-ajax'),
+    # path to download files from the media folder
+    path('download/<int:id>/', views.download_file, name='download_file'),
 ]

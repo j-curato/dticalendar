@@ -718,7 +718,8 @@ const app = Vue.createApp({
                             // Assuming the 'file_attachment' contains the full URL
                             if (type === 'display') {
                               const fileName = data.substring(data.lastIndexOf('/') + 1); // Extracts the file name from the URL
-                              return '<a href="' + data + '" download>' + fileName + '</a>';
+                              const fileId = row.id; // Accessing the 'id' field from the row data
+                              return '<a href="/events/download/' + fileId + '" download>' + fileName + '</a>';
                             }
                             return data; // For other types or non-display, return the data as is
                           }
