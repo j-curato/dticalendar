@@ -6,7 +6,7 @@ from .models import Lgu
 
 # Create your views here.
 def get_lguList(request):
-    lguList = Lgu.objects.all()
+    lguList = Lgu.objects.all().order_by('lgu_name')
     data = [{'id': lgu.id, 'lgu': lgu.lgu_name, 'province_id': lgu.province_id} for lgu in lguList]
     return JsonResponse(data, safe=False)
 

@@ -185,7 +185,8 @@ def get_events(request):
                 'office': event.office,
                 'division_name': event.division_name,
                 'unit': event.unit,
-                'event_code': event.event_code,
+                # get the file_attachment download url
+                'file_attachment': event.file_attachment.url,
                 # whole date start format should be like January 01, 2023
                 # Add more fields as needed
             })

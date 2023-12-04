@@ -13,8 +13,10 @@ const app = Vue.createApp({
             papsListVue: [], // Initialize papsList with an empty array
             provincesListVue: [], // Initialize provincesList with an empty array
             lguListVue: [], // Initialize lguList with an empty array
+            barangayListVue: [], // Initialize barangayList with an empty array
             filteredPAPs: [], // Initialize filteredPAPs with an empty array
             filteredLGUs: [], // Initialize filteredLGUs with an empty array
+            filteredBarangays: [], // Initialize filteredBarangays with an empty array
             formData: {
                 division_id: 0, // Initialize division_id with 0
                 division_name: '', // Initialize with an empty string
@@ -36,7 +38,7 @@ const app = Vue.createApp({
                 event_location: 0, // Initialize with an empty string
                 event_location_district: '', // Initialize with an empty string
                 event_location_lgu: 0, // Initialize with an empty string
-                event_location_barangay: '', // Initialize with an empty string
+                event_location_barangay: 0, // Initialize with an empty string
                 event_desc: '', // Initialize with an empty string
                 participants: '', // Initialize with an empty string
                 file_attachment: null, // Initialize with null
@@ -138,6 +140,12 @@ const app = Vue.createApp({
             const orgOutcomeText = this.ooListVue.find(item => item.id === this.formData.org_outcome).org_outcome;
             // Get the selected PAPs text
             const papsText = this.papsListVue.find(item => item.id === this.formData.paps).pap;
+            // get the selected event location text
+            const eventLocationText = this.provincesListVue.find(item => item.id === this.formData.event_location).province;
+            // get the selected lgu text
+            const lguText = this.lguListVue.find(item => item.id === this.formData.event_location_lgu).lgu;
+            // get the selected barangay text
+            const barangayText = this.barangayListVue.find(item => item.id === this.formData.event_location_barangay).barangay;
             
             const formData = new FormData();
             formData.append('office', this.formData.office);
@@ -145,10 +153,11 @@ const app = Vue.createApp({
             formData.append('unit', this.formData.unit);
             formData.append('org_outcome', orgOutcomeText);
             formData.append('paps', papsText);
-            formData.append('calendar_id', this.formData.calendar_id);
+            formData.append('calendar_id', 1);
+            //formData.append('calendar_id', this.formData.calendar_id);
             formData.append('user_id', this.formData.user_id);
             formData.append('event_title', this.formData.event_title);
-            formData.append('event_location', this.formData.event_location);
+            formData.append('event_location', eventLocationText);
             formData.append('event_desc', this.formData.event_desc);
             formData.append('participants', this.formData.participants);
             //formData.append('file_attachment', this.formData.file_attachment); this code is not working because v-model doesn't work for input type files
@@ -167,11 +176,12 @@ const app = Vue.createApp({
             formData.append('whole_date_end', this.formData.whole_date_end);
             formData.append('whole_date_start_searchable', this.formData.whole_date_start_searchable);
             formData.append('whole_date_end_searchable', this.formData.whole_date_end_searchable);
-            formData.append('calendar_name', this.formData.calendar_name);
+            formData.append('calendar_name', "DTI Calendar");
+            //formData.append('calendar_name', this.formData.calendar_name);
             formData.append('division_name', this.formData.division_name);
             formData.append('event_location_district', this.formData.event_location_district);
-            formData.append('event_location_lgu', this.formData.event_location_lgu);
-            formData.append('event_location_barangay', this.formData.event_location_barangay);
+            formData.append('event_location_lgu', lguText);
+            formData.append('event_location_barangay', barangayText);
             // assign 10 randomly generated alphanumeric with special characters to the formData.event_code
             formData.append('event_code', Math.random().toString(36).slice(2));
             
@@ -482,6 +492,20 @@ const app = Vue.createApp({
                 console.error('Error fetching lgu data:', error);
             });
         },
+        // Function to fetch barangay data
+        fetchBarangayData() {
+            fetch('/barangays/api/get-barangayList/') // Replace with the actual API endpoint
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                this.filteredBarangays = data;
+                this.barangayListVue = data;
+                console.log(this.barangayListVue);
+            })
+            .catch(error => {
+                console.error('Error fetching barangay data:', error);
+            });
+        },  
         // Function to filter paps data
         updatePAPs() {
             // Filter the papsListVue array to only include items that match the selected org outcome
@@ -502,6 +526,7 @@ const app = Vue.createApp({
             this.formData.event_location_lgu = 0;
             // reset the formData.event_location_district to ''
             this.formData.event_location_district = '';
+            this.formData.event_location_barangay = 0;
         },
         // function to fetch district data in the lgu database based on the selected lgu
         updateDistrict() {
@@ -518,11 +543,15 @@ const app = Vue.createApp({
                 // assign the district name to the formData.event_location_district
                 this.formData.event_location_district = data[0].district;
                 console.log(this.formData.event_location_district);
-                console.log('df');
+                
             })
             .catch(error => {
                 console.error('Error fetching districts data:', error);
             });
+
+            // Filter the barangayListVue array to only include items that match the selected LGU
+            this.filteredBarangays = this.barangayListVue.filter(barangay => barangay.lgu_id === this.formData.event_location_lgu);
+            this.formData.event_location_barangay = 0;
         },
         // Function to filter datatable events data by office, division and unit
         onDivisionChange() {
@@ -681,7 +710,19 @@ const app = Vue.createApp({
                     {'data': 'office', 'searchable': true, 'sortable': true},
                     {'data': 'division_name', 'searchable': true, 'sortable': true},
                     {'data': 'unit', 'searchable': true, 'sortable': true},
-                    {'data': 'event_code', 'searchable': true, 'sortable': true},
+                    {
+                        'data': 'file_attachment',
+                        'searchable': true,
+                        'sortable': true,
+                        'render': function(data, type, row) {
+                            // Assuming the 'file_attachment' contains the full URL
+                            if (type === 'display') {
+                              const fileName = data.substring(data.lastIndexOf('/') + 1); // Extracts the file name from the URL
+                              return '<a href="' + data + '" download>' + fileName + '</a>';
+                            }
+                            return data; // For other types or non-display, return the data as is
+                          }
+                    },
                     // Add more columns as needed
                 ],
                 'order': [[0, 'desc']], // Order by ID column, descending
@@ -764,6 +805,8 @@ const app = Vue.createApp({
         this.fetchProvincesData();
         // fetch lgu data
         this.fetchLguData();
+        // fetch barangay data
+        this.fetchBarangayData();
     } // end of the mounted() function
 
 });
