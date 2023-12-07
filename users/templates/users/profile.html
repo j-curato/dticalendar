@@ -179,6 +179,12 @@
                    <p><input type="text" name="whole_date_start_searchable" class="form-control" v-model="formData.whole_date_start_searchable" style="display:none;"></p>
                   <!-- <p><input type="time" name="" class="form-control" placeholder="Time start" required></p> -->
                   <p><input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="formData.whole_date_end" @change="updateEndDateFields" @input="updateEndDateFields" required></p>
+                  <p>
+                    <label class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="customSwitch">
+                      <span class="form-check-label" for="customSwitch">All day</span>
+                    </label>
+                  </p>
                   <!-- <p><input type="time" name="" class="form-control" placeholder="Time end" required></p> -->
                   <p><input type="text" name="event_day_end" class="form-control" v-model="formData.event_day_end" placeholder="Day End" style="display: none;"></p>
                   <p><input type="text" name="event_month_end" class="form-control" v-model="formData.event_month_end" placeholder="Month End" style="display: none;"></p>

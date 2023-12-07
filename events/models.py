@@ -44,6 +44,7 @@ class Event(models.Model):
 	created_at = models.DateField(default=date.today)
 	updated_at = models.DateField(default=date.today)
 	event_code = models.CharField(max_length=500,blank=True, null=True)
+	event_all_day = models.BooleanField(default=False)
 
 	def serialize(self):
 		# define how you serialized the Event Object

@@ -1,15 +1,11 @@
 
-const appEvents = Vue.createApp({
+const appEvents = Vue.createApp({ 
     delimiters: ['{[', ']}'], // Change Vue.js delimiters to avoid conflicts with Django template tags
     data() {
         return {
             message: '',
             
         };
-    },
-    created() {
-       
-
     },
     mounted() {
 
@@ -46,6 +42,10 @@ const appEvents = Vue.createApp({
                 //apply css style to the columns
                 'columnDefs': [
                     {
+                        'targets': [1],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
+                        className: 'bold-column',
+                    },
+                    {
                         'targets': [2], // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
@@ -60,17 +60,17 @@ const appEvents = Vue.createApp({
                     
                                     // Iterate through each title-ID pair
                                     splitData.forEach(pair => {
-                                        const [title, id] = pair.trim().split('-'); // Split each pair into title and id
+                                        const [title, id, divname, unitname] = pair.trim().split('-'); // Split each pair into title and id
                     
                                         // Create individual spans for each title with its corresponding id
-                                        html += `<span v-hover="handleHover" class="highlight-offices regional-office multiline" data-id="${id}">&#8226; ${title}</span><br>`;
+                                        html += `<span class="highlight-offices regional-office multiline" style="cursor: pointer;" data-id="${id}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-html="true" data-bs-title="Division: ${divname}<br>Unit: ${unitname}">&#8226; ${title}</span><br>`;
                                     });
                                 } else {
                                     // Split the formattedData by '-' and select the desired part after the split
-                                    const [title, id] = formattedData.trim().split('-'); // Split the pair into title and id
+                                    const [title, id, divname, unitname] = formattedData.trim().split('-'); // Split the pair into title and id
                     
                                     // Create a single span for the title with its corresponding id
-                                    html += `<span v-hover="handleHover" class="highlight-offices regional-office" data-id="${id}">&#8226; ${title}</span>`;
+                                    html += `<span class="highlight-offices regional-office" data-id="${id}" style="cursor: pointer;" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-html="true" data-bs-title="Division: ${divname}<br>Unit: ${unitname}">&#8226; ${title}</span>`;
                                 }
                     
                                 return html;
@@ -487,22 +487,11 @@ const appEvents = Vue.createApp({
                 
             }); // end of the $('#eventsDivDisplayTable').DataTable()
 
-        }); // end of the function
-
-        const app = this; // Assign the Vue instance to a variable called app
-        const elements = document.querySelectorAll('.highlight-offices');
-
-        this.$nextTick(() => {
-            elements.forEach(element => {
-                element.addEventListener('mouseover', event => {
-                    const id = event.target.getAttribute('data-id');
-
-                    if (id) {
-                        this.handleHover(id); // Call the handleHover method
-                    }
-                });
+            $('#eventsDisplayTable').DataTable().draw().on('draw', function() {
+                $('[data-bs-toggle="tooltip"]').tooltip(); // Reinitialize tooltips for dynamically added elements
             });
-        });
+
+        }); // end of the function
 
     }, // end of the mounted() function
     methods: {
@@ -530,20 +519,6 @@ const appEvents = Vue.createApp({
           },
 
     }, // end of methods
-    directives: {
-        hover: {
-            // Define the directive hook
-            mounted(el, binding) {
-                // Add event listener for mouseover
-                el.addEventListener('mouseover', () => {
-                    if (binding.value) {
-                        // Trigger the method passed as the directive value
-                        binding.value(el.dataset.id);
-                    }
-                });
-            }
-        }
-    },
 
 });
 

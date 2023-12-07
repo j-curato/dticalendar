@@ -13,4 +13,5 @@ urlpatterns = [
     path('fetch-events-by-unit-ajax/', views.fetch_events_by_unit_ajax, name='fetch-events-by-unit-ajax'),
     # path to download files from the media folder
     path('download/<int:id>/', views.download_file, name='download_file'),
+    path('tooltips/', views.tooltips, name='tooltips'),
 ]

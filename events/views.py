@@ -123,13 +123,15 @@ def fetch_events_ajax(request):
             SELECT whole_date_start,
                 whole_date_start_searchable,
                 office,
-                STRING_AGG(CONCAT(event_title, '-', id), ', ') AS event_titles
+                STRING_AGG(CONCAT(event_title, '-', id, '-', division_name, '-', unit), ', ') AS event_titles
             FROM (
                 SELECT whole_date_start,
                     whole_date_start_searchable,
                     office,
                     event_title,
-                    id
+                    id,
+                    division_name,
+                    unit
                 FROM events_event
             ) AS sub
             GROUP BY whole_date_start, whole_date_start_searchable, office
@@ -346,6 +348,11 @@ def download_file(request, id):
         return FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
     except FileNotFoundError:
         return HttpResponse('File not found', status=404)
+    
+
+# method to display tooltips
+def tooltips(request):
+    return render(request, 'events/tooltip.html')
 
 
     

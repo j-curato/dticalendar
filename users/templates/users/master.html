@@ -31,9 +31,13 @@
 
         <!--CSS Bootstrap-->
         <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"> -->
-        <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+        <!-- <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}"> -->
         <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script> -->
-        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+        <!-- <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script> -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://getbootstrap.com/docs/5.3/assets/css/docs.css" rel="stylesheet">
+        <title>Bootstrap Example</title>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
         <!-- <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"> -->
         <link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
@@ -44,7 +48,7 @@
         <!--vue.js-->
         <script src="{% static 'js/vue.global.js' %}"></script>
         <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script> -->
-        
+
     <style type="text/css">
 
         .ui-autocomplete-input{
@@ -73,7 +77,7 @@
         .highlight-offices{
             text-align: center;
             font-size: 11px;
-            color:#000;
+            color:#fff;
             padding: 4px;
             font-family: Verdana, sans-serif;
         }
@@ -85,30 +89,38 @@
             color: #fff;
             padding: 4px;
             font-family: Verdana, sans-serif;
+            border-radius: 10px;
         } 
-        .regional-office{
-          background-color:rgb(175, 225, 245);
+        .regional-office,
+        .po-adn,
+        .po-ads,
+        .po-sdn,
+        .po-sds,
+        .po-pdi
+        {
+          background-color: rgba(62, 104, 230, 0.741);
+          border-radius: 10px;
         }
-        .po-adn{
-          background-color: #9efcb4;
-        }
-        .po-ads{
-          background-color: rgb(248, 191, 105)
-        }
-        .po-sdn{
-          background-color: #f8aab2;
-        }
-        .po-sds{
-          background-color: rgb(212, 175, 247);
-        }
-        .po-pdi{
-          background-color: rgb(233, 248, 158);
-        }
+      
         .multiline {
             white-space: pre-line;  /* Preserve newlines and spaces */
             margin-bottom: 8px;     /* Add space between lines */
             padding: 4px;
         }
+
+        /* Custom tooltip styles */
+        .custom-tooltip {
+            --bs-tooltip-bg: #000000;
+            --bs-tooltip-color: #fff;
+        }
+
+      .bold-column {
+          color: black;
+      }
+
+      .form-switch .form-check-input{
+        border-color: #a5a1a1;
+      } 
 
     </style>
         
@@ -236,5 +248,14 @@
        {% endif %}
         
     </body>
+
+    <script>
+         
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+      })
+  
+    </script>
 
 </html>
