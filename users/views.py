@@ -155,8 +155,10 @@ def get_events(request):
             search_filter |= Q(**{f'{col}__icontains': search_value})
 
 
-        # Filter the events based on the search_value
-        events = Event.objects.filter(search_filter)
+        # Filter the events based on the search_value and user id
+        events = Event.objects.filter(search_filter, user=request.user)
+
+        #events = Event.objects.filter(search_filter)
 
         # Get the total count of events (before filtering)
         total_records = Event.objects.count()

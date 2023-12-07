@@ -11,28 +11,13 @@ const appEvents = Vue.createApp({
        
 
     },
-    methods: {
-        filterEventsDatatbl() {
-            // show the value of the selected option with and assign to a variable
-            var filtertxt = $("#filterBy option:selected").val();
-
-            if (filtertxt == 'division') {
-                $('#showOfficeModal').modal('show');
-            }else if (filtertxt == 'unit') {
-                $('#showDtiDivModal').modal('show');
-            }else{
-                //redirect to the events page
-                window.location.href = "/events/get_eventsList/";
-            }
-        },
-
-    }, // end of methods
     mounted() {
 
         var table; //declare the table variable globally
         var tblEventsDiv; //declare the table variable globally
         var tblEventsUnit; //declare the table variable globally
-      
+
+        // initialize the datatable
         $(function() {
 
             table = $('#eventsDisplayTable').DataTable({  
@@ -61,23 +46,38 @@ const appEvents = Vue.createApp({
                 //apply css style to the columns
                 'columnDefs': [
                     {
-                        'targets': [2],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
+                        'targets': [2], // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
                                 return '<span class="highlight-vacant">empty</span>';
                             } else {
-                                // Replace commas with bullets and add line breaks
-                                var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
-                                
+                                var formattedData = data.replace(/,/g, ' <br>');
+                                let html = '';
+                    
                                 if (formattedData.includes('<br>')) {
-                                    // If the data contains a line break, apply multiline CSS
-                                    return '<span class="highlight-offices regional-office multiline">&#8226; ' + formattedData + '</span>';
+                                    // If the data contains multiple titles separated by '<br>'
+                                    const splitData = formattedData.split('<br>');
+                    
+                                    // Iterate through each title-ID pair
+                                    splitData.forEach(pair => {
+                                        const [title, id] = pair.trim().split('-'); // Split each pair into title and id
+                    
+                                        // Create individual spans for each title with its corresponding id
+                                        html += `<span v-hover="handleHover" class="highlight-offices regional-office multiline" data-id="${id}">&#8226; ${title}</span><br>`;
+                                    });
                                 } else {
-                                    return '<span class="highlight-offices regional-office">&#8226; ' + formattedData + '</span>';
+                                    // Split the formattedData by '-' and select the desired part after the split
+                                    const [title, id] = formattedData.trim().split('-'); // Split the pair into title and id
+                    
+                                    // Create a single span for the title with its corresponding id
+                                    html += `<span v-hover="handleHover" class="highlight-offices regional-office" data-id="${id}">&#8226; ${title}</span>`;
                                 }
+                    
+                                return html;
                             }
-                        },
+                        }
                     },
+                    
                     {
                         'targets': [3],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
@@ -489,7 +489,61 @@ const appEvents = Vue.createApp({
 
         }); // end of the function
 
-    } // end of the mounted() function
+        const app = this; // Assign the Vue instance to a variable called app
+        const elements = document.querySelectorAll('.highlight-offices');
+
+        this.$nextTick(() => {
+            elements.forEach(element => {
+                element.addEventListener('mouseover', event => {
+                    const id = event.target.getAttribute('data-id');
+
+                    if (id) {
+                        this.handleHover(id); // Call the handleHover method
+                    }
+                });
+            });
+        });
+
+    }, // end of the mounted() function
+    methods: {
+        filterEventsDatatbl() {
+            // show the value of the selected option with and assign to a variable
+            var filtertxt = $("#filterBy option:selected").val();
+
+            if (filtertxt == 'division') {
+                $('#showOfficeModal').modal('show');
+            }else if (filtertxt == 'unit') {
+                $('#showDtiDivModal').modal('show');
+            }else{
+                //redirect to the events page
+                window.location.href = "/events/get_eventsList/";
+            }
+        },
+
+        handleHover(id) {
+            if (id) {
+                alert(`ID: ${id}`);
+            }
+        },
+          handleMouseOut(event) {
+            // Perform actions on mouseout (if needed)
+          },
+
+    }, // end of methods
+    directives: {
+        hover: {
+            // Define the directive hook
+            mounted(el, binding) {
+                // Add event listener for mouseover
+                el.addEventListener('mouseover', () => {
+                    if (binding.value) {
+                        // Trigger the method passed as the directive value
+                        binding.value(el.dataset.id);
+                    }
+                });
+            }
+        }
+    },
 
 });
 

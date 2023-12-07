@@ -123,8 +123,15 @@ def fetch_events_ajax(request):
             SELECT whole_date_start,
                 whole_date_start_searchable,
                 office,
-                STRING_AGG(event_title, ', ') AS event_titles
-            FROM events_event
+                STRING_AGG(CONCAT(event_title, '-', id), ', ') AS event_titles
+            FROM (
+                SELECT whole_date_start,
+                    whole_date_start_searchable,
+                    office,
+                    event_title,
+                    id
+                FROM events_event
+            ) AS sub
             GROUP BY whole_date_start, whole_date_start_searchable, office
         ) AS subquery
         GROUP BY whole_date_start, whole_date_start_searchable
