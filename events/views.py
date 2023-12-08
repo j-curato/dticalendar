@@ -14,6 +14,7 @@ from django.shortcuts import render
 from django.http import FileResponse
 from mimetypes import guess_type
 from .models import Event
+import os
 # make_random_password is a method from django.contrib.auth.models
 
 # @api_view(['GET'])
@@ -60,8 +61,7 @@ def save_event_ajax(request):
             event.whole_date_end = end_date
             event.calendar = calendar
             event.division = division
-            event.file_attachment = request.FILES['file_attachment']
-            #event.file_attachment = request.FILES.get('file_attachment')
+            event.file_attachment = request.FILES.get('file_attachment')
             event.whole_date_start_searchable = start_date.strftime("%B %d, %Y")
             event.whole_date_end_searchable = request.POST['whole_date_end_searchable']
             event.office = request.POST['office'].upper()
@@ -80,6 +80,12 @@ def save_event_ajax(request):
             event.event_status = "PENDING".upper()
             event.expected_outcome = "PENDING".upper()
             event.event_code = request.POST['event_code']
+            # save a boolean value to event_all_day field
+            if request.POST['event_all_day'] == 'true':
+                event.event_all_day = True
+            else:
+                event.event_all_day = False
+            
             event.save()
             start_date = start_date + day_duration
 
@@ -344,10 +350,14 @@ def download_file(request, id):
     event = get_object_or_404(Event, pk=id)
     file_path = event.file_attachment.path
 
-    try:
-        return FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
-    except FileNotFoundError:
-        return HttpResponse('File not found', status=404)
+    # Check if the file_path exists before attempting to download
+    if os.path.exists(file_path):
+        try:
+            return FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
+        except FileNotFoundError:
+            return HttpResponse('File not found', status=404)
+    else:
+        return HttpResponse('No file associated', status=404)
     
 
 # method to display tooltips

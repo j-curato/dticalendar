@@ -181,7 +181,7 @@
                   <p><input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="formData.whole_date_end" @change="updateEndDateFields" @input="updateEndDateFields" required></p>
                   <p>
                     <label class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" id="customSwitch">
+                      <input name="event_all_day" v-model="formData.event_all_day" class="form-check-input" type="checkbox" id="customSwitch">
                       <span class="form-check-label" for="customSwitch">All day</span>
                     </label>
                   </p>
@@ -436,7 +436,7 @@
                 <th>Office</th>
                 <th>Division</th>
                 <th>Unit</th>
-                <th>Attachment</th>
+                <!-- <th>Attachment</th> -->
                 
                 <!-- Add more columns as needed -->
             </tr>
@@ -451,7 +451,7 @@
             <th>Office</th>
             <th>Division</th>
             <th>Unit</th>
-            <th>Attachment</th>
+            <!-- <th>Attachment</th> -->
                
           </tr>
       </tfoot>

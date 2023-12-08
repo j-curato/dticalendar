@@ -342,7 +342,7 @@ const appEvents = Vue.createApp({
                         // Add more 'columnDefs' as needed
                     ],
                     
-                }); // end of the $('#eventsDivDisplayTable').DataTable()
+            }); // end of the $('#eventsDivDisplayTable').DataTable()
 
             // filter by unit
             tblEventsUnit = $('#eventsUnitDisplayTable').DataTable({

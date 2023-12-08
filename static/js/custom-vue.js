@@ -48,6 +48,7 @@ const app = Vue.createApp({
                 paps: 0, // Initialize with an empty string
                 user_id: '', // Initialize with an empty string
                 calendar_id: 0, // Initialize with an empty string
+                event_all_day: false, // Initialize with false
             }, // end of formData
             // initialize the Org Outcome form data
             orgFormData: {
@@ -184,6 +185,7 @@ const app = Vue.createApp({
             formData.append('event_location_barangay', barangayText);
             // assign 10 randomly generated alphanumeric with special characters to the formData.event_code
             formData.append('event_code', Math.random().toString(36).slice(2));
+            formData.append('event_all_day', this.formData.event_all_day);
             
             // ajax call to save the event data
             fetch("/events/save-event-ajax/", {
@@ -699,7 +701,36 @@ const app = Vue.createApp({
                 },
                 'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
                 'buttons': [
-                    'copy', 'csv', 'excel', 'pdf', 'print' // Add the export buttons you need
+                    {
+                        extend: 'copy',
+                        exportOptions: {
+                            columns: ':not(:first-child)' // Excludes the first column from copy
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        exportOptions: {
+                            columns: ':not(:first-child)' // Excludes the first column from CSV export
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        exportOptions: {
+                            columns: ':not(:first-child)' // Excludes the first column from Excel export
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        exportOptions: {
+                            columns: ':not(:first-child)' // Excludes the first column from PDF export
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            columns: ':not(:first-child)' // Excludes the first column when printing
+                        }
+                    },
                 ],
                 'columns': [
                     {'data': 'id', 'sortable': true, 'searchable': false},
@@ -710,23 +741,29 @@ const app = Vue.createApp({
                     {'data': 'office', 'searchable': true, 'sortable': true},
                     {'data': 'division_name', 'searchable': true, 'sortable': true},
                     {'data': 'unit', 'searchable': true, 'sortable': true},
-                    {
-                        'data': 'file_attachment',
-                        'searchable': true,
-                        'sortable': true,
-                        'render': function(data, type, row) {
-                            // Assuming the 'file_attachment' contains the full URL
-                            if (type === 'display') {
-                              const fileName = data.substring(data.lastIndexOf('/') + 1); // Extracts the file name from the URL
-                              const fileId = row.id; // Accessing the 'id' field from the row data
-                              return '<a href="/events/download/' + fileId + '" download>' + fileName + '</a>';
-                            }
-                            return data; // For other types or non-display, return the data as is
-                          }
-                    },
+                    // {
+                    //     'data': 'file_attachment',
+                    //     'searchable': true,
+                    //     'sortable': true,
+                    //     'render': function(data, type, row) {
+                        
+                    //             // Assuming the 'file_attachment' contains the full URL
+                    //             if (type === 'display') {
+                    //                 // check if the 'file_attachment' attribute has no file associated with it.
+                    //                 const fileName = data.substring(data.lastIndexOf('/') + 1); // Extracts the file name from the URL
+                    //                 const fileId = row.id; // Accessing the 'id' field from the row data
+                    //                 // check file name if empty
+                    //                 const displayFileName = (fileName==='NONE') ? 'No file attached' : '<a href="/events/download/' + fileId + '" download>' + fileName + '</a>';
+                    //                 return displayFileName
+                    //             }
+                    //             return data; // For other types or non-display, return the data as is
+                            
+                    //     }
+                    // },
                     // Add more columns as needed
                 ],
                 'order': [[0, 'desc']], // Order by ID column, descending
+                
                
             }); // end of the $('#eventsTable').DataTable()
 
