@@ -157,7 +157,7 @@ def get_events(request):
 
         # Filter the events based on the search_value and user id
         events = Event.objects.filter(search_filter, user=request.user)
-
+        
         #events = Event.objects.filter(search_filter)
 
         # Get the total count of events (before filtering)
