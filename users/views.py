@@ -11,6 +11,8 @@ from divisions.models import Division
 from orgoutcomes.models import OrgOutcome
 from provinces.models import Province
 from django.shortcuts import get_object_or_404
+from django.db.models import OuterRef, Subquery
+from django.db.models import F, Min
 from django.utils import timezone
 from django.shortcuts import redirect
 from django.contrib import messages
@@ -171,6 +173,10 @@ def get_events(request):
 
         # Count of records after filtering
         filtered_records = events.count()
+        
+        # Apply distinct on 'event_code' and fetch the record with the smallest ID
+        subquery = Event.objects.filter(user=request.user).values('event_code').annotate(min_id=Min('id')).values('min_id')
+        events = events.filter(id__in=subquery)
 
         # Slice the events based on DataTables pagination
         events = events[start:start + length]

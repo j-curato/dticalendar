@@ -134,6 +134,14 @@ const app = Vue.createApp({
             //this.selectedFileName = selectedFile.name;
             //this.selectedFileName = selectedFile ? selectedFile.name : '';
           },
+
+          // function to handle event title change, keyup and click on autocomplete
+          handleEventTitleText(event) {
+            // Access the inputted text from the event
+            const selectedEventTitle = event.target.value;
+            this.formData.event_title = selectedEventTitle;
+         },
+
         // Function to save event data
         saveEventData() {
 

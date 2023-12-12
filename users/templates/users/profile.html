@@ -148,10 +148,10 @@
                 <form @submit.prevent="saveEventData" enctype="multipart/form-data">
                   <!-- <input v-model="formData.calendar_desc" type="text" placeholder="Field 2" required> -->
                   <p><input type="text" name="user_id" class="form-control" placeholder="Event title" v-model="formData.user_id" style="display: none;"></p>
-                  <p><input type="text" name="event_title" class="form-control" id="event-title-input" placeholder="Event title" v-model="formData.event_title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
+                  <p><input type="text" name="event_title" class="form-control" id="event-title-input" placeholder="Event title" @keyup="handleEventTitleText" @change="handleEventTitleText" @click="handleEventTitleText" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
                   <p>
                       <select name="event_location" v-model="formData.event_location" @change="updateLGUs" class="form-control form-select" required>
-                        <option value="0">Select Province</option>
+                        <option value="0">Select location by Province</option>
                         <!-- use loop to load values from provinceList -->
                         <option v-for="val in provincesListVue" :value="val.id">{[ val.province ]}</option>
                       </select>
@@ -159,13 +159,13 @@
                   <!-- <p><input type="text" name="event_location_lgu" class="form-control" v-model="formData.event_location_lgu" placeholder="LGU" required></p> -->
                   <p>
                     <select name="event_location_lgu" v-model="formData.event_location_lgu" class="form-control form-select" id="event-location-lgu-id" @change="updateDistrict" required>
-                      <option value="0">Select LGU</option>
+                      <option value="0">Select location by City/Municipality</option>
                       <option v-for="val in filteredLGUs" :value="val.id">{[ val.lgu ]}</option>
                     </select>
                   </p>
                   <p>
                     <select name="event_location_barangay" v-model="formData.event_location_barangay" class="form-control form-select" id="event-location-barangay-id" required>
-                      <option value="0">Select Barangay</option>
+                      <option value="0">Select location by Barangay</option>
                       <option v-for="val in filteredBarangays" :value="val.id">{[ val.barangay ]}</option>
                     </select>
                   </p>
@@ -191,12 +191,11 @@
                   <p><input type="text" name="event_year_end" class="form-control" v-model="formData.yearEnd" placeholder="Year end" style="display: none;"></p>
                   <p><input type="text" name="event_time_end" class="form-control" v-model="formData.event_time_end" placeholder="Time end" style="display: none;"></p>
                   <p><input type="text" name="whole_date_end_searchable" class="form-control" v-model="formData.whole_date_end_searchable" style="display:none;"></p>
-                  <p><textarea name="event_desc" class="form-control" v-model="formData.event_desc" placeholder="Add a description"></textarea></p>
-                  <p><textarea name="participants" class="form-control" v-model="formData.participants" placeholder="Participants"></textarea></p>
+                  <p><textarea name="event_desc" class="form-control" v-model="formData.event_desc" placeholder="Add a description" required></textarea></p>
+                  <p><textarea name="participants" class="form-control" v-model="formData.participants" placeholder="Participants" required></textarea></p>
                   <!-- <p><input type="file" name="file_attachment" v-model="formData.file_attachment" class="form-control"></p> -->
                   <p><input type="file" name="file_attachment" class="form-control" @change="handleFileChange"></p>
                   
-
                   <div class="modal-footer">
                     <button class="btn btn-primary">Save</button>
                     <button type="button" @click="previousModal" class="btn btn-secondary" data-bs-target="#exampleModalToggle" data-bs-toggle="modal" data-bs-dismiss="modal">Back</button>

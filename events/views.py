@@ -61,7 +61,13 @@ def save_event_ajax(request):
             event.whole_date_end = end_date
             event.calendar = calendar
             event.division = division
-            event.file_attachment = request.FILES.get('file_attachment')
+            # check if the file_attachment field is not empty
+            if request.FILES.get('file_attachment') != None:
+                event.file_attachment = request.FILES.get('file_attachment')
+            else:
+                event.file_attachment = 'NONE'
+            
+            #event.file_attachment = request.FILES.get('file_attachment')
             event.whole_date_start_searchable = start_date.strftime("%B %d, %Y")
             event.whole_date_end_searchable = request.POST['whole_date_end_searchable']
             event.office = request.POST['office'].upper()
