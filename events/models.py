@@ -52,3 +52,4 @@ class Event(models.Model):
 			'id': self.id,
 			'event_title': self.event_title,
 		}
+	

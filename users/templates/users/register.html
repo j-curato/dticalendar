@@ -8,7 +8,15 @@
 
     <div class="container" style="width: 50%; margin: 0 auto;">
         <h2>Register</h2>
-        {{ error_message }} 
+        {% if form.errors %}
+            <div class="alert alert-danger" role="alert">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endif %}
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}

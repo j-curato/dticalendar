@@ -3,6 +3,7 @@
 # from .serializers import EventSerializer
 from django.http import HttpResponse
 from django.http import JsonResponse
+
 from django.db import connection
 from calendars.models import Calendar
 from divisions.models import Division
@@ -15,6 +16,7 @@ from django.http import FileResponse
 from mimetypes import guess_type
 from .models import Event
 import os
+import json
 # make_random_password is a method from django.contrib.auth.models
 
 # @api_view(['GET'])
@@ -108,6 +110,32 @@ def get_eventsList(request):
     events = Event.objects.all()
     return render(request, 'events/event_display.html', {'events': events, 'txturl': txturl})
 
+@csrf_exempt
+def get_eventsListDate(request):
+    # check request method
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST request required.'}, status=400)
+    # Extract start_date and end_date from request body
+    try:
+        request_data = json.loads(request.body)
+        start_date = request_data.get('start_date')
+        end_date = request_data.get('end_date')
+    except:
+        return JsonResponse({'error': 'Invalid request body.'}, status=400)
+    
+    # define the desired fields to include in the JSON response
+    fields_to_include = ['id','event_title', 'event_desc', 'participants', 'event_location', 'whole_date_start_searchable', 'whole_date_end_searchable', 'event_time_start', 'event_time_end', 'office', 'org_outcome', 'paps', 'unit', 'division_name', 'actual_outcome', 'event_location_lgu', 'event_location_barangay', 'event_status', 'expected_outcome','event_all_day']
+    # Filter events based on start_date and end_date
+    events = Event.objects.filter(Q(whole_date_start__gte=start_date) & Q(whole_date_start__lte=end_date))
+    events_json = []
+    # Loop through each event and extract the desired fields
+    for event in events:
+        event_json = {}
+        for field in fields_to_include:
+            event_json[field] = getattr(event, field)
+        events_json.append(event_json)
+    # Return the JSON response
+    return JsonResponse(events_json, safe=False)
 
 # method to display event details using datatable server side processing
 def fetch_events_ajax(request):
@@ -135,7 +163,7 @@ def fetch_events_ajax(request):
             SELECT whole_date_start,
                 whole_date_start_searchable,
                 office,
-                STRING_AGG(CONCAT(event_title, '-', id, '-', division_name, '-', unit), ', ') AS event_titles
+                STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit), ', ') AS event_titles
             FROM (
                 SELECT whole_date_start,
                     whole_date_start_searchable,

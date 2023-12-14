@@ -6,6 +6,7 @@ urlpatterns = [
     # save-event-ajax
     path('save-event-ajax/', views.save_event_ajax, name='save-event-ajax/'),
     path('get_eventsList/', views.get_eventsList, name='get_eventsList'),
+    path('api/get-eventsList/', views.get_eventsListDate, name='get_eventsListDate'),
     path('fetch-events-ajax/', views.fetch_events_ajax, name='fetch-events-ajax'),
     path('load-div-datatbl-html/', views.load_div_datatbl_html, name='load-div-datatbl-html'),
     path('load-unit-datatbl-html/', views.load_unit_datatbl_html, name='load-unit-datatbl-html'),

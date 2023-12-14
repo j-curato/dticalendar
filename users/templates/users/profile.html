@@ -42,7 +42,7 @@
 
         <pre>{{ divisionListVue }}</pre>
 
-        <div class="toast align-items-center text-white bg-primary border-0 hide position-fixed top-0 end-0 p-3 mt-2" id="liveToast" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 1050">
+        <div class="toast align-items-center text-white bg-primary border-0 hide position-fixed top-0 end-0 p-3 mt-2" id="liveToast" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 1060">
           <div class="d-flex">
             <div class="toast-body">
               {[ message ]}
@@ -149,9 +149,10 @@
                   <!-- <input v-model="formData.calendar_desc" type="text" placeholder="Field 2" required> -->
                   <p><input type="text" name="user_id" class="form-control" placeholder="Event title" v-model="formData.user_id" style="display: none;"></p>
                   <p><input type="text" name="event_title" class="form-control" id="event-title-input" placeholder="Event title" @keyup="handleEventTitleText" @change="handleEventTitleText" @click="handleEventTitleText" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
-                  <p>
+                  <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px;">Location details</span>
+                  <p style="padding-top: 7px;">
                       <select name="event_location" v-model="formData.event_location" @change="updateLGUs" class="form-control form-select" required>
-                        <option value="0">Select location by Province</option>
+                        <option value="0">Select Province</option>
                         <!-- use loop to load values from provinceList -->
                         <option v-for="val in provincesListVue" :value="val.id">{[ val.province ]}</option>
                       </select>
@@ -159,26 +160,30 @@
                   <!-- <p><input type="text" name="event_location_lgu" class="form-control" v-model="formData.event_location_lgu" placeholder="LGU" required></p> -->
                   <p>
                     <select name="event_location_lgu" v-model="formData.event_location_lgu" class="form-control form-select" id="event-location-lgu-id" @change="updateDistrict" required>
-                      <option value="0">Select location by City/Municipality</option>
+                      <option value="0">Select City/Municipality</option>
                       <option v-for="val in filteredLGUs" :value="val.id">{[ val.lgu ]}</option>
                     </select>
                   </p>
                   <p>
                     <select name="event_location_barangay" v-model="formData.event_location_barangay" class="form-control form-select" id="event-location-barangay-id" required>
-                      <option value="0">Select location by Barangay</option>
+                      <option value="0">Select Barangay</option>
                       <option v-for="val in filteredBarangays" :value="val.id">{[ val.barangay ]}</option>
                     </select>
                   </p>
                   <p><input type="text" name="event_location_district" class="form-control" v-model="formData.event_location_district" placeholder="District" required></p>
                   <!-- <p><input type="text" name="event_location_barangay" class="form-control" v-model="formData.event_location_barangay" placeholder="Barangay" required></p> -->
-                  <p><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="formData.whole_date_start" @change="updateStartDateFields" @input="updateStartDateFields" required></p>
+                  <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px;">Time details</span>
+                  <p style="padding-top: 7px;"><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="formData.whole_date_start" @change="updateStartDateFields" @input="updateStartDateFields" required></p>
                   <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="formData.event_day_start" style="display:none;"></p>
                   <p><input type="text" name="event_month_start" class="form-control" placeholder="Month Start"  v-model="formData.event_month_start" style="display:none;"></p>
                   <p><input type="text" name="event_year_start" class="form-control" placeholder="Year Start"  v-model="formData.event_year_start" style="display:none;"></p>
                   <p><input type="text" name="event_time_start" class="form-control" placeholder="Time Start"  v-model="formData.event_time_start" style="display:none;"></p>
                    <p><input type="text" name="whole_date_start_searchable" class="form-control" v-model="formData.whole_date_start_searchable" style="display:none;"></p>
                   <!-- <p><input type="time" name="" class="form-control" placeholder="Time start" required></p> -->
-                  <p><input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="formData.whole_date_end" @change="updateEndDateFields" @input="updateEndDateFields" required></p>
+                  <p>
+                    <input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="formData.whole_date_end" @change="updateEndDateFields" @input="updateEndDateFields" required>
+                    <span class="form-check-label" style="font-size: 12px;"><a href="#" @click="checkEventDate">Check date</a></span>
+                  </p>
                   <p>
                     <label class="form-check form-switch">
                       <input name="event_all_day" v-model="formData.event_all_day" class="form-check-input" type="checkbox" id="customSwitch">
@@ -194,7 +199,8 @@
                   <p><textarea name="event_desc" class="form-control" v-model="formData.event_desc" placeholder="Add a description" required></textarea></p>
                   <p><textarea name="participants" class="form-control" v-model="formData.participants" placeholder="Participants" required></textarea></p>
                   <!-- <p><input type="file" name="file_attachment" v-model="formData.file_attachment" class="form-control"></p> -->
-                  <p><input type="file" name="file_attachment" class="form-control" @change="handleFileChange"></p>
+                  <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px;">Optional</span>
+                  <p style="padding-top: 7px;"><input type="file" name="file_attachment" class="form-control" @change="handleFileChange"></p>
                   
                   <div class="modal-footer">
                     <button class="btn btn-primary">Save</button>
@@ -209,6 +215,36 @@
           </div>
         </div>
 
+        <div class="modal fade" id="events-modal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
+          <div class="modal-dialog modal-dialog-scrollable modal-dialog-slideout">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalToggleLabel">Event details</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <ul class="list-group">
+                        <li v-if="eventsListVue.length === 0" class="list-group-item">
+                            <p>No conflict activity</p>
+                        </li>
+                        <li v-else v-for="event in eventsListVue" :key="event.id" class="list-group-item">
+                            <h5>{[ event.event_title ]}</h5>
+                            <p>Description: {[ event.event_desc ]}</p>
+                            <p>Participants: {[ event.participants ]}</p>
+                            <p>Location: {[ event.event_location ]}</p>
+                            <p>Office: {[ event.office ]}</p>
+                            <p>Date: {[ event.whole_date_start_searchable + ' - ' + event.whole_date_end_searchable ]}</p>
+                            <!-- Add other event details as needed -->
+                        </li>
+                    </ul>                  
+                  </div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+      
           <!-- modal for editing events -->
 
             <!-- <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">

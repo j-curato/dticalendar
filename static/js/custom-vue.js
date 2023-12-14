@@ -17,6 +17,7 @@ const app = Vue.createApp({
             filteredPAPs: [], // Initialize filteredPAPs with an empty array
             filteredLGUs: [], // Initialize filteredLGUs with an empty array
             filteredBarangays: [], // Initialize filteredBarangays with an empty array
+            eventsListVue: [], // Initialize eventsList with an empty array
             formData: {
                 division_id: 0, // Initialize division_id with 0
                 division_name: '', // Initialize with an empty string
@@ -210,7 +211,7 @@ const app = Vue.createApp({
                 // if message is true, then show the toast notification
                 if (data.message) {
                 // call the showToast() method and change the toast message to "Event saved successfully!"
-                this.message = "Event saved successfully!";
+                this.message = "Event created successfully!";
                 // call the showToast() method to show the toast notification
                 this.showToast();
                 // refresh the server-side datatables events table
@@ -680,6 +681,39 @@ const app = Vue.createApp({
             var ooText = $("#orgOutcome-id option:selected").text();
             this.papsFormData.oo_name = ooText;
             },
+
+        // Function to fetch events data based on formData.whole_date_start and formData.whole_date_end
+        checkEventDate() {
+
+                // show modal with id="events-modal" and show it on top of another modal with id="modal2"
+                $('#events-modal').modal({backdrop: 'static', keyboard: false});
+                $('#events-modal').modal('show');
+
+                // get the formData.whole_date_start and formData.whole_date_end values
+                var startDate = this.formData.whole_date_start;
+                var endDate = this.formData.whole_date_end;
+                //remove time from the date 2024-01-19T14:37
+                var startDate = startDate.split('T')[0];
+                var endDate = endDate.split('T')[0];
+
+                // ajax call to fetch the events data with startDate and endDate as parameters
+                fetch('/events/api/get-eventsList/', {
+                    method: "POST",
+                    body: JSON.stringify({
+                        start_date: startDate,
+                        end_date: endDate,
+                    }),
+                    })
+                .then(response => response.json())
+                .then(data => {
+                    this.eventsListVue = data;      
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+                
+        }, // end of checkEventDate() function
+
     }, // end of methods
     mounted() {
 
