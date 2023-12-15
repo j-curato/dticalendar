@@ -41,19 +41,77 @@ const appEvents = Vue.createApp({
                         extend: 'excel',
                         exportOptions: {
                             columns: ':not(:first)' // Excludes the first visible column
+                        },   
+                        customize: function (xlsx) {
+                            // Modify the content before exporting to PDF
+                            const sheet = xlsx.xl.worksheets['sheet1.xml'];
+                            // Ensure that the text containing bullet points is formatted properly and move to the next line after each bullet point
+                            $('row c[r^="B"]', sheet).each(function () {
+                                if ($(this).text().includes('•')) {
+                                    // apply wrap text style
+                                    $(this).attr('s', '55');
+                                    // Insert line breaks after each bullet point
+                                    $(this).html($(this).html().replace(/• /g, '\n• ')); // Insert line breaks after each bullet point
+                                }
+                            });
+                            
                         }
                     },
                     {
                         extend: 'pdf',
                         exportOptions: {
                             columns: ':not(:first)' // Excludes the first visible column
+                        },
+                        customize: function (doc) {
+
+                            // Modify the content before exporting to PDF
+                            doc.content[1].table.body.forEach(row => {
+                                row.forEach(cell => {
+                                    // Set border property for each cell
+                                    cell['style'] = 'tableCell'; // Apply the table cell style
+                                });
+                            });
+                            // Apply the table border style
+                            doc.content[1].layout = {
+                                hLineWidth: function () { return 1; },
+                                vLineWidth: function () { return 1; },
+                                hLineColor: function () { return '#b3b3b3'; },
+                                vLineColor: function () { return '#b3b3b3'; },
+                            };
+
+                            // Increase the width of the exported PDF
+                            doc.pageOrientation = 'landscape'; // Change orientation to landscape
+                            doc.pageSize = 'A4'; // Set page size to A3
+                    
+                            // Modify the content before exporting to PDF
+                            doc.content[1].table.body.forEach(row => {
+                                row.forEach((cell, index) => {
+                                    // Ensure that the text containing bullet points is formatted properly
+                                    if (typeof cell.text === 'string' && cell.text.includes('•')) {
+                                        cell.text = cell.text.replace(/• /g, '\n• '); // Insert line breaks after each bullet point
+                                    }
+                                });
+                            });
                         }
                     },
                     {
                         extend: 'print',
                         exportOptions: {
                             columns: ':not(:first)' // Excludes the first visible column
-                        }
+                        },
+                        customize: function (win) {
+                            const table = $(win.document.body).find('table tbody');
+                    
+                            table.find('tr').each(function () {
+                                const cells = $(this).find('td');
+                    
+                                cells.each(function () {
+                                    const newText = $(this).text().replace(/•/g, '\n•');
+                                    $(this).text(newText);
+                                });
+                            });
+                        } 
+                        
                     },
                 ],
                 'columns': [
@@ -75,23 +133,23 @@ const appEvents = Vue.createApp({
                         className: 'bold-column',
                     },
                     {
-                        'targets': [2], // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
+                        'targets': [2],
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
                                 return '<span class="highlight-vacant">empty</span>';
                             } else {
-                                var formattedData = data.replace(/,/g, ' <br>');
+                                var formattedData = data.replace(/,/g, '<br>');
                                 let html = '';
-                    
+
                                 if (formattedData.includes('<br>')) {
                                     const splitData = formattedData.split('<br>');
                                     splitData.forEach(pair => {
                                         const [title, id, divname, unitname] = pair.trim().split('*');
-                                        html += `<span class="highlight-offices regional-office multiline" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span><br>`;
+                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}">• ${title}</span><br>`;
                                     });
                                 } else {
                                     const [title, id, divname, unitname] = formattedData.trim().split('*');
-                                    html += `<span class="highlight-offices regional-office" data-id="${id}" style="cursor: pointer;" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span>`;
+                                    html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}">• ${title}</span>`;
                                 }
                                 
                                 return html;
