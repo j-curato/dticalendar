@@ -137,6 +137,23 @@ def get_eventsListDate(request):
     # Return the JSON response
     return JsonResponse(events_json, safe=False)
 
+@csrf_exempt
+def get_event_details(request):
+    # check request method
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST request required.'}, status=400)
+    # extract id from the request body
+    try:
+        request_data = json.loads(request.body)
+        id = request_data.get('event_id')
+    except:
+        return JsonResponse({'error': 'Invalid request body.'}, status=400)
+    
+    # filter event based on id
+    event = Event.objects.filter(id=id)
+    # return the JSON response
+    return JsonResponse(list(event.values()), safe=False)
+
 # method to display event details using datatable server side processing
 def fetch_events_ajax(request):
     try:

@@ -182,7 +182,7 @@
                   <!-- <p><input type="time" name="" class="form-control" placeholder="Time start" required></p> -->
                   <p>
                     <input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="formData.whole_date_end" @change="updateEndDateFields" @input="updateEndDateFields" required>
-                    <span class="form-check-label" style="font-size: 12px;"><a href="#" @click="checkEventDate">Check date</a></span>
+                    <span class="form-check-label" style="font-size: 12px;"><a href="#" @click="checkEventDate">Check date for conflicts</a></span>
                   </p>
                   <p>
                     <label class="form-check form-switch">
@@ -225,7 +225,7 @@
                   <div class="modal-body">
                     <ul class="list-group">
                         <li v-if="eventsListVue.length === 0" class="list-group-item">
-                            <p>No conflict activity</p>
+                            <p>No activities found</p>
                         </li>
                         <li v-else v-for="event in eventsListVue" :key="event.id" class="list-group-item">
                             <h5>{[ event.event_title ]}</h5>
@@ -462,7 +462,7 @@
 
     <table id="eventsTable" class="display" style="width:100%">
         <thead>
-            <tr>
+            <tr >
                 <th>ID</th>
                 <th>Date Start</th>
                 <th>Date End</th>
