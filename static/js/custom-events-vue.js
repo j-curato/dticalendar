@@ -4,6 +4,7 @@ const appEvents = Vue.createApp({
     data() {
         return {
             message: '',
+            specificEventDetails: []
             
         };
     },
@@ -12,6 +13,12 @@ const appEvents = Vue.createApp({
         var table; //declare the table variable globally
         var tblEventsDiv; //declare the table variable globally
         var tblEventsUnit; //declare the table variable globally
+        const self = this; // Preserve reference to Vue component
+
+        $('#eventsDisplayTable').on('click', '.regional-office', function() {
+            const id = $(this).attr('data-id');
+            self.fetchEventDetails(id);
+        });
 
         // initialize the datatable
         $(function() {
@@ -46,13 +53,15 @@ const appEvents = Vue.createApp({
                             // Modify the content before exporting to PDF
                             const sheet = xlsx.xl.worksheets['sheet1.xml'];
                             // Ensure that the text containing bullet points is formatted properly and move to the next line after each bullet point
-                            $('row c[r^="B"]', sheet).each(function () {
-                                if ($(this).text().includes('•')) {
-                                    // apply wrap text style
-                                    $(this).attr('s', '55');
-                                    // Insert line breaks after each bullet point
-                                    $(this).html($(this).html().replace(/• /g, '\n• ')); // Insert line breaks after each bullet point
-                                }
+                            ['B', 'C', 'D', 'E', 'F', 'G'].forEach(function(columnLetter) {
+                                $('row c[r^="' + columnLetter + '"]', sheet).each(function () {
+                                    if ($(this).text().includes('•')) {
+                                        // apply wrap text style
+                                        $(this).attr('s', '55');
+                                        // Insert line breaks after each bullet point
+                                        $(this).html($(this).html().replace(/• /g, '\n• ')); // Insert line breaks after each bullet point
+                                    }
+                                });
                             });
                             
                         }
@@ -78,6 +87,14 @@ const appEvents = Vue.createApp({
                                 hLineColor: function () { return '#b3b3b3'; },
                                 vLineColor: function () { return '#b3b3b3'; },
                             };
+
+                            // increase header width
+                            doc.content[1].table.widths = ['*', '*', '*', '*', '*', '*', '*'];
+
+                            // apply header background color
+                            doc.content[1].table.body[0].forEach(cell => {
+                                cell['fillColor'] = '#e6e6e6'; // Apply the header background color
+                            });
 
                             // Increase the width of the exported PDF
                             doc.pageOrientation = 'landscape'; // Change orientation to landscape
@@ -637,9 +654,37 @@ const appEvents = Vue.createApp({
                 alert(`ID: ${id}`);
             }
         },
-          handleMouseOut(event) {
+        handleMouseOut(event) {
             // Perform actions on mouseout (if needed)
-          },
+        },
+
+        // Function to fetch event detail by getting the data-id value of the span tag with class name "regional-office"
+        fetchEventDetails(id) {
+
+            $('#specific-event-modal').modal('show');
+            
+            fetch('/events/api/get-event-details/', {
+
+                method: "POST",
+                body: JSON.stringify({
+                    event_id: id
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.specificEventDetails = data;
+                console.log(data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        },
+
+        extractFileName(url) {
+            // Extracts the file name from the URL
+            const fileName = url.split('/').pop();
+            return fileName;
+        }
 
     }, // end of methods
 

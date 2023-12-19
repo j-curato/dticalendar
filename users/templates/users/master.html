@@ -217,6 +217,37 @@
       <div id="{%if txturl == 'events'%}appEvents{%else%}app{% endif %}">
 
             {% if txturl == 'events' %}
+            
+          <div class="modal fade" id="specific-event-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-slideout">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalToggleLabel">Event details</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                  <ul class="list-group">
+                    <li class="list-group-item" v-for="event in specificEventDetails" :key="event.id">
+                      <h5>{[ event.event_title ]}</h5>
+                      <p>Description: {[ event.event_desc ]}</p>
+                      <p>Participants: {[ event.participants ]}</p>
+                      <p>Location: {[ event.event_location ]}</p>
+                      <p>Office: {[ event.office ]}</p>
+                      <p>Date: {[ event.whole_date_start_searchable ]}</p>
+                      <p>Attachment: 
+                        <a :href="`/events/download/${event.id}`" download>{[ extractFileName(event.file_attachment) ]}</a>
+                      </p>
+                    </li>
+                  </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
                 <br>
                 <div class="row">
                     <div class="col-md-12">
