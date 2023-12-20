@@ -161,12 +161,12 @@ const appEvents = Vue.createApp({
                                 if (formattedData.includes('<br>')) {
                                     const splitData = formattedData.split('<br>');
                                     splitData.forEach(pair => {
-                                        const [title, id, divname, unitname] = pair.trim().split('*');
-                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}">• ${title}</span><br>`;
+                                        const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
+                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span><br>`;
                                     });
                                 } else {
-                                    const [title, id, divname, unitname] = formattedData.trim().split('*');
-                                    html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}">• ${title}</span>`;
+                                    const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
+                                    html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span>`;
                                 }
                                 
                                 return html;
@@ -219,7 +219,6 @@ const appEvents = Vue.createApp({
                                     html += `<span class="highlight-offices po-ads" data-id="${id}" style="cursor: pointer;" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span>`;
                                 }
                                 
-                    
                                 return html;
                             }
                         },

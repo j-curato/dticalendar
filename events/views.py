@@ -180,7 +180,7 @@ def fetch_events_ajax(request):
             SELECT whole_date_start,
                 whole_date_start_searchable,
                 office,
-                STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit), ', ') AS event_titles
+                STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit, '*', event_time_start, '*', event_time_end), ', ') AS event_titles
             FROM (
                 SELECT whole_date_start,
                     whole_date_start_searchable,
@@ -188,7 +188,9 @@ def fetch_events_ajax(request):
                     event_title,
                     id,
                     division_name,
-                    unit
+                    unit,
+                    event_time_start,
+                    event_time_end
                 FROM events_event
             ) AS sub
             GROUP BY whole_date_start, whole_date_start_searchable, office
