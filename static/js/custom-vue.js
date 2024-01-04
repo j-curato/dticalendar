@@ -603,6 +603,11 @@ const app = Vue.createApp({
             // Convert the time to a Date object
             const timeValue = new Date(`2000-01-01T${time}`);
 
+            // If event_all_day is true, set the time to 9am
+            if (this.formData.event_all_day) {
+                timeValue.setHours(9, 0, 0, 0); // Set time to 9 am
+            }
+
             // Extract hours and minutes from the Date object
             const hours = timeValue.getHours();
             const minutes = timeValue.getMinutes();
@@ -624,6 +629,7 @@ const app = Vue.createApp({
             this.formData.event_month_start = month.toString(); // Convert back to string
             this.formData.event_year_start = year.toString(); // Convert back to string
             this.formData.event_time_start = `${formattedHours}:${formattedMinutes} ${amOrPm}`;
+            //this.formData.whole_date_start = `${formattedHours}:${formattedMinutes} ${amOrPm}`;
             this.formData.whole_date_start_searchable = formattedDate;
             //this.dateStartSearchable = `${year}-${month}-${day}`;
         },
@@ -646,6 +652,12 @@ const app = Vue.createApp({
           
             // Convert the time to a Date object
             const endtimeValue = new Date(`2000-01-01T${timePart}`);
+
+            // If event_all_day is true, set the time to 9am
+            if (this.formData.event_all_day) {
+                // Set time to 5pm
+                endtimeValue.setHours(17, 0, 0, 0);
+            }
           
             // Extract hours and minutes from the Date object
             const hours24 = endtimeValue.getHours();
@@ -713,6 +725,38 @@ const app = Vue.createApp({
                 });
                 
         }, // end of checkEventDate() function
+
+        handleDateTimeChange() {
+
+            // Your logic for handling the event_all_day change
+            if (this.formData.event_all_day) {
+                const startDate = new Date(this.formData.whole_date_start); // Convert the user-input date string to a Date object
+                startDate.setHours(17, 0, 0, 0); // Set time to 9am for start date
+                this.formData.whole_date_start = startDate.toISOString().slice(0, 16); // Update start datetime
+            
+                const endDate = new Date(this.formData.whole_date_end); // Convert the user-input date string to a Date object
+                endDate.setHours(25, 0, 0, 0); // Set time to 5pm for end date
+                this.formData.whole_date_end = endDate.toISOString().slice(0, 16); // Update end datetime
+            }else {
+
+                const now = new Date();
+                const startDate = new Date(this.formData.whole_date_start);
+                const endDate = new Date(this.formData.whole_date_end);
+
+                startDate.setHours(now.getHours(), now.getMinutes(), 0, 0);
+                endDate.setHours(now.getHours(), now.getMinutes(), 0, 0);
+
+                const formattedStartDate = `${startDate.toISOString().slice(0, 11)}${startDate.getHours()}:${(`0${startDate.getMinutes()}`).slice(-2)}`;
+                const formattedEndDate = `${endDate.toISOString().slice(0, 11)}${endDate.getHours()}:${(`0${endDate.getMinutes()}`).slice(-2)}`;
+
+                this.formData.whole_date_start = formattedStartDate;
+                this.formData.whole_date_end = formattedEndDate;
+            }
+            
+            // Update the date fields
+            this.updateStartDateFields();
+            this.updateEndDateFields();
+        }
 
     }, // end of methods
     mounted() {
@@ -810,7 +854,11 @@ const app = Vue.createApp({
             }); // end of the $('#eventsTable').DataTable()
 
             $('#eventsTable tbody').on('click', 'tr', function () {
+
                 var data = table.row(this).data();
+                // show cursor as pointer when hovering over the table row
+                $('#eventsTable tbody tr').css('cursor', 'pointer');
+                
                 if (data) {
                     console.log('Selected Data:', data.id);
                     //query the database for the event details using the event id and display it in the #editEventModal
@@ -838,7 +886,7 @@ const app = Vue.createApp({
                             //$("#editWholeDateStart-id").val(data.event_date_start);
                             //$("#editWholeDateEnd-id").val(data.event_date_end);
                             $("#editFileAttachment-id").text(data.file_attachment); 
-                            $('#editEventModal').modal('show');
+                            $('#modal1').modal('show');
                         }
                     }); // end of the $.ajax()
                 }
