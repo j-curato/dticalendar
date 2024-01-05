@@ -217,7 +217,7 @@ const app = Vue.createApp({
                 // refresh the server-side datatables events table
                 $('#eventsTable').DataTable().ajax.reload();
                 // Handle a successful response
-                console.log("Data saved successfully:", data);
+                console.log("Event added", data);
                 // reset the form data
                 this.formData.office = 0;
                 this.formData.division_id = 0;
@@ -245,10 +245,10 @@ const app = Vue.createApp({
                 this.formData.whole_date_end_searchable = '';
                 this.formData.calendar_name = '';
                 this.formData.division_name = '';
+                this.formData.event_location_lgu = 0;
+                this.formData.event_location_barangay = 0;
                 this.formData.event_location_district = '';
-                this.formData.event_location_lgu = '';
-                this.formData.event_location_barangay = '';
-
+                
             } // end of if (data.message)
             else {
                 // Handle a failed response
@@ -737,6 +737,10 @@ const app = Vue.createApp({
                 const endDate = new Date(this.formData.whole_date_end); // Convert the user-input date string to a Date object
                 endDate.setHours(25, 0, 0, 0); // Set time to 5pm for end date
                 this.formData.whole_date_end = endDate.toISOString().slice(0, 16); // Update end datetime
+
+                console.log(this.formData.whole_date_start);
+                console.log(this.formData.whole_date_end);
+                
             }else {
 
                 const now = new Date();
@@ -746,16 +750,17 @@ const app = Vue.createApp({
                 startDate.setHours(now.getHours(), now.getMinutes(), 0, 0);
                 endDate.setHours(now.getHours(), now.getMinutes(), 0, 0);
 
-                const formattedStartDate = `${startDate.toISOString().slice(0, 11)}${startDate.getHours()}:${(`0${startDate.getMinutes()}`).slice(-2)}`;
-                const formattedEndDate = `${endDate.toISOString().slice(0, 11)}${endDate.getHours()}:${(`0${endDate.getMinutes()}`).slice(-2)}`;
+                const formattedStartDate = `${startDate.getFullYear()}-${(`0${startDate.getMonth() + 1}`).slice(-2)}-${(`0${startDate.getDate()}`).slice(-2)}T${(`0${startDate.getHours()}`).slice(-2)}:${(`0${startDate.getMinutes()}`).slice(-2)}`;
+                const formattedEndDate = `${endDate.getFullYear()}-${(`0${endDate.getMonth() + 1}`).slice(-2)}-${(`0${endDate.getDate()}`).slice(-2)}T${(`0${endDate.getHours()}`).slice(-2)}:${(`0${endDate.getMinutes()}`).slice(-2)}`;
 
                 this.formData.whole_date_start = formattedStartDate;
                 this.formData.whole_date_end = formattedEndDate;
+
             }
             
             // Update the date fields
-            this.updateStartDateFields();
-            this.updateEndDateFields();
+            //this.updateStartDateFields();
+            //this.updateEndDateFields();
         }
 
     }, // end of methods
@@ -863,20 +868,20 @@ const app = Vue.createApp({
                     console.log('Selected Data:', data.id);
                     //query the database for the event details using the event id and display it in the #editEventModal
                     $.ajax({
-                        url: '/get_event_details/',
+                        url: '/get_event_details_to_edit/',
                         type: 'GET',
                         data: {
                             'event_id': data.id,
                         },
                         dataType: 'json',
                         success: function (data) {
-                            console.log(data);
+                            console.log(data.event_code);
                             //populate the editEventModal with the event details
-                            $("#editOffice-id").val(data.office);
-                            $("#editDivision-id").val(data.division_id);
-                            $("#editUnit-id").val(data.unit);
-                            $("#editOrgOutcome-id").val(data.org_outcome);
-                            $("#editPAPs-id").val(data.paps);
+                            $("#editOffice").val(data.office);
+                            $("#division-id").val(data.division_id);
+                            $("#editUnit").val(data.unit);
+                            $("#editOrgOutcome").val(data.org_outcome);
+                            $("#editPaps").val(data.paps);
                             $("#editCalendar-id").val(data.calendar_id);
                             $("#editUser-id").val(data.user_id);
                             $("#editEventTitle-id").val(data.event_title);

@@ -2,6 +2,11 @@ from django.db import models
 from employees.models import Employee
 from calendars.models import Calendar
 from divisions.models import Division
+from orgoutcomes.models import OrgOutcome
+from paps.models import Pap
+from provinces.models import Province
+from lgus.models import Lgu
+from barangays.models import Barangay
 from django.contrib.auth.models import User
 from datetime import date
 
@@ -15,6 +20,8 @@ class Event(models.Model):
 	division_name = models.CharField(max_length=500, null=True, blank=True)
 	unit = models.CharField(max_length=500, null=True, blank=True)
 	paps = models.CharField(max_length=500, null=True, blank=True)
+	orgoutcome = models.ForeignKey(OrgOutcome, on_delete=models.CASCADE, default=0)
+	pap = models.ForeignKey(Pap, on_delete=models.CASCADE, default=0)
 	org_outcome = models.CharField(max_length=500, null=True, blank=True)
 	event_title = models.CharField(max_length=500)
 	event_desc = models.CharField(max_length=1000)
@@ -23,7 +30,10 @@ class Event(models.Model):
 	event_location_lgu = models.CharField(max_length=255,blank=True, null=True)
 	event_location_district = models.CharField(max_length=255,blank=True, null=True)
 	event_location_barangay = models.CharField(max_length=255,blank=True, null=True)
-	event_day_start = models.IntegerField()
+	province = models.ForeignKey(Province, on_delete=models.CASCADE, default=0)
+	lgu = models.ForeignKey(Lgu, on_delete=models.CASCADE, default=0)
+	barangay = models.ForeignKey(Barangay, on_delete=models.CASCADE, default=0)
+	event_day_start = models.IntegerField() 
 	event_month_start = models.IntegerField()
 	event_year_start = models.IntegerField()
 	event_time_start = models.CharField(max_length=50)

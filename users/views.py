@@ -213,7 +213,7 @@ def get_events(request):
         return JsonResponse({'error': str(e)}, status=500)
     
     # method to get the event details and return it as JSON and display it in the modal #editEventModal
-def get_event_details(request):
+def get_event_details_to_edit(request):
     try:
         # Get the event ID from the GET parameters
         event_id = request.GET.get('event_id')
@@ -221,28 +221,29 @@ def get_event_details(request):
         # Get the event details from the database
         event = Event.objects.get(pk=event_id)
 
-        # Prepare the JSON response
+        # Prepare the JSON response returning all the daabase fields
         response_data = {
+
             'id': event.id,
-            'event_title': event.event_title,
-            'event_desc': event.event_desc,
-            'whole_date_start_searchable': event.whole_date_start_searchable,
-            'whole_date_end_searchable': event.whole_date_end_searchable,
-            'event_location': event.event_location,
-            'participants': event.participants,
-            'file_attachment': event.file_attachment.url,
-            'event_day_start': event.event_day_start,
-            'event_month_start': event.event_month_start,
-            'event_year_start': event.event_year_start,
-            'event_time_start': event.event_time_start,
-            'event_day_end': event.event_day_end,
-            'event_month_end': event.event_month_end,
-            'event_year_end': event.event_year_end,
-            'event_time_end': event.event_time_end,
             'office': event.office,
+            'division_name': event.division_name,
+            'division_id': event.division_id,
+            'unit': event.unit,
             'org_outcome': event.org_outcome,
             'paps': event.paps,
-            'unit': event.unit
+            'event_title': event.event_title,
+            'event_location': event.event_location,
+            'event_location_lgu': event.event_location_lgu,
+            'event_location_barangay': event.event_location_barangay,
+            'event_location_district': event.event_location_district,
+            'whole_dateEnd_with_time': event.whole_dateEnd_with_time,
+            'whole_dateStart_with_time': event.whole_dateStart_with_time,
+            'event_all_day': event.event_all_day,
+            'event_desc': event.event_desc,
+            'participants': event.participants,
+            'file_attachment': event.file_attachment.url,
+            'event_code': event.event_code,
+
         }
  
         return JsonResponse(response_data)
