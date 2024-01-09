@@ -7,6 +7,11 @@ from django.http import JsonResponse
 from django.db import connection
 from calendars.models import Calendar
 from divisions.models import Division
+from orgoutcomes.models import OrgOutcome
+from paps.models import Pap
+from provinces.models import Province
+from lgus.models import Lgu
+from barangays.models import Barangay
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
@@ -32,10 +37,21 @@ def save_event_ajax(request):
     if request.method == 'POST':
         calendar_id = request.POST.get('calendar_id')
         division_id = request.POST.get('division_id')
+        orgoutcome_id = request.POST.get('orgoutcome_id')
+        pap_id = request.POST.get('pap_id')
+        province_id = request.POST.get('province_id')
+        lgu_id = request.POST.get('lgu_id')
+        barangay_id = request.POST.get('barangay_id')
 
+        # check if the user is logged in
         if request.user:
              calendar = get_object_or_404(Calendar, pk=calendar_id)
              division = get_object_or_404(Division, pk=division_id)
+             orgoutcome = get_object_or_404(OrgOutcome, pk=orgoutcome_id)
+             pap = get_object_or_404(Pap, pk=pap_id)
+             province = get_object_or_404(Province, pk=province_id)
+             lgu = get_object_or_404(Lgu, pk=lgu_id)
+             barangay = get_object_or_404(Barangay, pk=barangay_id)
 
         # set variables to use for multiple records to be saved if the event is recurring
         start_date = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
@@ -63,6 +79,11 @@ def save_event_ajax(request):
             event.whole_date_end = end_date
             event.calendar = calendar
             event.division = division
+            event.orgoutcome = orgoutcome
+            event.pap = pap
+            event.province = province
+            event.lgu = lgu
+            event.barangay = barangay
             # check if the file_attachment field is not empty
             if request.FILES.get('file_attachment') != None:
                 event.file_attachment = request.FILES.get('file_attachment')

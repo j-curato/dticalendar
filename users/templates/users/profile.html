@@ -63,7 +63,7 @@
               <div class="modal-body">
                 <span style="font-weight:bold; color:blue;">Step 1/2</span>
                 <address></address>
-                <form @submit.prevent="saveEventData" enctype="multipart/form-data">
+                <form name="event-form" enctype="multipart/form-data">
                   <!-- <input v-model="formData.calendar_name" type="text" placeholder="Field 1" required> -->
                   <p> <!-- to be created with db table office-->
                     <select name="office" v-model="formData.office" class="form-control form-select" aria-label="Default select example" id="editOffice" required>
@@ -145,7 +145,7 @@
               <div class="modal-body">
                 <span style="font-weight:bold; color:blue;">Step 2/2</span>
                 <address></address>
-                <form @submit.prevent="saveEventData" enctype="multipart/form-data">
+                <form name="event-form" enctype="multipart/form-data">
                   <!-- <input v-model="formData.calendar_desc" type="text" placeholder="Field 2" required> -->
                   <p><input type="text" name="user_id" class="form-control" placeholder="Event title" v-model="formData.user_id" style="display: none;"></p>
                   <p>
@@ -154,7 +154,7 @@
                   </p>
                   <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px;">Location details</span>
                   <p style="padding-top: 7px;">
-                      <select name="event_location" v-model="formData.event_location" @change="updateLGUs" class="form-control form-select" required>
+                      <select name="event_location" v-model="formData.event_location" @change="updateLGUs" class="form-control form-select" id="editLocProv" required>
                         <option value="0">Select Province</option>
                         <!-- use loop to load values from provinceList -->
                         <option v-for="val in provincesListVue" :value="val.id">{[ val.province ]}</option>
@@ -173,10 +173,10 @@
                       <option v-for="val in filteredBarangays" :value="val.id">{[ val.barangay ]}</option>
                     </select>
                   </p>
-                  <p><input type="text" name="event_location_district" class="form-control" v-model="formData.event_location_district" placeholder="District" required></p>
+                  <p><input type="text" name="event_location_district" class="form-control" v-model="formData.event_location_district" placeholder="District" id="editDistrict" required></p>
                   <!-- <p><input type="text" name="event_location_barangay" class="form-control" v-model="formData.event_location_barangay" placeholder="Barangay" required></p> -->
                   <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px;">Time details</span>
-                  <p style="padding-top: 7px;"><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="formData.whole_date_start" @change="updateStartDateFields" @input="updateStartDateFields" required></p>
+                  <p style="padding-top: 7px;"><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="formData.whole_date_start" @change="updateStartDateFields" @input="updateStartDateFields" id="editDateStart" required></p>
                   <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="formData.event_day_start" style="display:none"></p>
                   <p><input type="text" name="event_month_start" class="form-control" placeholder="Month Start"  v-model="formData.event_month_start" style="display:none"></p>
                   <p><input type="text" name="event_year_start" class="form-control" placeholder="Year Start"  v-model="formData.event_year_start" style="display:none"></p>
@@ -184,7 +184,7 @@
                    <p><input type="text" name="whole_date_start_searchable" class="form-control" v-model="formData.whole_date_start_searchable" style="display:none"></p>
                   <!-- <p><input type="time" name="" class="form-control" placeholder="Time start" required></p> -->
                   <p>
-                    <input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="formData.whole_date_end" @change="updateEndDateFields" @input="updateEndDateFields" required>
+                    <input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="formData.whole_date_end" @change="updateEndDateFields" @input="updateEndDateFields" id="editDateEnd" required>
                     <span class="form-check-label" style="font-size: 12px;"><a href="#" @click="checkEventDate">Check date for conflicts</a></span>
                   </p>
                   <p>
@@ -199,15 +199,17 @@
                   <p><input type="text" name="event_year_end" class="form-control" v-model="formData.event_year_end" placeholder="Year end" style="display:none"></p>
                   <p><input type="text" name="event_time_end" class="form-control" v-model="formData.event_time_end" placeholder="Time end" style="display:none"></p>
                   <p><input type="text" name="whole_date_end_searchable" class="form-control" v-model="formData.whole_date_end_searchable" style="display:none"></p>
-                  <p><textarea name="event_desc" class="form-control" v-model="formData.event_desc" placeholder="Add a description" required></textarea></p>
-                  <p><textarea name="participants" class="form-control" v-model="formData.participants" placeholder="Participants" required></textarea></p>
+                  <p><textarea name="event_desc" class="form-control" v-model="formData.event_desc" placeholder="Add a description" id="editEventDesc" required></textarea></p>
+                  <p><textarea name="participants" class="form-control" v-model="formData.participants" placeholder="Participants" id="editParticipants" required></textarea></p>
                   <!-- <p><input type="file" name="file_attachment" v-model="formData.file_attachment" class="form-control"></p> -->
                   <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px;">Optional</span>
-                  <p style="padding-top: 7px;"><input type="file" name="file_attachment" class="form-control" @change="handleFileChange"></p>
-                  
+                  <br>
+                  <span style="font-size:12px">File Attachment: <a href="#"><span id="fileAttachmentName"></span></a></span>
+                  <p style="padding-top: 7px;"><input type="file" name="file_attachment" class="form-control" id="editFileAttachment" @change="handleFileChange"></p>
+                
                   <div class="modal-footer">
-                    <button class="btn btn-primary">Save</button>
-                    <button class="btn btn-primary" style="display:none;">Update</button>
+                    <button class="btn btn-primary" id="saveButton" @click="saveEventData($event)">Save</button>
+                    <button class="btn btn-primary" id="updateButton">Update</button>
                     <button type="button" @click="previousModal" class="btn btn-secondary" data-bs-target="#exampleModalToggle" data-bs-toggle="modal" data-bs-dismiss="modal">Back</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                   </div>

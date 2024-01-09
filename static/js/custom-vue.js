@@ -39,6 +39,7 @@ const app = Vue.createApp({
                 event_location: 0, // Initialize with an empty string
                 event_location_district: '', // Initialize with an empty string
                 event_location_lgu: 0, // Initialize with an empty string
+                lgu_id: 0, // Initialize with zero
                 event_location_barangay: 0, // Initialize with an empty string
                 event_desc: '', // Initialize with an empty string
                 participants: '', // Initialize with an empty string
@@ -144,8 +145,9 @@ const app = Vue.createApp({
          },
 
         // Function to save event data
-        saveEventData() {
-
+        saveEventData(event) {
+            // Prevent the default submit action
+            event.preventDefault();
             // Get the selected Organizational Outcome text
             const orgOutcomeText = this.ooListVue.find(item => item.id === this.formData.org_outcome).org_outcome;
             // Get the selected PAPs text
@@ -162,12 +164,15 @@ const app = Vue.createApp({
             formData.append('division_id', this.formData.division_id);
             formData.append('unit', this.formData.unit);
             formData.append('org_outcome', orgOutcomeText);
+            formData.append('orgoutcome_id', this.formData.org_outcome);
             formData.append('paps', papsText);
+            formData.append('pap_id', this.formData.paps);
             formData.append('calendar_id', 1);
             //formData.append('calendar_id', this.formData.calendar_id);
             formData.append('user_id', this.formData.user_id);
             formData.append('event_title', this.formData.event_title);
             formData.append('event_location', eventLocationText);
+            formData.append('province_id', this.formData.event_location);
             formData.append('event_desc', this.formData.event_desc);
             formData.append('participants', this.formData.participants);
             //formData.append('file_attachment', this.formData.file_attachment); this code is not working because v-model doesn't work for input type files
@@ -191,7 +196,9 @@ const app = Vue.createApp({
             formData.append('division_name', this.formData.division_name);
             formData.append('event_location_district', this.formData.event_location_district);
             formData.append('event_location_lgu', lguText);
+            formData.append('lgu_id', this.formData.event_location_lgu);
             formData.append('event_location_barangay', barangayText);
+            formData.append('barangay_id', this.formData.event_location_barangay);
             // assign 10 randomly generated alphanumeric with special characters to the formData.event_code
             formData.append('event_code', Math.random().toString(36).slice(2));
             formData.append('event_all_day', this.formData.event_all_day);
@@ -218,36 +225,9 @@ const app = Vue.createApp({
                 $('#eventsTable').DataTable().ajax.reload();
                 // Handle a successful response
                 console.log("Event added", data);
-                // reset the form data
-                this.formData.office = 0;
-                this.formData.division_id = 0;
-                this.formData.unit = 0;
-                this.formData.org_outcome = 0;
-                this.formData.paps = 0;
-                this.formData.calendar_id = 0;
-                this.formData.user_id = '';
-                this.formData.event_title = '';
-                this.formData.event_location = 0;
-                this.formData.event_desc = '';
-                this.formData.participants = '';
-                this.formData.file_attachment = null;
-                this.formData.event_day_start = '';
-                this.formData.event_month_start = '';
-                this.formData.event_year_start = '';
-                this.formData.event_time_start = '';
-                this.formData.event_day_end = '';
-                this.formData.event_month_end = '';
-                this.formData.event_year_end = '';
-                this.formData.event_time_end = '';
-                this.formData.whole_date_start = '';
-                this.formData.whole_date_end = '';
-                this.formData.whole_date_start_searchable = '';
-                this.formData.whole_date_end_searchable = '';
-                this.formData.calendar_name = '';
-                this.formData.division_name = '';
-                this.formData.event_location_lgu = 0;
-                this.formData.event_location_barangay = 0;
-                this.formData.event_location_district = '';
+                // reset the form data all at once using one line of code
+                Object.assign(this.formData, this.$options.data().formData);
+                    
                 
             } // end of if (data.message)
             else {
@@ -383,8 +363,10 @@ const app = Vue.createApp({
 
         showModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
-            // $('#myModal').modal('show');
             $("#modal1").modal('show'); // Show the modal on page load
+            $("#updateButton").hide(); // Show the update button
+            $("#saveButton").show(); // Hide the save button
+
         },
         showDivModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
@@ -759,8 +741,8 @@ const app = Vue.createApp({
             }
             
             // Update the date fields
-            //this.updateStartDateFields();
-            //this.updateEndDateFields();
+            this.updateStartDateFields();
+            this.updateEndDateFields();
         }
 
     }, // end of methods
@@ -863,7 +845,7 @@ const app = Vue.createApp({
                 var data = table.row(this).data();
                 // show cursor as pointer when hovering over the table row
                 $('#eventsTable tbody tr').css('cursor', 'pointer');
-                
+               
                 if (data) {
                     console.log('Selected Data:', data.id);
                     //query the database for the event details using the event id and display it in the #editEventModal
@@ -875,22 +857,61 @@ const app = Vue.createApp({
                         },
                         dataType: 'json',
                         success: function (data) {
+                            
+                            // Assuming data.whole_dateStart_with_time is in the format "2024-01-08 09:00:00+08"
+                            
+                            // Assuming data.whole_dateStart_with_time is in the format "2024-01-08 09:00:00+08"
+                            const startDateString = data.whole_dateStart_with_time.replace(' ', 'T'); // Convert to "YYYY-MM-DDTHH:MM:SS+HH:MM" format
+
+                            // Adjusting for time zone offset
+                            const startDate = new Date(startDateString);
+                            const adjustedStartDate = new Date(startDate.getTime() - (startDate.getTimezoneOffset() * 60000)); // Adjusting for local time
+
+                            const endDateString = data.whole_dateEnd_with_time.replace(' ', 'T'); // Convert to "YYYY-MM-DDTHH:MM:SS+HH:MM" format
+
+                            // Adjusting for time zone offset
+                            const endDate = new Date(endDateString);
+                            const adjustedEndDate = new Date(endDate.getTime() - (endDate.getTimezoneOffset() * 60000)); // Adjusting for local time
+
+                            // Formatting the adjusted dates back to "YYYY-MM-DDTHH:MM" format
+                            const formattedStartDate = adjustedStartDate.toISOString().slice(0, 16);
+                            const formattedEndDate = adjustedEndDate.toISOString().slice(0, 16);
+
+                            // Assuming data.file_attachment contains the file path
+                            const fullPath = data.file_attachment; // Replace this with your file path
+                            const fileName = fullPath.split('/').pop(); // Extract the file name from the path
+
                             console.log(data.event_code);
                             //populate the editEventModal with the event details
                             $("#editOffice").val(data.office);
                             $("#division-id").val(data.division_id);
                             $("#editUnit").val(data.unit);
-                            $("#editOrgOutcome").val(data.org_outcome);
-                            $("#editPaps").val(data.paps);
-                            $("#editCalendar-id").val(data.calendar_id);
-                            $("#editUser-id").val(data.user_id);
-                            $("#editEventTitle-id").val(data.event_title);
-                            $("#editEventLocation-id").val(data.event_location);
-                            $("#editEventDesc-id").val(data.event_desc);
-                            $("#editParticipants-id").val(data.participants);
+                            $("#editOrgOutcome").val(data.orgoutcome_id);
+                            $("#editPaps").val(data.pap_id);
+                            $("#event-title-input").val(data.event_title);
+                            $("#editLocProv").val(data.province_id);
+                            $("#event-location-lgu-id").val(data.lgu_id);
+                            $("#event-location-barangay-id").val(data.barangay_id);
+                            $("#editDistrict").val(data.event_location_district);
+                            $("#editDateStart").val(formattedStartDate);
+                            $("#editDateEnd").val(formattedEndDate);
+                            $("#customSwitch").prop('checked', data.event_all_day);
+                            $("#editEventDesc").val(data.event_desc);
+                            $("#editParticipants").val(data.participants);
                             //$("#editWholeDateStart-id").val(data.event_date_start);
                             //$("#editWholeDateEnd-id").val(data.event_date_end);
-                            $("#editFileAttachment-id").text(data.file_attachment); 
+                            $("#editFileAttachment").text(data.file_attachment); 
+                            // Assuming data.file_attachment contains the file name
+                            $("#fileAttachmentName").text(fileName);
+
+                            if (data) {
+                                $("#updateButton").show(); // Show the update button
+                                $("#saveButton").hide(); // Hide the save button
+                            } else {
+                                $("#updateButton").hide(); // Hide the update button
+                                $("#saveButton").show(); // Show the save button
+                            }
+
                             $('#modal1').modal('show');
                         }
                     }); // end of the $.ajax()
