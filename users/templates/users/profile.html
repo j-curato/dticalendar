@@ -64,7 +64,8 @@
                 <span style="font-weight:bold; color:blue;">Step 1/2</span>
                 <address></address>
                 <form name="event-form" enctype="multipart/form-data">
-                  <!-- <input v-model="formData.calendar_name" type="text" placeholder="Field 1" required> -->
+
+                   <input type="text" placeholder="Field 1" id="event-code" required>
                   <p> <!-- to be created with db table office-->
                     <select name="office" v-model="formData.office" class="form-control form-select" aria-label="Default select example" id="editOffice" required>
                     <option value="0">Select Office</option>
@@ -209,7 +210,7 @@
                 
                   <div class="modal-footer">
                     <button class="btn btn-primary" id="saveButton" @click="saveEventData($event)">Save</button>
-                    <button class="btn btn-primary" id="updateButton">Update</button>
+                    <button class="btn btn-primary" id="updateButton" @click="saveEventData($event)">Update</button>
                     <button type="button" @click="previousModal" class="btn btn-secondary" data-bs-target="#exampleModalToggle" data-bs-toggle="modal" data-bs-dismiss="modal">Back</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                   </div>
@@ -221,7 +222,7 @@
           </div>
         </div>
 
-        <div class="modal fade" id="events-modal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
+        <div class="modal fade" id="events-modal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"> 
           <div class="modal-dialog modal-dialog-scrollable modal-dialog-slideout">
               <div class="modal-content">
                   <div class="modal-header">

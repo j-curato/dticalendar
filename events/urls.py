@@ -4,7 +4,7 @@ from . import views
 urlpatterns = [
     #path('api/events/', views.get_events, name='events-api'),
     # save-event-ajax
-    path('save-event-ajax/', views.save_event_ajax, name='save-event-ajax/'),
+    path('save-event-ajax/', views.save_event_ajax_ver2, name='save-event-ajax/'),
     path('get_eventsList/', views.get_eventsList, name='get_eventsList'),
     path('api/get-eventsList/', views.get_eventsListDate, name='get_eventsListDate'),
     path('api/get-event-details/', views.get_event_details, name='get_event_details'),

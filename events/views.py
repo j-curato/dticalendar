@@ -29,10 +29,253 @@ import json
 #     events = Event.objects.all()
 #     serializer = EventSerializer(events, many=True)
 #     return Response(serializer.data)
+@csrf_exempt
+def save_event_ajax(request):
+
+    if request.method == 'POST':
+        # ... (existing code to retrieve IDs)
+        calendar_id = request.POST.get('calendar_id')
+        division_id = request.POST.get('division_id')
+        orgoutcome_id = request.POST.get('orgoutcome_id')
+        pap_id = request.POST.get('pap_id')
+        province_id = request.POST.get('province_id')
+        lgu_id = request.POST.get('lgu_id')
+        barangay_id = request.POST.get('barangay_id')
+
+        # Check if the user is logged in
+        if request.user:
+            calendar = get_object_or_404(Calendar, pk=calendar_id)
+            division = get_object_or_404(Division, pk=division_id)
+            orgoutcome = get_object_or_404(OrgOutcome, pk=orgoutcome_id)
+            pap = get_object_or_404(Pap, pk=pap_id)
+            province = get_object_or_404(Province, pk=province_id)
+            lgu = get_object_or_404(Lgu, pk=lgu_id)
+            barangay = get_object_or_404(Barangay, pk=barangay_id)
+
+        start_date = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
+        end_date = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
+        day_duration = timezone.timedelta(days=1)
+
+        while start_date <= end_date:
+            # Fetch existing events based on event_code
+            event_code = request.POST['event_code']
+            existing_event = Event.objects.filter(event_code=event_code)
+
+            # Update existing event
+            updated_fields = {}
+
+            # ... (check and update fields)
+            if existing_event.whole_date_start_searchable != start_date.strftime("%B %d, %Y"):
+                existing_event.whole_date_start_searchable = start_date.strftime("%B %d, %Y")
+                updated_fields['whole_date_start_searchable'] = existing_event.whole_date_start_searchable
+            
+            if existing_event.event_title != request.POST['event_title'].upper():
+                existing_event.event_title = request.POST['event_title'].upper()
+                updated_fields['event_title'] = existing_event.event_title
+
+            if existing_event.event_desc != request.POST['event_desc'].upper():
+                existing_event.event_desc = request.POST['event_desc'].upper()
+                updated_fields['event_desc'] = existing_event.event_desc
+
+            if existing_event.participants != request.POST['participants'].upper():
+                existing_event.participants = request.POST['participants'].upper()
+                updated_fields['participants'] = existing_event.participants
+
+            if existing_event.event_location != request.POST['event_location'].upper():
+                existing_event.event_location = request.POST['event_location'].upper()
+                updated_fields['event_location'] = existing_event.event_location
+
+            if existing_event.event_day_start != start_date.day:
+                existing_event.event_day_start = start_date.day
+                updated_fields['event_day_start'] = existing_event.event_day_start
+
+            if existing_event.event_month_start != start_date.month:
+                existing_event.event_month_start = start_date.month
+                updated_fields['event_month_start'] = existing_event.event_month_start
+
+            if existing_event.event_year_start != start_date.year:
+                existing_event.event_year_start = start_date.year
+                updated_fields['event_month_start'] = existing_event.event_year_start
+
+            if existing_event.event_time_start != request.POST['event_time_start']:
+                existing_event.event_time_start = request.POST['event_time_start']
+                updated_fields['event_time_start'] = existing_event.event_time_start
+
+            if existing_event.event_day_end != request.POST['event_day_end']:
+                existing_event.event_day_end = request.POST['event_day_end']
+                updated_fields['event_day_end'] = existing_event.event_day_end
+
+            if existing_event.event_month_end != request.POST['event_month_end']:
+                existing_event.event_month_end = request.POST['event_month_end']
+                updated_fields['event_month_end'] = existing_event.event_month_end
+
+            if existing_event.event_year_end != request.POST['event_year_end']:
+                existing_event.event_year_end = request.POST['event_year_end']
+                updated_fields['event_year_end'] = existing_event.event_year_end
+
+            if existing_event.event_time_end != request.POST['event_time_end']:
+                existing_event.event_time_end = request.POST['event_time_end']
+                updated_fields['event_time_end'] = existing_event.event_time_end
+
+            if existing_event.whole_date_start != start_date:
+                existing_event.whole_date_start = start_date
+                updated_fields['whole_date_start'] = existing_event.whole_date_start
+
+            if existing_event.whole_date_end != end_date:
+                existing_event.whole_date_end = end_date
+                updated_fields['whole_date_end'] = existing_event.whole_date_end
+
+            if existing_event.division_id != division:
+                existing_event.division_id = division
+                updated_fields['division_id'] = existing_event.division_id
+
+            if existing_event.orgoutcome_id != orgoutcome:
+                existing_event.orgoutcome_id = orgoutcome
+                updated_fields['orgoutcome_id'] = existing_event.orgoutcome_id
+
+            if existing_event.pap_id != pap:
+                existing_event.pap_id = pap
+                updated_fields['pap_id'] = existing_event.pap_id
+
+            if existing_event.province_id != province:
+                existing_event.province_id = province
+                updated_fields['province_id'] = existing_event.province_id
+
+            if existing_event.barangay_id != barangay:
+                existing_event.barangay_id = barangay
+                updated_fields['barangay_id'] = existing_event.barangay_id
+
+            #filename = os.path.basename(existing_event.file_attachment)
+            if os.path.basename(existing_event.file_attachment) != request.FILES.get('file_attachment'):
+                existing_event.file_attachment = request.FILES.get('file_attachment')
+                updated_fields['file_attachment'] = existing_event.file_attachment
+
+            if existing_event.whole_date_start_searchable != start_date.strftime("%B %d, %Y"):
+                existing_event.whole_date_start_searchable = start_date.strftime("%B %d, %Y")
+                updated_fields['whole_date_start_searchable'] = existing_event.whole_date_start_searchable
+
+            if existing_event.whole_date_end_searchable != request.POST['whole_date_end_searchable']:
+                existing_event.whole_date_end_searchable = request.POST['whole_date_end_searchable']
+                updated_fields['whole_date_end_searchable'] = existing_event.whole_date_end_searchable
+
+            if existing_event.office != request.POST['office'].upper():
+                existing_event.office = request.POST['office'].upper()
+                updated_fields['office'] = existing_event.office
+
+            if existing_event.org_outcome != request.POST['org_outcome'].upper():
+                existing_event.org_outcome = request.POST['org_outcome'].upper()
+                updated_fields['org_outcome'] = existing_event.org_outcome
+
+            if existing_event.paps != request.POST['paps'].upper():
+                existing_event.paps = request.POST['paps'].upper()
+                updated_fields['paps'] = existing_event.paps
+
+            if existing_event.unit != request.POST['unit'].upper():
+                existing_event.unit = request.POST['unit'].upper()
+                updated_fields['unit'] = existing_event.unit
+
+            if existing_event.division_name != request.POST['division_name'].upper():
+                existing_event.division_name = request.POST['division_name'].upper()
+                updated_fields['division_name'] = existing_event.division_name
+
+            if existing_event.whole_dateStart_with_time != timezone.datetime.strptime(start_date.strftime("%Y-%m-%dT%H:%M"), "%Y-%m-%dT%H:%M"):
+                existing_event.whole_dateStart_with_time = timezone.datetime.strptime(start_date.strftime("%Y-%m-%dT%H:%M"), "%Y-%m-%dT%H:%M")
+                updated_fields['whole_dateStart_with_time'] = existing_event.whole_dateStart_with_time
+
+            if existing_event.whole_dateEnd_with_time != timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M"):
+                existing_event.whole_dateEnd_with_time = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
+                updated_fields['whole_dateEnd_with_time'] = existing_event.whole_dateEnd_with_time
+
+            if existing_event.event_location_district != request.POST['event_location_district'].upper():
+                existing_event.event_location_district = request.POST['event_location_district'].upper()
+                updated_fields['event_location_district'] = existing_event.event_location_district
+
+            if existing_event.event_location_lgu != request.POST['event_location_lgu'].upper():
+                existing_event.event_location_lgu = request.POST['event_location_lgu'].upper()
+                updated_fields['event_location_lgu'] = existing_event.event_location_lgu
+
+            if existing_event.event_locatievent_location_barangayon_lgu != request.POST['event_location_barangay'].upper():
+                existing_event.event_location_barangay = request.POST['event_location_barangay'].upper()
+                updated_fields['event_location_barangay'] = existing_event.event_location_barangay
+
+            if existing_event.event_all_day != request.POST['event_all_day']:
+                existing_event.event_all_day = request.POST['event_all_day']
+                updated_fields['event_all_day'] = existing_event.event_all_day
+
+            # Save changes if any
+            if updated_fields:
+                existing_event.save()
+
+            # Create a new event if no existing event with the specified event_code
+            if request.POST['buttontxt'] == 'Save':
+
+                event = Event()
+                # assign to event.user the current logged-in user id
+                event.user = request.user
+                event.event_title = request.POST['event_title'].upper()
+                event.event_desc = request.POST['event_desc'].upper()
+                event.participants = request.POST['participants'].upper()
+                event.event_location = request.POST['event_location'].upper()
+                event.event_day_start = start_date.day
+                event.event_month_start = start_date.month
+                event.event_year_start = start_date.year
+                event.event_time_start = request.POST['event_time_start']
+                event.event_day_end = request.POST['event_day_end']
+                event.event_month_end = request.POST['event_month_end']
+                event.event_year_end = request.POST['event_year_end']
+                event.event_time_end = request.POST['event_time_end']
+                event.whole_date_start = start_date
+                event.whole_date_end = end_date
+                event.calendar = calendar
+                event.division = division
+                event.orgoutcome = orgoutcome
+                event.pap = pap
+                event.province = province
+                event.lgu = lgu
+                event.barangay = barangay
+                # check if the file_attachment field is not empty
+                if request.FILES.get('file_attachment') != None:
+                    event.file_attachment = request.FILES.get('file_attachment')
+                else:
+                    event.file_attachment = 'NONE'
+                
+                #event.file_attachment = request.FILES.get('file_attachment')
+                event.whole_date_start_searchable = start_date.strftime("%B %d, %Y")
+                event.whole_date_end_searchable = request.POST['whole_date_end_searchable']
+                event.office = request.POST['office'].upper()
+                event.org_outcome = request.POST['org_outcome'].upper()
+                event.paps = request.POST['paps'].upper()
+                event.unit = request.POST['unit'].upper()
+                event.division_name = request.POST['division_name'].upper()
+                #event.whole_dateStart_with_time = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
+                event.whole_dateStart_with_time = timezone.datetime.strptime(start_date.strftime("%Y-%m-%dT%H:%M"), "%Y-%m-%dT%H:%M")
+                event.whole_dateEnd_with_time = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
+                event.actual_outcome = "PENDING".upper()
+                event.calendar_name = request.POST['calendar_name'].upper()
+                event.event_location_district = request.POST['event_location_district'].upper()
+                event.event_location_lgu = request.POST['event_location_lgu'].upper()
+                event.event_location_barangay = request.POST['event_location_barangay'].upper()
+                event.event_status = "PENDING".upper()
+                event.expected_outcome = "PENDING".upper()
+                event.event_code = request.POST['event_code']
+                # save a boolean value to event_all_day field
+                if request.POST['event_all_day'] == 'true':
+                    event.event_all_day = True
+                else:
+                    event.event_all_day = False
+
+                event.save()
+
+
+            start_date = start_date + day_duration
+
+        return JsonResponse({'message': 'True'})
+    else:
+        return JsonResponse({'message': 'False'})
 
 # save using ajax
 @csrf_exempt
-def save_event_ajax(request):
+def save_event_ajax_version1(request):
     
     if request.method == 'POST':
         calendar_id = request.POST.get('calendar_id')
@@ -60,6 +303,7 @@ def save_event_ajax(request):
 
         # use while loop to save multiple records if the event is recurring
         while start_date <= end_date:
+
             event = Event()
             # assign to event.user the current logged-in user id
             event.user = request.user
@@ -90,7 +334,6 @@ def save_event_ajax(request):
             else:
                 event.file_attachment = 'NONE'
             
-            #event.file_attachment = request.FILES.get('file_attachment')
             event.whole_date_start_searchable = start_date.strftime("%B %d, %Y")
             event.whole_date_end_searchable = request.POST['whole_date_end_searchable']
             event.office = request.POST['office'].upper()
@@ -98,7 +341,6 @@ def save_event_ajax(request):
             event.paps = request.POST['paps'].upper()
             event.unit = request.POST['unit'].upper()
             event.division_name = request.POST['division_name'].upper()
-            #event.whole_dateStart_with_time = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
             event.whole_dateStart_with_time = timezone.datetime.strptime(start_date.strftime("%Y-%m-%dT%H:%M"), "%Y-%m-%dT%H:%M")
             event.whole_dateEnd_with_time = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
             event.actual_outcome = "PENDING".upper()
@@ -114,9 +356,98 @@ def save_event_ajax(request):
                 event.event_all_day = True
             else:
                 event.event_all_day = False
-            
+
             event.save()
             start_date = start_date + day_duration
+
+        return JsonResponse({'message': 'True'})
+    else:
+        return JsonResponse({'message': 'False'})
+    
+
+@csrf_exempt
+def save_event_ajax_ver2(request):
+    
+    if request.method == 'POST':
+        calendar_id = request.POST.get('calendar_id')
+        division_id = request.POST.get('division_id')
+        orgoutcome_id = request.POST.get('orgoutcome_id')
+        pap_id = request.POST.get('pap_id')
+        province_id = request.POST.get('province_id')
+        lgu_id = request.POST.get('lgu_id')
+        barangay_id = request.POST.get('barangay_id')
+
+        # check if the user is logged in
+        if request.user:
+             calendar = get_object_or_404(Calendar, pk=calendar_id)
+             division = get_object_or_404(Division, pk=division_id)
+             orgoutcome = get_object_or_404(OrgOutcome, pk=orgoutcome_id)
+             pap = get_object_or_404(Pap, pk=pap_id)
+             province = get_object_or_404(Province, pk=province_id)
+             lgu = get_object_or_404(Lgu, pk=lgu_id)
+             barangay = get_object_or_404(Barangay, pk=barangay_id)
+
+        # set variables to use for multiple records to be saved if the event is recurring
+        start_date = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
+        end_date = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
+        #day_duration = timezone.timedelta(days=1)
+
+        # use while loop to save multiple records if the event is recurring
+        
+        event = Event()
+        # assign to event.user the current logged-in user id
+        event.user = request.user
+        event.event_title = request.POST['event_title'].upper()
+        event.event_desc = request.POST['event_desc'].upper()
+        event.participants = request.POST['participants'].upper()
+        event.event_location = request.POST['event_location'].upper()
+        event.event_day_start = start_date.day
+        event.event_month_start = start_date.month
+        event.event_year_start = start_date.year
+        event.event_time_start = request.POST['event_time_start']
+        event.event_day_end = request.POST['event_day_end']
+        event.event_month_end = request.POST['event_month_end']
+        event.event_year_end = request.POST['event_year_end']
+        event.event_time_end = request.POST['event_time_end']
+        event.whole_date_start = start_date
+        event.whole_date_end = end_date
+        event.calendar = calendar
+        event.division = division
+        event.orgoutcome = orgoutcome
+        event.pap = pap
+        event.province = province
+        event.lgu = lgu
+        event.barangay = barangay
+        # check if the file_attachment field is not empty
+        if request.FILES.get('file_attachment') != None:
+            event.file_attachment = request.FILES.get('file_attachment')
+        else:
+            event.file_attachment = 'NONE'
+        
+        event.whole_date_start_searchable = start_date.strftime("%B %d, %Y")
+        event.whole_date_end_searchable = request.POST['whole_date_end_searchable']
+        event.office = request.POST['office'].upper()
+        event.org_outcome = request.POST['org_outcome'].upper()
+        event.paps = request.POST['paps'].upper()
+        event.unit = request.POST['unit'].upper()
+        event.division_name = request.POST['division_name'].upper()
+        event.whole_dateStart_with_time = timezone.datetime.strptime(start_date.strftime("%Y-%m-%dT%H:%M"), "%Y-%m-%dT%H:%M")
+        event.whole_dateEnd_with_time = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
+        event.actual_outcome = "PENDING".upper()
+        event.calendar_name = request.POST['calendar_name'].upper()
+        event.event_location_district = request.POST['event_location_district'].upper()
+        event.event_location_lgu = request.POST['event_location_lgu'].upper()
+        event.event_location_barangay = request.POST['event_location_barangay'].upper()
+        event.event_status = "PENDING".upper()
+        event.expected_outcome = "PENDING".upper()
+        event.event_code = request.POST['event_code']
+        # save a boolean value to event_all_day field
+        if request.POST['event_all_day'] == 'true':
+            event.event_all_day = True
+        else:
+            event.event_all_day = False
+
+        event.save()
 
         return JsonResponse({'message': 'True'})
     else:

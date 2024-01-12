@@ -51,6 +51,7 @@ const app = Vue.createApp({
                 user_id: '', // Initialize with an empty string
                 calendar_id: 0, // Initialize with an empty string
                 event_all_day: false, // Initialize with false
+                event_code: '',
             }, // end of formData
             // initialize the Org Outcome form data
             orgFormData: {
@@ -148,6 +149,20 @@ const app = Vue.createApp({
         saveEventData(event) {
             // Prevent the default submit action
             event.preventDefault();
+            // Get the button elements by their IDs
+            const saveButton = document.getElementById('saveButton');
+            const updateButton = document.getElementById('updateButton');
+
+            // Retrieve the text content of the clicked button
+            let buttonText = '';
+            if (event.target === saveButton) {
+                buttonText = saveButton.textContent;
+            } else if (event.target === updateButton) {
+                buttonText = updateButton.textContent;
+            }
+
+            console.log("Button text:", buttonText.trim()); // Ensure to trim any whitespace
+            
             // Get the selected Organizational Outcome text
             const orgOutcomeText = this.ooListVue.find(item => item.id === this.formData.org_outcome).org_outcome;
             // Get the selected PAPs text
@@ -160,6 +175,7 @@ const app = Vue.createApp({
             const barangayText = this.barangayListVue.find(item => item.id === this.formData.event_location_barangay).barangay;
             
             const formData = new FormData();
+            formData.append('buttontxt', buttonText);
             formData.append('office', this.formData.office);
             formData.append('division_id', this.formData.division_id);
             formData.append('unit', this.formData.unit);
@@ -200,7 +216,11 @@ const app = Vue.createApp({
             formData.append('event_location_barangay', barangayText);
             formData.append('barangay_id', this.formData.event_location_barangay);
             // assign 10 randomly generated alphanumeric with special characters to the formData.event_code
-            formData.append('event_code', Math.random().toString(36).slice(2));
+            if (buttonText == 'Save'){
+                formData.append('event_code', Math.random().toString(36).slice(2));
+            }else{
+                formData.append('event_code', formData.event_code);
+            }
             formData.append('event_all_day', this.formData.event_all_day);
             
             // ajax call to save the event data
@@ -750,6 +770,7 @@ const app = Vue.createApp({
 
         var table; //declare the table variable globally
         var tableEvents; //declare the table variable globally
+        const self = this;
 
         $(function() {
 
@@ -841,7 +862,7 @@ const app = Vue.createApp({
             }); // end of the $('#eventsTable').DataTable()
 
             $('#eventsTable tbody').on('click', 'tr', function () {
-
+                
                 var data = table.row(this).data();
                 // show cursor as pointer when hovering over the table row
                 $('#eventsTable tbody tr').css('cursor', 'pointer');
@@ -881,8 +902,9 @@ const app = Vue.createApp({
                             const fullPath = data.file_attachment; // Replace this with your file path
                             const fileName = fullPath.split('/').pop(); // Extract the file name from the path
 
-                            console.log(data.event_code);
+                            //console.log(data.event_code);
                             //populate the editEventModal with the event details
+                            $("#event-code").val(data.event_code);
                             $("#editOffice").val(data.office);
                             $("#division-id").val(data.division_id);
                             $("#editUnit").val(data.unit);
@@ -913,6 +935,8 @@ const app = Vue.createApp({
                             }
 
                             $('#modal1').modal('show');
+                            const eventcode = $("#event-code").val();
+                            self.formData.event_code = eventcode;
                         }
                     }); // end of the $.ajax()
                 }
