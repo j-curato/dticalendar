@@ -363,6 +363,7 @@ def save_event_ajax_version1(request):
 def save_event_ajax_ver2(request):
     
     if request.method == 'POST':
+
         calendar_id = request.POST.get('calendar_id')
         division_id = request.POST.get('division_id')
         orgoutcome_id = request.POST.get('orgoutcome_id')
@@ -370,6 +371,7 @@ def save_event_ajax_ver2(request):
         province_id = request.POST.get('province_id')
         lgu_id = request.POST.get('lgu_id')
         barangay_id = request.POST.get('barangay_id')
+       
 
         # check if the user is logged in
         if request.user:
@@ -385,8 +387,8 @@ def save_event_ajax_ver2(request):
         start_date = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
         end_date = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
         #day_duration = timezone.timedelta(days=1)
-
-        # use while loop to save multiple records if the event is recurring
+     
+    if request.POST['buttontxt'] == 'Save':
         
         event = Event()
         # assign to event.user the current logged-in user id
@@ -441,12 +443,27 @@ def save_event_ajax_ver2(request):
         else:
             event.event_all_day = False
 
-        event.save()
-
-        return JsonResponse({'message': 'True'})
+        if event.save():
+            return JsonResponse({'message': 'True'})
+        else:
+            return JsonResponse({'message': 'False'})
+            
     else:
-        return JsonResponse({'message': 'False'})
-    
+            evenpID = request.POST['pID']
+            existing_event = Event.objects.get(pk=evenpID)
+            updated_fields = {}
+
+            if existing_event.event_title != request.POST['event_title'].upper():
+                existing_event.event_title = request.POST['event_title'].upper()
+                updated_fields['event_title'] = existing_event.event_title
+
+                existing_event.update(**updated_fields)
+
+                return JsonResponse({'message': 'True'})
+            else:
+                return JsonResponse({'message': 'False'})
+
+
     # method to fetch the event table data and display it in the following field order - whole_date_start_searchable, event_title, office.
     # but the office data is divided into 5 fields that is based on its values. Namely: RO, ADN, ADS, SDN, SDS and PDI
     # display the data in event_display.html

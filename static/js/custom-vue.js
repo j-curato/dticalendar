@@ -52,6 +52,7 @@ const app = Vue.createApp({
                 calendar_id: 0, // Initialize with an empty string
                 event_all_day: false, // Initialize with false
                 event_code: '',
+                event_pid: 0
             }, // end of formData
             // initialize the Org Outcome form data
             orgFormData: {
@@ -136,7 +137,7 @@ const app = Vue.createApp({
             // Optionally, you can show the selected file's name to the user
             //this.selectedFileName = selectedFile.name;
             //this.selectedFileName = selectedFile ? selectedFile.name : '';
-          },
+          }, 
 
           // function to handle event title change, keyup and click on autocomplete
           handleEventTitleText(event) {
@@ -153,119 +154,144 @@ const app = Vue.createApp({
             const saveButton = document.getElementById('saveButton');
             const updateButton = document.getElementById('updateButton');
 
+            const orgOutcomeText = this.ooListVue.find(item => item.id === Number(this.formData.org_outcome))?.org_outcome;
+
+            const papsText = this.papsListVue.find(item => item.id === this.formData.paps)?.pap;
+            const eventLocationText = this.provincesListVue.find(item => item.id === this.formData.event_location)?.province;
+            const lguText = this.lguListVue.find(item => item.id === this.formData.event_location_lgu)?.lgu;
+            const barangayText = this.barangayListVue.find(item => item.id === this.formData.event_location_barangay)?.barangay;
+
             // Retrieve the text content of the clicked button
             let buttonText = '';
+
             if (event.target === saveButton) {
+
                 buttonText = saveButton.textContent;
+                    
+                    const formData = new FormData();
+                    formData.append('buttontxt', buttonText);
+                    formData.append('office', this.formData.office);
+                    formData.append('division_id', this.formData.division_id);
+                    formData.append('unit', this.formData.unit);
+                    formData.append('org_outcome', orgOutcomeText);
+                    formData.append('orgoutcome_id', this.formData.org_outcome);
+                    formData.append('paps', papsText);
+                    formData.append('pap_id', this.formData.paps);
+                    formData.append('calendar_id', 1);
+                    //formData.append('calendar_id', this.formData.calendar_id);
+                    formData.append('user_id', this.formData.user_id);
+                    formData.append('event_title', this.formData.event_title);
+                    formData.append('event_location', eventLocationText);
+                    formData.append('province_id', this.formData.event_location);
+                    formData.append('event_desc', this.formData.event_desc);
+                    formData.append('participants', this.formData.participants);
+                    //formData.append('file_attachment', this.formData.file_attachment); this code is not working because v-model doesn't work for input type files
+                    // Handle the file input separately
+                    //formData.append('file_attachment', this.$refs.file_attachment.files[0]);
+                    formData.append('file_attachment', this.formData.file_attachment);
+                    formData.append('event_day_start', this.formData.event_day_start);
+                    formData.append('event_month_start', this.formData.event_month_start);
+                    formData.append('event_year_start', this.formData.event_year_start);
+                    formData.append('event_time_start', this.formData.event_time_start);
+                    formData.append('event_day_end', this.formData.event_day_end);
+                    formData.append('event_month_end', this.formData.event_month_end);
+                    formData.append('event_year_end', this.formData.event_year_end);
+                    formData.append('event_time_end', this.formData.event_time_end);
+                    formData.append('whole_date_start', this.formData.whole_date_start);
+                    formData.append('whole_date_end', this.formData.whole_date_end);
+                    formData.append('whole_date_start_searchable', this.formData.whole_date_start_searchable);
+                    formData.append('whole_date_end_searchable', this.formData.whole_date_end_searchable);
+                    formData.append('calendar_name', "DTI Calendar");
+                    //formData.append('calendar_name', this.formData.calendar_name);
+                    formData.append('division_name', this.formData.division_name);
+                    formData.append('event_location_district', this.formData.event_location_district);
+                    formData.append('event_location_lgu', lguText);
+                    formData.append('lgu_id', this.formData.event_location_lgu);
+                    formData.append('event_location_barangay', barangayText);
+                    formData.append('barangay_id', this.formData.event_location_barangay);
+                    // assign 10 randomly generated alphanumeric with special characters to the formData.event_code
+                    if (buttonText == 'Save'){
+                        formData.append('event_code', Math.random().toString(36).slice(2));
+                    }else{
+                        formData.append('event_code', formData.event_code);
+                    }
+                    formData.append('event_all_day', this.formData.event_all_day);
+                    
+                    // ajax call to save the event data
+                    fetch("/events/save-event-ajax/", {
+                        method: "POST",
+                        body: formData,
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("Network response was not ok");
+                        }
+                        return response.json(); // Assuming the server returns JSON data
+                    })
+                    .then(data => {
+                        // if message is true, then show the toast notification
+                        if (data.message) {
+                        // call the showToast() method and change the toast message to "Event saved successfully!"
+                        this.message = "Event created successfully!";
+                        // call the showToast() method to show the toast notification
+                        this.showToast();
+                        // refresh the server-side datatables events table
+                        $('#eventsTable').DataTable().ajax.reload();
+                        // Handle a successful response
+                        console.log("Event added", data);
+                        // reset the form data all at once using one line of code
+                        Object.assign(this.formData, this.$options.data().formData);
+                            
+                        
+                    } // end of if (data.message)
+                    else {
+                        // Handle a failed response
+                        console.log("Data save failed:", data);     
+                    }
+                    
+                }) // end of the first .then()
+
+                    .catch(error => {
+                        // Handle errors
+                        console.error("Error while saving data:", error);
+                    });
+
             } else if (event.target === updateButton) {
+
                 buttonText = updateButton.textContent;
+                console.log("wowowee");
+                console.log(orgOutcomeText);
+                console.log("this.ooListVue:", this.ooListVue);
+                console.log(this.formData.org_outcome);
+                console.log(this.formData.event_pid);
+                console.log(this.formData.event_title);
+                console.log(this.formData.office);
+                console.log(this.formData.division_id);
+                console.log(this.formData.unit);
+                console.log(this.formData.org_outcome);
+                console.log(this.formData.paps);
+                console.log(this.formData.event_location);
+                console.log(this.formData.event_location_lgu); 
+                console.log(this.formData.event_location_barangay);
+                console.log(this.formData.event_location_district);
+                console.log(this.formData.whole_date_start);
+                console.log(this.formData.whole_date_end);
+                console.log(this.formData.event_all_day);
+                console.log(this.formData.event_desc);
+                console.log(this.formData.participants);
+                console.log(this.formData.file_attachment);
+
             }
 
             console.log("Button text:", buttonText.trim()); // Ensure to trim any whitespace
             
-            // Get the selected Organizational Outcome text
-            const orgOutcomeText = this.ooListVue.find(item => item.id === this.formData.org_outcome).org_outcome;
-            // Get the selected PAPs text
-            const papsText = this.papsListVue.find(item => item.id === this.formData.paps).pap;
-            // get the selected event location text
-            const eventLocationText = this.provincesListVue.find(item => item.id === this.formData.event_location).province;
-            // get the selected lgu text
-            const lguText = this.lguListVue.find(item => item.id === this.formData.event_location_lgu).lgu;
-            // get the selected barangay text
-            const barangayText = this.barangayListVue.find(item => item.id === this.formData.event_location_barangay).barangay;
             
-            const formData = new FormData();
-            formData.append('buttontxt', buttonText);
-            formData.append('office', this.formData.office);
-            formData.append('division_id', this.formData.division_id);
-            formData.append('unit', this.formData.unit);
-            formData.append('org_outcome', orgOutcomeText);
-            formData.append('orgoutcome_id', this.formData.org_outcome);
-            formData.append('paps', papsText);
-            formData.append('pap_id', this.formData.paps);
-            formData.append('calendar_id', 1);
-            //formData.append('calendar_id', this.formData.calendar_id);
-            formData.append('user_id', this.formData.user_id);
-            formData.append('event_title', this.formData.event_title);
-            formData.append('event_location', eventLocationText);
-            formData.append('province_id', this.formData.event_location);
-            formData.append('event_desc', this.formData.event_desc);
-            formData.append('participants', this.formData.participants);
-            //formData.append('file_attachment', this.formData.file_attachment); this code is not working because v-model doesn't work for input type files
-            // Handle the file input separately
-            //formData.append('file_attachment', this.$refs.file_attachment.files[0]);
-            formData.append('file_attachment', this.formData.file_attachment);
-            formData.append('event_day_start', this.formData.event_day_start);
-            formData.append('event_month_start', this.formData.event_month_start);
-            formData.append('event_year_start', this.formData.event_year_start);
-            formData.append('event_time_start', this.formData.event_time_start);
-            formData.append('event_day_end', this.formData.event_day_end);
-            formData.append('event_month_end', this.formData.event_month_end);
-            formData.append('event_year_end', this.formData.event_year_end);
-            formData.append('event_time_end', this.formData.event_time_end);
-            formData.append('whole_date_start', this.formData.whole_date_start);
-            formData.append('whole_date_end', this.formData.whole_date_end);
-            formData.append('whole_date_start_searchable', this.formData.whole_date_start_searchable);
-            formData.append('whole_date_end_searchable', this.formData.whole_date_end_searchable);
-            formData.append('calendar_name', "DTI Calendar");
-            //formData.append('calendar_name', this.formData.calendar_name);
-            formData.append('division_name', this.formData.division_name);
-            formData.append('event_location_district', this.formData.event_location_district);
-            formData.append('event_location_lgu', lguText);
-            formData.append('lgu_id', this.formData.event_location_lgu);
-            formData.append('event_location_barangay', barangayText);
-            formData.append('barangay_id', this.formData.event_location_barangay);
-            // assign 10 randomly generated alphanumeric with special characters to the formData.event_code
-            if (buttonText == 'Save'){
-                formData.append('event_code', Math.random().toString(36).slice(2));
-            }else{
-                formData.append('event_code', formData.event_code);
-            }
-            formData.append('event_all_day', this.formData.event_all_day);
-            
-            // ajax call to save the event data
-            fetch("/events/save-event-ajax/", {
-                method: "POST",
-                body: formData,
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Network response was not ok");
-                }
-                return response.json(); // Assuming the server returns JSON data
-            })
-            .then(data => {
-                // if message is true, then show the toast notification
-                if (data.message) {
-                // call the showToast() method and change the toast message to "Event saved successfully!"
-                this.message = "Event created successfully!";
-                // call the showToast() method to show the toast notification
-                this.showToast();
-                // refresh the server-side datatables events table
-                $('#eventsTable').DataTable().ajax.reload();
-                // Handle a successful response
-                console.log("Event added", data);
-                // reset the form data all at once using one line of code
-                Object.assign(this.formData, this.$options.data().formData);
-                    
-                
-            } // end of if (data.message)
-            else {
-                // Handle a failed response
-                console.log("Data save failed:", data);
-            }
-            
-           }) // end of the first .then()
 
-            .catch(error => {
-                // Handle errors
-                console.error("Error while saving data:", error);
-            });
         }, // end of saveEventData() function
 
         // Function to load datatable with the selected id="dtioffice"
         loadFiltDatatable() {
-            var tablevar;
+            var tablevar; m
             // get the selected office id
             var officeId = $("#dtioffice option:selected").val();
             //Datatables serverside for displaying events
@@ -904,7 +930,7 @@ const app = Vue.createApp({
 
                             //console.log(data.event_code);
                             //populate the editEventModal with the event details
-                            $("#event-code").val(data.event_code);
+                            $("#event-id").val(data.id);
                             $("#editOffice").val(data.office);
                             $("#division-id").val(data.division_id);
                             $("#editUnit").val(data.unit);
@@ -935,8 +961,44 @@ const app = Vue.createApp({
                             }
 
                             $('#modal1').modal('show');
-                            const eventcode = $("#event-code").val();
-                            self.formData.event_code = eventcode;
+                            const eventpID = $("#event-id").val();
+                            const eventTitle = $("#event-title-input").val();
+                            const eventOffice = $("#editOffice").val();
+                            const eventDivision = $("#division-id").val();
+                            const eventUnit = $("#editUnit").val();
+                            const eventOo = $("#editOrgOutcome").val();
+                            const eventpap = $("#editPaps").val();
+                            const eventLocation = $("#editLocProv").val();
+                            const eventLgu = $("#event-location-lgu-id").val();
+                            const eventBrgy = $("#event-location-barangay-id").val();
+                            const eventDistrict = $("#editDistrict").val();
+                            const eventDateStart = $("#editDateStart").val();
+                            const eventDateEnd = $("#editDateEnd").val();
+                            const eventAllDay = $("#customSwitch").val();
+                            const eventDesc = $("#editEventDesc").val();
+                            const eventParticipants = $("#editParticipants").val();
+                            const eventfile = $("#fileAttachmentName").text(fileName);
+
+
+                            self.formData.event_pid = eventpID;
+                            self.formData.event_title = eventTitle;
+                            self.formData.office = eventOffice;
+                            self.formData.division_id = eventDivision;
+                            self.formData.unit = eventUnit;
+                            self.formData.org_outcome = eventOo;
+                            self.formData.paps = eventpap;
+                            self.formData.event_location = eventLocation;
+                            self.formData.event_location_lgu = eventLgu;
+                            self.formData.event_location_barangay = eventBrgy;
+                            self.formData.event_location_district = eventDistrict;
+                            self.formData.whole_date_start = eventDateStart;
+                            self.formData.whole_date_end = eventDateEnd;
+                            self.formData.event_all_day = eventAllDay;
+                            self.formData.event_desc = eventDesc;
+                            self.formData.participants = eventParticipants;
+                            self.formData.file_attachment = eventfile;
+
+                           
                         }
                     }); // end of the $.ajax()
                 }
