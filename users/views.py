@@ -248,6 +248,18 @@ def get_event_details_to_edit(request):
             'participants': event.participants,
             'file_attachment': event.file_attachment.url,
             'event_code': event.event_code,
+            'event_day_start': event.event_day_start,
+            'event_month_start': event.event_month_start,
+            'event_year_start': event.event_year_start,
+            'event_time_start': event.event_time_start,
+            'event_day_end': event.event_day_end,
+            'event_month_end': event.event_month_end,
+            'event_year_end': event.event_year_end,
+            'event_time_end': event.event_time_end,
+            'whole_date_start': event.whole_date_start,
+            'whole_date_end': event.whole_date_end,
+            'whole_date_start_searchable': event.whole_date_start_searchable,
+            'whole_date_end_searchable': event.whole_date_end_searchable
 
         }
  

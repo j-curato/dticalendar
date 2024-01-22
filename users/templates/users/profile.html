@@ -53,7 +53,7 @@
 
         <!-- vue.js 2 modal test -->
 
-        <div class="modal fade" id="modal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
+        <div class="modal fade" id="modal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
           <div class="modal-dialog modal-dialog-slideout">
             <div class="modal-content">
               <div class="modal-header">
@@ -65,7 +65,7 @@
                 <address></address>
                 <form name="event-form" enctype="multipart/form-data">
 
-                  <input type="text" placeholder="Field 1" id="event-id" required>
+                  <input type="text" placeholder="Field 1" id="event-id" style="display:none;" required>
                   <p> <!-- to be created with db table office-->
                     <select name="office" v-model="formData.office" class="form-control form-select" aria-label="Default select example" id="editOffice" required>
                     <option value="0">Select Office</option>
@@ -87,7 +87,7 @@
 
                  <p>
                   <!-- <input type="text" name="division_name" id="division-name-id" v-model="formData.division_name" class="form-control" placeholder="Division Name" required> -->
-                  <input type="text" name="division_name" id="division-name-id" v-model="formData.division_name" class="form-control" placeholder="Division Name" style="display: none;"required>
+                  <input type="text" name="division_name" id="division-name-id" v-model="formData.division_name" class="form-control" placeholder="Division Name" style="display:none;" required>
                  </p>
 
                   <p> <!-- to be created with db table unit-->
@@ -136,7 +136,7 @@
           </div>  
         </div>
       
-        <div class="modal fade" id="modal2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
+        <div class="modal fade" id="modal2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
           <div class="modal-dialog modal-dialog-slideout">
             <div class="modal-content">
               <div class="modal-header">
@@ -178,11 +178,11 @@
                   <!-- <p><input type="text" name="event_location_barangay" class="form-control" v-model="formData.event_location_barangay" placeholder="Barangay" required></p> -->
                   <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px;">Time details</span>
                   <p style="padding-top: 7px;"><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="formData.whole_date_start" @change="updateStartDateFields" @input="updateStartDateFields" id="editDateStart" required></p>
-                  <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="formData.event_day_start" style="display:none"></p>
-                  <p><input type="text" name="event_month_start" class="form-control" placeholder="Month Start"  v-model="formData.event_month_start" style="display:none"></p>
-                  <p><input type="text" name="event_year_start" class="form-control" placeholder="Year Start"  v-model="formData.event_year_start" style="display:none"></p>
-                  <p><input type="text" name="event_time_start" class="form-control" placeholder="Time Start"  v-model="formData.event_time_start" style="display:none"></p>
-                   <p><input type="text" name="whole_date_start_searchable" class="form-control" v-model="formData.whole_date_start_searchable" style="display:none"></p>
+                  <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="formData.event_day_start" id="editDayStart" style="display:none;"></p>
+                  <p><input type="text" name="event_month_start" class="form-control" placeholder="Month Start"  v-model="formData.event_month_start" id="editMonthStart" style="display:none;"></p>
+                  <p><input type="text" name="event_year_start" class="form-control" placeholder="Year Start"  v-model="formData.event_year_start" id="editYearStart" style="display:none;"></p>
+                  <p><input type="text" name="event_time_start" class="form-control" placeholder="Time Start"  v-model="formData.event_time_start" id="editTimeStart" style="display:none;"></p>
+                   <p><input type="text" name="whole_date_start_searchable" class="form-control" v-model="formData.whole_date_start_searchable" id="editDStartSearchable" style="display:none;"></p>
                   <!-- <p><input type="time" name="" class="form-control" placeholder="Time start" required></p> -->
                   <p>
                     <input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="formData.whole_date_end" @change="updateEndDateFields" @input="updateEndDateFields" id="editDateEnd" required>
@@ -195,11 +195,11 @@
                     </label>
                   </p>
                   <!-- <p><input type="time" name="" class="form-control" placeholder="Time end" required></p> -->
-                  <p><input type="text" name="event_day_end" class="form-control" v-model="formData.event_day_end" placeholder="Day End" style="display:none"></p>
-                  <p><input type="text" name="event_month_end" class="form-control" v-model="formData.event_month_end" placeholder="Month End" style="display:none"></p>
-                  <p><input type="text" name="event_year_end" class="form-control" v-model="formData.event_year_end" placeholder="Year end" style="display:none"></p>
-                  <p><input type="text" name="event_time_end" class="form-control" v-model="formData.event_time_end" placeholder="Time end" style="display:none"></p>
-                  <p><input type="text" name="whole_date_end_searchable" class="form-control" v-model="formData.whole_date_end_searchable" style="display:none"></p>
+                  <p><input type="text" name="event_day_end" class="form-control" v-model="formData.event_day_end" placeholder="Day End" id="editDayEnd" style="display:none;"></p>
+                  <p><input type="text" name="event_month_end" class="form-control" v-model="formData.event_month_end" placeholder="Month End" id="editMonthEnd" style="display:none;"></p>
+                  <p><input type="text" name="event_year_end" class="form-control" v-model="formData.event_year_end" placeholder="Year end" id="editYearEnd" style="display:none;"></p>
+                  <p><input type="text" name="event_time_end" class="form-control" v-model="formData.event_time_end" placeholder="Time end" id="editTimeEnd" style="display:none;"></p>
+                  <p><input type="text" name="whole_date_end_searchable" class="form-control" v-model="formData.whole_date_end_searchable" id="editDEndSearchable" style="display:none;"></p>
                   <p><textarea name="event_desc" class="form-control" v-model="formData.event_desc" placeholder="Add a description" id="editEventDesc" required></textarea></p>
                   <p><textarea name="participants" class="form-control" v-model="formData.participants" placeholder="Participants" id="editParticipants" required></textarea></p>
                   <!-- <p><input type="file" name="file_attachment" v-model="formData.file_attachment" class="form-control"></p> -->
@@ -212,7 +212,7 @@
                     <button class="btn btn-primary" id="saveButton" @click="saveEventData($event)">Save</button>
                     <button class="btn btn-primary" id="updateButton" @click="saveEventData($event)">Update</button>
                     <button type="button" @click="previousModal" class="btn btn-secondary" data-bs-target="#exampleModalToggle" data-bs-toggle="modal" data-bs-dismiss="modal">Back</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeButton">Close</button>
                   </div>
                   
                 </form>

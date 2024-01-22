@@ -154,17 +154,21 @@ const app = Vue.createApp({
             const saveButton = document.getElementById('saveButton');
             const updateButton = document.getElementById('updateButton');
 
-            const orgOutcomeText = this.ooListVue.find(item => item.id === Number(this.formData.org_outcome))?.org_outcome;
-
-            const papsText = this.papsListVue.find(item => item.id === this.formData.paps)?.pap;
-            const eventLocationText = this.provincesListVue.find(item => item.id === this.formData.event_location)?.province;
-            const lguText = this.lguListVue.find(item => item.id === this.formData.event_location_lgu)?.lgu;
-            const barangayText = this.barangayListVue.find(item => item.id === this.formData.event_location_barangay)?.barangay;
-
             // Retrieve the text content of the clicked button
             let buttonText = '';
 
             if (event.target === saveButton) {
+
+            // Get the selected Organizational Outcome text
+            const orgOutcomeText = this.ooListVue.find(item => item.id === this.formData.org_outcome).org_outcome;
+            // Get the selected PAPs text
+            const papsText = this.papsListVue.find(item => item.id === this.formData.paps).pap;
+            // get the selected event location text
+            const eventLocationText = this.provincesListVue.find(item => item.id === this.formData.event_location).province;
+            // get the selected lgu text
+            const lguText = this.lguListVue.find(item => item.id === this.formData.event_location_lgu).lgu;
+            // get the selected barangay text
+            const barangayText = this.barangayListVue.find(item => item.id === this.formData.event_location_barangay).barangay;
 
                 buttonText = saveButton.textContent;
                     
@@ -202,7 +206,6 @@ const app = Vue.createApp({
                     formData.append('whole_date_start_searchable', this.formData.whole_date_start_searchable);
                     formData.append('whole_date_end_searchable', this.formData.whole_date_end_searchable);
                     formData.append('calendar_name', "DTI Calendar");
-                    //formData.append('calendar_name', this.formData.calendar_name);
                     formData.append('division_name', this.formData.division_name);
                     formData.append('event_location_district', this.formData.event_location_district);
                     formData.append('event_location_lgu', lguText);
@@ -232,7 +235,7 @@ const app = Vue.createApp({
                         // if message is true, then show the toast notification
                         if (data.message) {
                         // call the showToast() method and change the toast message to "Event saved successfully!"
-                        this.message = "Event created successfully!";
+                        this.message = "Event Added!";
                         // call the showToast() method to show the toast notification
                         this.showToast();
                         // refresh the server-side datatables events table
@@ -240,8 +243,22 @@ const app = Vue.createApp({
                         // Handle a successful response
                         console.log("Event added", data);
                         // reset the form data all at once using one line of code
-                        Object.assign(this.formData, this.$options.data().formData);
-                            
+                        //Object.assign(this.formData, this.$options.data().formData);
+
+                        $("#editOffice").val(0);
+                        $("#division-id").val(0);
+                        $("#division-name-id").val(" ");
+                        $("#editUnit").val(0);
+                        $("#editOrgOutcome").val(0);
+                        $("#editPaps").val(0);
+                        $("#event-title-input").val(" ");
+                        $("#editLocProv").val(0);
+                        $("#event-location-lgu-id").val(0);
+                        $("#event-location-barangay-id").val(0);
+                        $("#editDistrict").val(" ");
+                        $("#customSwitch").prop('checked',false);
+                        $("#editEventDesc").val(" ");
+                        $("#editParticipants").val(" ");    
                         
                     } // end of if (data.message)
                     else {
@@ -258,34 +275,137 @@ const app = Vue.createApp({
 
             } else if (event.target === updateButton) {
 
+                const orgOutcomeTextEdit = this.ooListVue.find(item => item.id === Number(this.formData.org_outcome))?.org_outcome;
+                const papsTextEdit = this.papsListVue.find(item => item.id === Number(this.formData.paps))?.pap;
+                const eventLocationTextEdit = this.provincesListVue.find(item => item.id === Number(this.formData.event_location))?.province;
+                const lguTextEdit = this.lguListVue.find(item => item.id === Number(this.formData.event_location_lgu))?.lgu;
+                const barangayTextEdit = this.barangayListVue.find(item => item.id === Number(this.formData.event_location_barangay))?.barangay;
+
                 buttonText = updateButton.textContent;
-                console.log("wowowee");
-                console.log(orgOutcomeText);
-                console.log("this.ooListVue:", this.ooListVue);
-                console.log(this.formData.org_outcome);
-                console.log(this.formData.event_pid);
-                console.log(this.formData.event_title);
-                console.log(this.formData.office);
-                console.log(this.formData.division_id);
-                console.log(this.formData.unit);
-                console.log(this.formData.org_outcome);
-                console.log(this.formData.paps);
-                console.log(this.formData.event_location);
-                console.log(this.formData.event_location_lgu); 
-                console.log(this.formData.event_location_barangay);
-                console.log(this.formData.event_location_district);
-                console.log(this.formData.whole_date_start);
-                console.log(this.formData.whole_date_end);
-                console.log(this.formData.event_all_day);
-                console.log(this.formData.event_desc);
-                console.log(this.formData.participants);
-                console.log(this.formData.file_attachment);
+                    
+                    const formData = new FormData();
+                    formData.append('buttontxt', buttonText);
+                    formData.append('pID', this.formData.event_pid);
+                    formData.append('office', this.formData.office);
+                    formData.append('division_id', this.formData.division_id);
+                    formData.append('unit', this.formData.unit);
+                    formData.append('org_outcome', orgOutcomeTextEdit);
+                    formData.append('orgoutcome_id', this.formData.org_outcome);
+                    formData.append('paps', papsTextEdit);
+                    formData.append('pap_id', this.formData.paps);
+                    formData.append('calendar_id', 1);
+                    //formData.append('calendar_id', this.formData.calendar_id);
+                    formData.append('user_id', this.formData.user_id);
+                    formData.append('event_title', this.formData.event_title);
+                    formData.append('event_location', eventLocationTextEdit);
+                    formData.append('province_id', this.formData.event_location);
+                    formData.append('event_desc', this.formData.event_desc);
+                    formData.append('participants', this.formData.participants);
+                    //formData.append('file_attachment', this.formData.file_attachment); this code is not working because v-model doesn't work for input type files
+                    // Handle the file input separately
+                    //formData.append('file_attachment', this.$refs.file_attachment.files[0]);
+                    formData.append('file_attachment', this.formData.file_attachment);
+                    formData.append('event_day_start', this.formData.event_day_start);
+                    formData.append('event_month_start', this.formData.event_month_start);
+                    formData.append('event_year_start', this.formData.event_year_start);
+                    formData.append('event_time_start', this.formData.event_time_start);
+                    formData.append('event_day_end', this.formData.event_day_end);
+                    formData.append('event_month_end', this.formData.event_month_end);
+                    formData.append('event_year_end', this.formData.event_year_end);
+                    formData.append('event_time_end', this.formData.event_time_end);
+                    formData.append('whole_date_start', this.formData.whole_date_start);
+                    formData.append('whole_date_end', this.formData.whole_date_end);
+                    formData.append('whole_date_start_searchable', this.formData.whole_date_start_searchable);
+                    formData.append('whole_date_end_searchable', this.formData.whole_date_end_searchable);
+                    formData.append('calendar_name', "DTI Calendar");
+                    formData.append('division_name', this.formData.division_name);
+                    formData.append('event_location_district', this.formData.event_location_district);
+                    formData.append('event_location_lgu', lguTextEdit);
+                    formData.append('lgu_id', this.formData.event_location_lgu);
+                    formData.append('event_location_barangay', barangayTextEdit);
+                    formData.append('barangay_id', this.formData.event_location_barangay);
+                    // assign 10 randomly generated alphanumeric with special characters to the formData.event_code
+                    if (buttonText == 'Save'){
+                        formData.append('event_code', Math.random().toString(36).slice(2));
+                    }else{
+                        formData.append('event_code', formData.event_code);
+                    }
+                    formData.append('event_all_day', this.formData.event_all_day);
+                    
+                    // ajax call to save the event data
+                    fetch("/events/save-event-ajax/", {
+                        method: "POST",
+                        body: formData,
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("Network response was not ok");
+                        }
+                        return response.json(); // Assuming the server returns JSON data
+                    })
+                    .then(data => {
+                        // if message is true, then show the toast notification
+                        if (data.message) {
+                        // call the showToast() method and change the toast message to "Event saved successfully!"
+                        this.message = "Event Updated!";
+                        // call the showToast() method to show the toast notification
+                        this.showToast();
+                        // refresh the server-side datatables events table
+                        $('#eventsTable').DataTable().ajax.reload();
+                        // Handle a successful response
+                        console.log("Event added", data);
+                        // reset the form data all at once using one line of code
+                        //Object.assign(this.formData, this.$options.data().formData);
+                        
+                    } // end of if (data.message)
+                    else {
+                        // Handle a failed response
+                        console.log("Data save failed:", data);     
+                    }
+                    
+                }) // end of the first .then()
+
+                    .catch(error => {
+                        // Handle errors
+                        console.error("Error while saving data:", error);
+                    });
+
+		        // console.log("this.ooListVue:", this.ooListVue);
+                // console.log(this.formData.org_outcome);
+                // console.log(this.formData.event_pid);
+                // console.log(this.formData.event_title);
+                // console.log(this.formData.office);
+                // console.log(this.formData.division_id);
+                // console.log(this.formData.unit);
+                // console.log(this.formData.org_outcome);
+                // console.log(this.formData.paps);
+                // console.log(this.formData.event_location);
+                // console.log(this.formData.event_location_lgu); 
+                // console.log(this.formData.event_location_barangay);
+                // console.log(this.formData.event_location_district);
+                // console.log(this.formData.whole_date_start);
+                // console.log(this.formData.whole_date_end);
+                // console.log(this.formData.event_all_day);
+                // console.log(this.formData.event_desc);
+                // console.log(this.formData.participants);
+                // console.log(this.formData.event_day_start);
+                // console.log(this.formData.event_month_start);
+                // console.log(this.formData.event_year_start);
+                // console.log(this.formData.event_time_start);
+                // console.log(this.formData.whole_date_start_searchable);
+                // console.log(this.formData.event_day_end);
+                // console.log(this.formData.event_month_end);
+                // console.log(this.formData.event_year_end);
+                // console.log(this.formData.event_time_end);
+                // console.log(this.formData.whole_date_end_searchable);
+
+            }else{
+
+                console.log('Nothing in here');    
 
             }
 
             console.log("Button text:", buttonText.trim()); // Ensure to trim any whitespace
-            
-            
 
         }, // end of saveEventData() function
 
@@ -412,6 +532,13 @@ const app = Vue.createApp({
             $("#modal1").modal('show'); // Show the modal on page load
             $("#updateButton").hide(); // Show the update button
             $("#saveButton").show(); // Hide the save button
+            // Initialize the date property with the current date and time in Manila, Philippines (UTC+8)
+            const now = new Date();
+            const manilaOffset = 8 * 60; // UTC+8 offset for Manila
+            now.setMinutes(now.getMinutes() + manilaOffset);
+            const isoDate = now.toISOString().slice(0, 16); // Format: "YYYY-MM-DDTHH:mm"
+            $("#editDateStart").val(isoDate);
+            $("#editDateEnd").val(isoDate);
 
         },
         showDivModal() {
@@ -800,6 +927,26 @@ const app = Vue.createApp({
 
         $(function() {
 
+            document.getElementById('closeButton').addEventListener('click', function () {
+
+                $("#editOffice").val(0);
+                $("#division-id").val(0);
+                $("#division-name-id").val("");
+                $("#editUnit").val(0);
+                $("#editOrgOutcome").val(0);
+                $("#editPaps").val(0);
+                $("#event-title-input").val("");
+                $("#editLocProv").val(0);
+                $("#event-location-lgu-id").val(0);
+                $("#event-location-barangay-id").val(0);
+                $("#editDistrict").val("");
+                $("#customSwitch").prop('checked',false);
+                $("#editEventDesc").val("");
+                $("#editParticipants").val("");     
+                document.getElementById('fileAttachmentName').textContent = '';
+
+            });
+
             $("#event-title-input, #editEventTitle-id").autocomplete({
                 source: 'suggest_event_titles',
                 minLength: 1,  // Minimum number of characters before triggering autocomplete
@@ -926,7 +1073,7 @@ const app = Vue.createApp({
 
                             // Assuming data.file_attachment contains the file path
                             const fullPath = data.file_attachment; // Replace this with your file path
-                            const fileName = fullPath.split('/').pop(); // Extract the file name from the path
+                            const editFileName = fullPath.split('/').pop(); // Extract the file name from the path
 
                             //console.log(data.event_code);
                             //populate the editEventModal with the event details
@@ -949,8 +1096,19 @@ const app = Vue.createApp({
                             //$("#editWholeDateStart-id").val(data.event_date_start);
                             //$("#editWholeDateEnd-id").val(data.event_date_end);
                             $("#editFileAttachment").text(data.file_attachment); 
+                            $("#editDayStart").val(data.event_day_start);
+                            $("#editMonthStart").val(data.event_month_start);
+                            $("#editYearStart").val(data.event_year_start);
+                            $("#editTimeStart").val(data.event_time_start);
+                            $("#editDStartSearchable").val(data.whole_date_start_searchable);
+                            $("#editDayEnd").val(data.event_day_end);
+                            $("#editMonthEnd").val(data.event_month_end);
+                            $("#editYearEnd").val(data.event_year_end);
+                            $("#editTimeEnd").val(data.event_time_end);
+                            $("#editDEndSearchable").val(data.whole_date_end_searchable);
+                            $("#division-name-id").val(data.division_name);
                             // Assuming data.file_attachment contains the file name
-                            $("#fileAttachmentName").text(fileName);
+                            $("#fileAttachmentName").text(editFileName);
 
                             if (data) {
                                 $("#updateButton").show(); // Show the update button
@@ -965,6 +1123,7 @@ const app = Vue.createApp({
                             const eventTitle = $("#event-title-input").val();
                             const eventOffice = $("#editOffice").val();
                             const eventDivision = $("#division-id").val();
+                            const eventDivName = $("#division-name-id").val();
                             const eventUnit = $("#editUnit").val();
                             const eventOo = $("#editOrgOutcome").val();
                             const eventpap = $("#editPaps").val();
@@ -974,16 +1133,26 @@ const app = Vue.createApp({
                             const eventDistrict = $("#editDistrict").val();
                             const eventDateStart = $("#editDateStart").val();
                             const eventDateEnd = $("#editDateEnd").val();
-                            const eventAllDay = $("#customSwitch").val();
+                            const eventAllDay = $("#customSwitch").prop('checked');
                             const eventDesc = $("#editEventDesc").val();
                             const eventParticipants = $("#editParticipants").val();
-                            const eventfile = $("#fileAttachmentName").text(fileName);
-
+                            //const eventfile = $("#fileAttachmentName").text(fileName);
+                            const eventDayStart = $("#editDayStart").val();
+                            const eventMonthStart = $("#editMonthStart").val();
+                            const eventYearStart = $("#editYearStart").val();
+                            const eventTimeStart = $("#editTimeStart").val();
+                            const eventDateStartSearchable = $("#editDStartSearchable").val();
+                            const eventDayEnd = $("#editDayEnd").val();
+                            const eventMonthEnd = $("#editMonthEnd").val();
+                            const eventYearEnd = $("#editYearEnd").val();
+                            const eventTimeEnd = $("#editTimeEnd").val();
+                            const eventDateEndSearchable = $("#editDEndSearchable").val();
 
                             self.formData.event_pid = eventpID;
                             self.formData.event_title = eventTitle;
                             self.formData.office = eventOffice;
                             self.formData.division_id = eventDivision;
+                            self.formData.division_name = eventDivName;
                             self.formData.unit = eventUnit;
                             self.formData.org_outcome = eventOo;
                             self.formData.paps = eventpap;
@@ -996,7 +1165,17 @@ const app = Vue.createApp({
                             self.formData.event_all_day = eventAllDay;
                             self.formData.event_desc = eventDesc;
                             self.formData.participants = eventParticipants;
-                            self.formData.file_attachment = eventfile;
+                            self.formData.file_attachment = editFileName;
+                            self.formData.event_day_start = eventDayStart;
+                            self.formData.event_month_start = eventMonthStart;
+                            self.formData.event_year_start = eventYearStart;
+                            self.formData.event_time_start = eventTimeStart;
+                            self.formData.whole_date_start_searchable = eventDateStartSearchable;
+                            self.formData.event_day_end = eventDayEnd;
+                            self.formData.event_month_end = eventMonthEnd;
+                            self.formData.event_year_end = eventYearEnd;
+                            self.formData.event_time_end = eventTimeEnd;
+                            self.formData.whole_date_end_searchable = eventDateEndSearchable;
 
                            
                         }
