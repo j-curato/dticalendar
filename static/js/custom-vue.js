@@ -157,6 +157,8 @@ const app = Vue.createApp({
             // Retrieve the text content of the clicked button
             let buttonText = '';
 
+            console.log('c');
+
             if (event.target === saveButton) {
 
             // Get the selected Organizational Outcome text
@@ -368,36 +370,7 @@ const app = Vue.createApp({
                     .catch(error => {
                         // Handle errors
                         console.error("Error while saving data:", error);
-                    });
-
-		        // console.log("this.ooListVue:", this.ooListVue);
-                // console.log(this.formData.org_outcome);
-                // console.log(this.formData.event_pid);
-                // console.log(this.formData.event_title);
-                // console.log(this.formData.office);
-                // console.log(this.formData.division_id);
-                // console.log(this.formData.unit);
-                // console.log(this.formData.org_outcome);
-                // console.log(this.formData.paps);
-                // console.log(this.formData.event_location);
-                // console.log(this.formData.event_location_lgu); 
-                // console.log(this.formData.event_location_barangay);
-                // console.log(this.formData.event_location_district);
-                // console.log(this.formData.whole_date_start);
-                // console.log(this.formData.whole_date_end);
-                // console.log(this.formData.event_all_day);
-                // console.log(this.formData.event_desc);
-                // console.log(this.formData.participants);
-                // console.log(this.formData.event_day_start);
-                // console.log(this.formData.event_month_start);
-                // console.log(this.formData.event_year_start);
-                // console.log(this.formData.event_time_start);
-                // console.log(this.formData.whole_date_start_searchable);
-                // console.log(this.formData.event_day_end);
-                // console.log(this.formData.event_month_end);
-                // console.log(this.formData.event_year_end);
-                // console.log(this.formData.event_time_end);
-                // console.log(this.formData.whole_date_end_searchable);
+                    }); 
 
             }else{
 
@@ -539,6 +512,14 @@ const app = Vue.createApp({
             const isoDate = now.toISOString().slice(0, 16); // Format: "YYYY-MM-DDTHH:mm"
             $("#editDateStart").val(isoDate);
             $("#editDateEnd").val(isoDate);
+
+            this.formData.event_title = '';
+            this.formData.event_desc = '';
+            this.formData.participants = '';
+
+            console.log(this.formData.event_title);
+            console.log(this.formData.event_desc);
+            console.log(this.formData.participants);
 
         },
         showDivModal() {
@@ -850,18 +831,57 @@ const app = Vue.createApp({
             },
 
         // Function to fetch events data based on formData.whole_date_start and formData.whole_date_end
-        checkEventDate() {
+        checkEventDate(event) {
 
+                event.stopPropagation();
                 // show modal with id="events-modal" and show it on top of another modal with id="modal2"
                 $('#events-modal').modal({backdrop: 'static', keyboard: false});
                 $('#events-modal').modal('show');
 
-                // get the formData.whole_date_start and formData.whole_date_end values
-                var startDate = this.formData.whole_date_start;
-                var endDate = this.formData.whole_date_end;
-                //remove time from the date 2024-01-19T14:37
-                var startDate = startDate.split('T')[0];
-                var endDate = endDate.split('T')[0];
+                 // show modal with id="events-modal" and show it on top of another modal with id="modal2"
+                 $('#events-modal').modal({backdrop: 'static', keyboard: false});
+                 $('#events-modal').modal('show');
+ 
+                 // get the formData.whole_date_start and formData.whole_date_end values
+                 var startDate = this.formData.whole_date_start;
+                 var endDate = this.formData.whole_date_end;
+                 //remove time from the date 2024-01-19T14:37
+                 var startDate = startDate.split('T')[0];
+                 var endDate = endDate.split('T')[0];
+
+                // var saveButton = document.getElementById('saveButton');
+                // var displayPropertyValue = saveButton.style.display;
+                // if(displayPropertyValue === 'none'){
+
+                //console.log('Update function');
+                     // get the formData.whole_date_start and formData.whole_date_end values
+                    // var startDateUpdate = this.formData.whole_date_start;
+                    // var endDateUpdate = this.formData.whole_date_end;
+                    //remove time from the date 2024-01-19T14:37
+                    // var startDate = startDateUpdate.split('T')[0];
+                    // var endDate = endDateUpdate.split('T')[0];
+                    // console.log(startDate);
+                    // console.log(endDate);
+                // }else{
+
+                //     console.log('Save function');
+                //     // Initialize the date property with the current date and time in Manila, Philippines (UTC+8)
+                //     const now = new Date();
+                //     const manilaOffset = 8 * 60; // UTC+8 offset for Manila
+                //     now.setMinutes(now.getMinutes() + manilaOffset);
+                //     const isoDate = now.toISOString().slice(0, 16); // Format: "YYYY-MM-DDTHH:mm"
+                //     this.formData.whole_date_start = isoDate;
+                //     this.formData.whole_date_end = isoDate;
+
+                //     // get the formData.whole_date_start and formData.whole_date_end values
+                //     var startDateSave = this.formData.whole_date_start;
+                //     var endDateSave = this.formData.whole_date_end;
+                //     //remove time from the date 2024-01-19T14:37
+                //     var startDate = startDateSave.split('T')[0];
+                //     var endDate = endDateSave.split('T')[0];
+                //     console.log(startDate);
+                //     console.log(endDate);
+                // }
 
                 // ajax call to fetch the events data with startDate and endDate as parameters
                 fetch('/events/api/get-eventsList/', {
@@ -875,7 +895,7 @@ const app = Vue.createApp({
                 .then(data => {
                     this.eventsListVue = data;      
                 })
-                .catch(error => {
+                .catch(error => { 
                     console.error('Error fetching data:', error);
                 });
                 
@@ -916,7 +936,14 @@ const app = Vue.createApp({
             // Update the date fields
             this.updateStartDateFields();
             this.updateEndDateFields();
-        }
+        },
+
+        resetFormData() {
+            // Reset the form data to initial values
+            Object.assign(this.formData, this.$options.data().formData);
+            // Alternatively, you can reset the form using the form reference
+            this.$refs.eventForm.reset();
+         },
 
     }, // end of methods
     mounted() {
@@ -929,6 +956,9 @@ const app = Vue.createApp({
 
             document.getElementById('closeButton').addEventListener('click', function () {
 
+                console.log('a');
+
+                $("#event-id").val("");
                 $("#editOffice").val(0);
                 $("#division-id").val(0);
                 $("#division-name-id").val("");
@@ -1035,7 +1065,9 @@ const app = Vue.createApp({
             }); // end of the $('#eventsTable').DataTable()
 
             $('#eventsTable tbody').on('click', 'tr', function () {
-                
+
+                console.log('b');
+
                 var data = table.row(this).data();
                 // show cursor as pointer when hovering over the table row
                 $('#eventsTable tbody tr').css('cursor', 'pointer');

@@ -65,7 +65,7 @@
                 <address></address>
                 <form name="event-form" enctype="multipart/form-data">
 
-                  <input type="text" placeholder="Field 1" id="event-id" style="display:none;" required>
+                  <input type="text" placeholder="Field 1" id="event-id" style="" required>
                   <p> <!-- to be created with db table office-->
                     <select name="office" v-model="formData.office" class="form-control form-select" aria-label="Default select example" id="editOffice" required>
                     <option value="0">Select Office</option>
@@ -186,7 +186,7 @@
                   <!-- <p><input type="time" name="" class="form-control" placeholder="Time start" required></p> -->
                   <p>
                     <input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="formData.whole_date_end" @change="updateEndDateFields" @input="updateEndDateFields" id="editDateEnd" required>
-                    <span class="form-check-label" style="font-size: 12px;"><a href="#" @click="checkEventDate">Check date for conflicts</a></span>
+                    <span class="form-check-label" style="font-size: 12px;"><a href="#" @click="checkEventDate($event)">Check date for conflicts</a></span>
                   </p>
                   <p>
                     <label class="form-check form-switch">
@@ -212,7 +212,7 @@
                     <button class="btn btn-primary" id="saveButton" @click="saveEventData($event)">Save</button>
                     <button class="btn btn-primary" id="updateButton" @click="saveEventData($event)">Update</button>
                     <button type="button" @click="previousModal" class="btn btn-secondary" data-bs-target="#exampleModalToggle" data-bs-toggle="modal" data-bs-dismiss="modal">Back</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeButton">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeButton" @click="resetFormData">Close</button>
                   </div>
                   
                 </form>
