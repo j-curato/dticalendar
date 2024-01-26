@@ -234,7 +234,7 @@
                       <p>Participants: {[ event.participants ]}</p>
                       <p>Location: {[ event.event_location ]}</p>
                       <p>Office: {[ event.office ]}</p>
-                      <p>Date: {[ event.whole_date_start_searchable ]}</p>
+                      <p>Date: {[ event.whole_date_start_searchable ]} - {[ event.whole_date_end_searchable ]}</p>
                       <p>Attachment: 
                         <a :href="`/events/download/${event.id}`" download>{[ extractFileName(event.file_attachment) ]}</a>
                       </p>
@@ -264,7 +264,7 @@
                                 <option value="0">Filter by</option>
                                 <option value="office">Office</option>
                                 <option value="division">Division</option>
-                                <option value="unit">Unit</option>
+                                <!-- <option value="unit">Unit</option> -->
                             </select>
                         </p>
                     </div>

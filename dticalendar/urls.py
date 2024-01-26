@@ -23,6 +23,7 @@ urlpatterns = [
     path('employees/', include('employees.urls')),
     path('users/', include('users.urls')),
     path('', include('divisions.urls')),
+    path('units/', include('units.urls')),
     path('', include('calendars.urls')),
     path('get_events/', get_events, name='get_events'),
     path('get_event_details_to_edit/', get_event_details_to_edit, name='get_event_details_to_edit'),

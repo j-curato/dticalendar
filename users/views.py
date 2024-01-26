@@ -124,10 +124,9 @@ def profile(request):
     # load Province object from the database into provinceList variable sorted in ascending order
     provinceList = Province.objects.all().order_by('province_name')
     #calList = Calendar.objects.all()
-    #divList = Division.objects.all()
+    divList = Division.objects.all()
     
-
-    return render(request, 'users/profile.html', {'eventsList': events, 'ooList': ooList, 'papList': papsList, 'provinceList': provinceList, 'msgvar': msgvar, 'txturl': txturl})
+    return render(request, 'users/profile.html', {'eventsList': events, 'ooList': ooList, 'papList': papsList, 'provinceList': provinceList, 'divList': divList, 'msgvar': msgvar, 'txturl': txturl})
 
 
 # method to display event details using datatable server side processing
@@ -144,13 +143,12 @@ def get_events(request):
         order_column_index = int(request.GET.get('order[0][column]', 0))
         order_direction = request.GET.get('order[0][dir]', 'asc')
 
-        
         # Print the values for debugging
         print("order_column_index:", order_column_index)
         print("order_direction:", order_direction)
 
          # Define the columns you want to search on
-        columns = ['id', 'event_title', 'event_desc', 'office', 'division_name', 'unit', 'whole_date_start_searchable', 'whole_date_end_searchable']
+        columns = ['id', 'event_title', 'event_desc', 'office', 'division_name', 'unit_name', 'whole_date_start_searchable', 'whole_date_end_searchable']
 
         #Create a Q object for filtering based on the search_value in all columns
         search_filter = Q()
@@ -193,7 +191,7 @@ def get_events(request):
                 'event_desc': event.event_desc,
                 'office': event.office,
                 'division_name': event.division_name,
-                'unit': event.unit,
+                'unit_name': event.unit_name,
                 # get the file_attachment download url
                 'file_attachment': event.file_attachment.url,
                 # whole date start format should be like January 01, 2023
@@ -217,6 +215,7 @@ def get_event_details_to_edit(request):
     try:
         # Get the event ID from the GET parameters
         event_id = request.GET.get('event_id')
+        division_name = request.GET.get('division_name')
 
         # Get the event details from the database
         event = Event.objects.get(pk=event_id)
@@ -233,7 +232,7 @@ def get_event_details_to_edit(request):
             'province_id': event.province_id,
             'lgu_id': event.lgu_id,
             'barangay_id': event.barangay_id,
-            'unit': event.unit,
+            'unit_id': event.unit_id,
             'org_outcome': event.org_outcome,
             'paps': event.paps,
             'event_title': event.event_title,

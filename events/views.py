@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.db import connection
 from calendars.models import Calendar
 from divisions.models import Division
+from units.models import Unit
 from orgoutcomes.models import OrgOutcome
 from paps.models import Pap
 from provinces.models import Province
@@ -371,6 +372,7 @@ def save_event_ajax_ver2(request):
         province_id = request.POST.get('province_id')
         lgu_id = request.POST.get('lgu_id')
         barangay_id = request.POST.get('barangay_id')
+        unit_id = request.POST.get('unit')
        
 
         # check if the user is logged in
@@ -382,6 +384,7 @@ def save_event_ajax_ver2(request):
              province = get_object_or_404(Province, pk=province_id)
              lgu = get_object_or_404(Lgu, pk=lgu_id)
              barangay = get_object_or_404(Barangay, pk=barangay_id)
+             unit = get_object_or_404(Unit, pk=unit_id)
 
         # set variables to use for multiple records to be saved if the event is recurring
         start_date = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
@@ -425,7 +428,8 @@ def save_event_ajax_ver2(request):
         event.office = request.POST['office'].upper()
         event.org_outcome = request.POST['org_outcome'].upper()
         event.paps = request.POST['paps'].upper()
-        event.unit = request.POST['unit'].upper()
+        event.unit = unit
+        event.unit_name = request.POST['unit_name'].upper()
         event.division_name = request.POST['division_name'].upper()
         event.whole_dateStart_with_time = timezone.datetime.strptime(start_date.strftime("%Y-%m-%dT%H:%M"), "%Y-%m-%dT%H:%M")
         event.whole_dateEnd_with_time = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
@@ -514,6 +518,10 @@ def save_event_ajax_ver2(request):
             existing_event.division_id = division
             updated_fields['division_id'] = existing_event.division_id
 
+        if existing_event.unit_id != unit:
+            existing_event.unit_id = unit
+            updated_fields['unit_id'] = existing_event.unit_id
+
         if existing_event.orgoutcome_id != orgoutcome:
             existing_event.orgoutcome_id = orgoutcome
             updated_fields['orgoutcome_id'] = existing_event.orgoutcome_id
@@ -550,9 +558,9 @@ def save_event_ajax_ver2(request):
             existing_event.paps = request.POST['paps'].upper()
             updated_fields['paps'] = existing_event.paps
 
-        if existing_event.unit != request.POST['unit'].upper():
-            existing_event.unit = request.POST['unit'].upper()
-            updated_fields['unit'] = existing_event.unit
+        if existing_event.unit_name != request.POST['unit_name'].upper():
+            existing_event.unit_name = request.POST['unit_name'].upper()
+            updated_fields['unit_name'] = existing_event.unit_name
 
         if existing_event.division_name != request.POST['division_name'].upper():
             existing_event.division_name = request.POST['division_name'].upper()
@@ -678,7 +686,7 @@ def fetch_events_ajax(request):
             SELECT 
                 generated_date,
                 office,
-                STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit, '*', event_time_start, '*', event_time_end), ', ') AS event_titles
+                STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), ', ') AS event_titles
             FROM (
                 SELECT 
                     generate_series(whole_date_start::date, whole_date_end::date, '1 day'::interval)::date AS generated_date,
@@ -686,7 +694,7 @@ def fetch_events_ajax(request):
                     event_title,
                     id,
                     division_name,
-                    unit,
+                    unit_name,
                     event_time_start,
                     event_time_end
                 FROM events_event
@@ -749,80 +757,104 @@ def load_unit_datatbl_html(request):
     divisions = Division.objects.all()
     return render(request, 'events/events_display_unit.html', {'divisions': divisions, 'txturl': txturl, 'officetxt': officetxt, 'divtxt': divtxt})
 
+
 def fetch_events_by_div_ajax(request):
     try:
         draw = int(request.GET.get('draw', 1))
         start = int(request.GET.get('start', 0))
         length = int(request.GET.get('length', 10))
         search_value = request.GET.get('search[value]', '')
-        #office_txt = request.GET.get('office', '')
 
-        # Define the columns you want to search on
-        # columns = ['whole_date_start_searchable']
-        columns = ['whole_date_start_searchable', 'ORD', 'OARD', 'SDD', 'IDD', 'CPD', 'FAD', 'MSSD']
+        # Fetch unique division names from the database
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT DISTINCT division_name FROM divisions_division")
+            division_names = [row[0] for row in cursor.fetchall()]
 
-        query = """
-        SELECT whole_date_start,
-            whole_date_start_searchable,
-            MAX(CASE WHEN division_name = 'ORD' THEN event_titles END) AS ORD,
-            MAX(CASE WHEN division_name = 'OARD' THEN event_titles END) AS OARD,
-            MAX(CASE WHEN division_name = 'SDD' THEN event_titles END) AS SDD,
-            MAX(CASE WHEN division_name = 'IDD' THEN event_titles END) AS IDD,
-            MAX(CASE WHEN division_name = 'CPD' THEN event_titles END) AS CPD,
-            MAX(CASE WHEN division_name = 'FAD' THEN event_titles END) AS FAD,
-            MAX(CASE WHEN division_name = 'MSSD' THEN event_titles END) AS MSSD
-        FROM (
-            SELECT whole_date_start,
-                whole_date_start_searchable,
-                division_name,
-                STRING_AGG(event_title, ', ') AS event_titles, office
-            FROM events_event
-            WHERE office = %s
-            GROUP BY whole_date_start, whole_date_start_searchable, division_name, office
-        ) AS subquery
-        GROUP BY whole_date_start, whole_date_start_searchable
-        ORDER BY 1;
+        # Generate the dynamic part of the SQL query based on the columns
+        columns_sql = ", ".join([
+            f"MAX(CASE WHEN division_name = '{col}' THEN event_titles END) AS {col}" for col in division_names
+        ])
+
+        query = f"""
+            SELECT
+                generated_date,
+                TO_CHAR(generated_date, 'FMMonth DD, YYYY') AS whole_date_start_searchable,
+                {columns_sql}
+            FROM (
+                SELECT
+                    generated_date,
+                    division_name,
+                    STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), ', ') AS event_titles
+                FROM (
+                    SELECT
+                        generate_series(whole_date_start::date, whole_date_end::date, '1 day'::interval)::date AS generated_date,
+                        division_name,
+                        event_title,
+                        id,
+                        unit_name,
+                        event_time_start,
+                        event_time_end
+                    FROM events_event
+                    WHERE office = %s
+                ) AS date_series
+                GROUP BY generated_date, division_name
+            ) AS subquery
+            GROUP BY generated_date
+            ORDER BY generated_date;
         """
 
         with connection.cursor() as cursor:
             cursor.execute(query, [request.GET.get('office')])
             result = cursor.fetchall()
 
-        # Convert the result into a list of dictionaries
+        # Convert the result into a list of dictionaries with dynamic keys
         data = []
         for row in result:
-            data.append({
-                'whole_date_start': row[0].strftime('%Y-%m-%d'),  # Format as needed
-                'whole_date_start_searchable': row[1],
-                'ORD': row[2],
-                'OARD': row[3],
-                'SDD': row[4],
-                'IDD': row[5],
-                'CPD': row[6],
-                'FAD': row[7],
-                'MSSD': row[8]
-                # Add more fields as needed
-            })
+            data_row = {'whole_date_start': row[0].strftime('%Y-%m-%d')}  # Format as needed
+
+            if isinstance(row[1], str):  # Check if row[1] is a string
+                data_row['whole_date_start_searchable'] = row[1]
+            else:
+                data_row['whole_date_start_searchable'] = row[1].strftime('%B %d, %Y')  # Format whole_date_start_searchable
+
+            data_row.update(zip(division_names, row[2:]))  # Update dynamically using zip
+            data.append(data_row)
 
         # Apply the search filter to the data
-        # filtered_data = [entry for entry in data if any(search_value.lower() in entry[col].lower() for col in columns)]
+        # Apply the search filter to the data
         filtered_data = [
             entry for entry in data if any(
-                search_value.lower() in (str(entry[col]).lower() if entry[col] is not None else '') for col in columns
+                search_value.lower() in (str(entry[col]).lower() if entry[col] is not None else '') 
+                for col in ['whole_date_start_searchable'] + division_names
             )
         ]
 
+
+        # Generate the columns array with search information
+        # Generate the columns array with search information
+        columns = [{'data': 'whole_date_start', 'name': '', 'searchable': True, 'orderable': True, 'search': {} }]
+        columns.append({'data': 'whole_date_start_searchable', 'name': '', 'searchable': True, 'orderable': True, 'search': {'value': search_value} })
+        columns += [{'data': col, 'name': '', 'searchable': True, 'orderable': True, 'search': {} } for col in division_names]
+
         response_data = {
             'draw': draw,
+            'columns': columns,
+            'order': [],  # You may need to populate this based on user interaction
+            'start': start,
+            'length': length,
             'recordsTotal': len(data),
             'recordsFiltered': len(filtered_data),
             'data': filtered_data[start:start + length]
         }
 
+
+
         return JsonResponse(response_data)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-    
+
+
+
     # get events by unit
 def fetch_events_by_unit_ajax(request):
     try:

@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'employees',
-    'calendars',
+    'calendars',   
     'divisions',
     'events',
     'users',
@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'provinces',
     'lgus',
     'barangays',
+    'units'
 ]
 
 MIDDLEWARE = [

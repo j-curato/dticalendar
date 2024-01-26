@@ -2,6 +2,7 @@ from django.db import models
 from employees.models import Employee
 from calendars.models import Calendar
 from divisions.models import Division
+from units.models import Unit
 from orgoutcomes.models import OrgOutcome
 from paps.models import Pap
 from provinces.models import Province
@@ -18,7 +19,8 @@ class Event(models.Model):
 	office = models.CharField(max_length=500, null=True, blank=True)
 	division = models.ForeignKey(Division, on_delete=models.CASCADE)
 	division_name = models.CharField(max_length=500, null=True, blank=True)
-	unit = models.CharField(max_length=500, null=True, blank=True)
+	unit_name = models.CharField(max_length=500, null=True, blank=True)
+	unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
 	paps = models.CharField(max_length=500, null=True, blank=True)
 	orgoutcome = models.ForeignKey(OrgOutcome, on_delete=models.CASCADE, default=0)
 	pap = models.ForeignKey(Pap, on_delete=models.CASCADE, default=0)

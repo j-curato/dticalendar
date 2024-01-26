@@ -35,8 +35,9 @@
       {% endif %}
 
         <button @click="showModal" class="btn btn-primary"><i class="bi bi-calendar-event"></i> New Event</button>&nbsp;
-        <button @click="showCalModal" class="btn btn-primary"><i class="bi bi-calendar-check"></i> Calendar Category</button>&nbsp;
+        <!-- <button @click="showCalModal" class="btn btn-primary"><i class="bi bi-calendar-check"></i> Calendar Category</button>&nbsp; -->
         <button @click="showDivModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Division</button>&nbsp;
+        <button @click="showUnitModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Unit</button>&nbsp;
         <button @click="showOrgModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Organizational Outcome</button>&nbsp;
         <button @click="showPapsModal" class="btn btn-primary"><i class="bi bi-person-square"></i> PAPs</button>&nbsp;
 
@@ -65,7 +66,7 @@
                 <address></address>
                 <form name="event-form" enctype="multipart/form-data">
 
-                  <input type="text" placeholder="Field 1" id="event-id" style="" required>
+                  <input type="text" placeholder="Field 1" id="event-id" style="display:none;" required>
                   <p> <!-- to be created with db table office-->
                     <select name="office" v-model="formData.office" class="form-control form-select" aria-label="Default select example" id="editOffice" required>
                     <option value="0">Select Office</option>
@@ -90,7 +91,7 @@
                   <input type="text" name="division_name" id="division-name-id" v-model="formData.division_name" class="form-control" placeholder="Division Name" style="display:none;" required>
                  </p>
 
-                  <p> <!-- to be created with db table unit-->
+                  <!-- <p> 
                     <select name="unit" v-model="formData.unit" class="form-control form-select" aria-label="Default select example" id="editUnit" required>
                       <option value="0">Select Unit</option>
                       <option value="NC" >Negosyo Center</option>
@@ -99,7 +100,14 @@
                       <option value="CARP">Comprehensive Agrarian Reform Program</option>
                       <option value="PLANNING">Planning Unit</option>
                     </select>
-                </p>
+                  </p> -->
+            
+                  <p>
+                    <select name="unit" v-model="formData.unit" class="form-control form-select" id="editUnit" required>
+                      <option value="0">Select Unit</option>
+                      <option v-for="val in filteredUnitList" :value="val.id">{[ val.unitList ]}</option>
+                    </select>
+                  </p>
 
                   <p> <!-- to be created with db table Org_outcome-->
                    <select name="org_outcome" v-model="formData.org_outcome" @change="updatePAPs" class="form-control form-select" aria-label="Default select example" id="editOrgOutcome" required>
@@ -433,7 +441,6 @@
               </div>
             </div>
 
-
             <div class="modal fade" id="myDivModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-slideout">
                 <div class="modal-content">
@@ -451,6 +458,40 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                   </div>
                   </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal fade" id="myUnitModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-slideout">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add Unit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form @submit.prevent="saveUnitData" enctype="multipart/form-data">
+                      {% csrf_token %}
+                        <p><input type="text" name="unit_name" class="form-control" placeholder="Unit Name" v-model="unitFormData.unit_name" required></p>
+                        <p><input type="text" name="description" class="form-control" v-model="unitFormData.description" placeholder="Description" required></p>
+                        <!-- Dropdown using loop for ooList = OrgOutcome.objects.all() -->
+                        <p>
+                          <select name="division_id" class="form-control form-select" id="divList-id" v-model="unitFormData.division_id" aria-label="Default select example" @change="onDivChange" required>
+                            <option value="0">Select Division</option>
+                            {% for val in divList %}
+                            <option value="{{ val.id }}">{{ val.division_name }}</option>
+                            {% endfor %}
+                          </select>
+                        </p>
+                        <p>
+                          <input type="text" name="division_name" class="form-control" id="div-name-id" v-model="unitFormData.division_name" style="display: none;">
+                        </p>
+                        <div class="modal-footer">
+                          <button class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      </div>
+                     </form>
                   </div>
                 </div>
               </div>

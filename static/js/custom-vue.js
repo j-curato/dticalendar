@@ -16,11 +16,14 @@ const app = Vue.createApp({
             barangayListVue: [], // Initialize barangayList with an empty array
             filteredPAPs: [], // Initialize filteredPAPs with an empty array
             filteredLGUs: [], // Initialize filteredLGUs with an empty array
+            filteredUnitList: [], // initialized with an empty array
+            unitListVue: [], // initialized with an empty array
             filteredBarangays: [], // Initialize filteredBarangays with an empty array
             eventsListVue: [], // Initialize eventsList with an empty array
             formData: {
                 division_id: 0, // Initialize division_id with 0
                 division_name: '', // Initialize with an empty string
+                unit_name: '',
                 calendar_id: null, // Initialize calendar_id with 0
                 calendar_name: '', // Initialize with an empty string
                 whole_date_start: '', // Initialize with an empty string
@@ -66,6 +69,11 @@ const app = Vue.createApp({
                 org_outcome_id: 0,
                 oo_name: '',
             },
+            unitFormData: {
+                unit_name: '',
+                description: '',
+                division_id: 0
+            }
         };
     },
     created() {
@@ -179,6 +187,7 @@ const app = Vue.createApp({
                     formData.append('office', this.formData.office);
                     formData.append('division_id', this.formData.division_id);
                     formData.append('unit', this.formData.unit);
+                    formData.append('unit_name', $("#editUnit option:selected").text());
                     formData.append('org_outcome', orgOutcomeText);
                     formData.append('orgoutcome_id', this.formData.org_outcome);
                     formData.append('paps', papsText);
@@ -291,6 +300,7 @@ const app = Vue.createApp({
                     formData.append('office', this.formData.office);
                     formData.append('division_id', this.formData.division_id);
                     formData.append('unit', this.formData.unit);
+                    formData.append('unit_name', $("#editUnit option:selected").text());
                     formData.append('org_outcome', orgOutcomeTextEdit);
                     formData.append('orgoutcome_id', this.formData.org_outcome);
                     formData.append('paps', papsTextEdit);
@@ -408,7 +418,7 @@ const app = Vue.createApp({
                             {'data': 'event_desc', 'searchable': true, 'sortable': true},
                             {'data': 'office', 'searchable': true, 'sortable': true},
                             {'data': 'division_name', 'searchable': true, 'sortable': true},
-                            {'data': 'unit', 'searchable': true, 'sortable': true},
+                            {'data': 'unit_name', 'searchable': true, 'sortable': true},
                             {'data': 'whole_date_start_searchable', 'searchable': true, 'sortable': true},
                             {'data': 'whole_date_end_searchable', 'searchable': true, 'sortable': true},
                             // Add more columns as needed
@@ -500,6 +510,50 @@ const app = Vue.createApp({
             });
         }, // end of savePapsData() function
 
+        saveUnitData() {
+            const unitFormData = new FormData();
+            unitFormData.append('unit_name', this.unitFormData.unit_name);
+            unitFormData.append('description', this.unitFormData.description);
+            unitFormData.append('division_id', this.unitFormData.division_id);
+            unitFormData.append('division_name', this.unitFormData.division_name);
+            //alert(this.papsFormData.oo_name);
+            // ajax call to save the paps data
+            fetch("/units/save-unit-ajax/", {
+                method: "POST",
+                body: unitFormData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json(); // Assuming the server returns JSON data
+            })
+            .then(data => {
+                // if message is true, then show the toast notification
+                if (data.message) {
+                // call the showToast() method and change the toast message to "PAPs saved successfully!"
+                this.message = "Unit details added!";
+                // call the showToast() method to show the toast notification
+                this.showToast();
+                console.log("Data saved successfully:", data.message);
+                // reset the form data
+                this.unitFormData.unit_name = '';
+                this.unitFormData.description = '';
+                this.unitFormData.division_id = 0;
+                this.unitFormData.division_name = '';
+            } // end of if (data.message)
+            else {
+                // Handle a failed response
+                console.log("Data save failed:", data.message);
+            }
+            }
+            ) // end of the first .then()
+            .catch(error => {
+                // Handle errors
+                console.error("Error while saving data:", error);
+            });
+        }, // end of savePapsData() function
+
         showModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $("#modal1").modal('show'); // Show the modal on page load
@@ -525,6 +579,9 @@ const app = Vue.createApp({
         showDivModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $('#myDivModal').modal('show');
+        },
+        showUnitModal(){
+            $("#myUnitModal").modal('show');
         },
         showCalModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
@@ -653,6 +710,24 @@ const app = Vue.createApp({
                 console.error('Error fetching barangay data:', error);
             });
         },  
+
+        // function to fetch unit data
+        fetchUnitData(){
+
+            fetch('/units/api/get-unitList/') // Replace with the actual API endpoint
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                this.filteredUnitList = data;
+                this.unitListVue = data;
+                console.log(this.filteredUnitList);
+            })
+            .catch(error => {
+                console.error('Error fetching lgu data:', error);
+            });
+
+        },
+
         // Function to filter paps data
         updatePAPs() {
             // Filter the papsListVue array to only include items that match the selected org outcome
@@ -707,11 +782,46 @@ const app = Vue.createApp({
             
             const selectedDivision = this.divisionListVue.find(item => item.id === this.formData.division_id);
             this.formData.division_name = selectedDivision ? selectedDivision.division_name : '';
-
+            
+            //change unit list based on the selected division
+            this.filteredUnitList = this.unitListVue.filter(unit => unit.division_id === this.formData.division_id);
+            console.log(this.filteredUnitList);
+            this.formData.unit = 0;
            //var divText = $("#division-id option:selected").text();
            //this.formData.division_name = divText;
             
           },
+
+        //   onDivisionChange(param) {
+        //     //console.log('Selected Division ID:', this.formData.division_id);
+        //     //console.log(this.divisionListVue);
+        //     if(param){
+
+        //         const selectedDivision = this.divisionListVue.find(item => item.id === this.formData.division_id);
+        //         this.formData.division_name = selectedDivision ? selectedDivision.division_name : '';
+                
+        //         //change unit list based on the selected division
+        //         this.filteredUnitList = this.unitListVue.filter(unit => unit.division_id === this.formData.division_id);
+        //         console.log(this.filteredUnitList);
+        //         this.formData.unit = 0;
+
+        //     }else{
+
+        //         const selectedDivision = this.divisionListVue.find(item => item.id === this.formData.division_id);
+        //         this.formData.division_name = selectedDivision ? selectedDivision.division_name : '';
+                
+        //         //change unit list based on the selected division
+        //         this.filteredUnitList = this.unitListVue.filter(unit => unit.division_id === this.formData.division_id);
+        //         console.log(this.filteredUnitList);
+        //         this.formData.unit = 0;
+        //     //var divText = $("#division-id option:selected").text();
+        //     //this.formData.division_name = divText;
+
+        //     }
+            
+            
+        //   },
+
         onCalendarChange() {
             //console.log('Selected Calendar ID:', this.formData.calendar_id);
             //console.log(this.calendarListVue);
@@ -828,6 +938,14 @@ const app = Vue.createApp({
             // get the selected org outcome text value with id="orgOutcome-id-id" and assign the text value to input type='text' id='oo-name-id'
             var ooText = $("#orgOutcome-id option:selected").text();
             this.papsFormData.oo_name = ooText;
+            },
+            
+            // fetch division name list
+            onDivChange(){
+
+                var divText = $("#divList-id option:selected").text();
+                this.unitFormData.division_name = divText;
+
             },
 
         // Function to fetch events data based on formData.whole_date_start and formData.whole_date_end
@@ -1037,7 +1155,7 @@ const app = Vue.createApp({
                     {'data': 'event_desc', 'searchable': true, 'sortable': true},
                     {'data': 'office', 'searchable': true, 'sortable': true},
                     {'data': 'division_name', 'searchable': true, 'sortable': true},
-                    {'data': 'unit', 'searchable': true, 'sortable': true},
+                    {'data': 'unit_name', 'searchable': true, 'sortable': true},
                     // {
                     //     'data': 'file_attachment',
                     //     'searchable': true,
@@ -1074,12 +1192,14 @@ const app = Vue.createApp({
                
                 if (data) {
                     console.log('Selected Data:', data.id);
+                    console.log(data.division_name);
                     //query the database for the event details using the event id and display it in the #editEventModal
                     $.ajax({
                         url: '/get_event_details_to_edit/',
                         type: 'GET',
                         data: {
                             'event_id': data.id,
+                            'division_name': data.division_name
                         },
                         dataType: 'json',
                         success: function (data) {
@@ -1112,7 +1232,7 @@ const app = Vue.createApp({
                             $("#event-id").val(data.id);
                             $("#editOffice").val(data.office);
                             $("#division-id").val(data.division_id);
-                            $("#editUnit").val(data.unit);
+                            $("#editUnit").val(data.unit_id);
                             $("#editOrgOutcome").val(data.orgoutcome_id);
                             $("#editPaps").val(data.pap_id);
                             $("#event-title-input").val(data.event_title);
@@ -1151,6 +1271,7 @@ const app = Vue.createApp({
                             }
 
                             $('#modal1').modal('show');
+                            //self.onDivisionChange(data.division_id);
                             const eventpID = $("#event-id").val();
                             const eventTitle = $("#event-title-input").val();
                             const eventOffice = $("#editOffice").val();
@@ -1258,6 +1379,8 @@ const app = Vue.createApp({
         this.fetchLguData();
         // fetch barangay data
         this.fetchBarangayData();
+        // fetch unit data
+        this.fetchUnitData();
     } // end of the mounted() function
 
 });
