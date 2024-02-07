@@ -59,7 +59,7 @@
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalToggleLabel">Add Event</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="resetFormData"></button>
               </div>
               <div class="modal-body">
                 <span style="font-weight:bold; color:blue;">Step 1/2</span>
@@ -67,7 +67,7 @@
                 <form name="event-form" enctype="multipart/form-data">
 
                   <input type="text" placeholder="Field 1" id="event-id" style="display:none;" required>
-                  <p> <!-- to be created with db table office-->
+                  <p> <!-- to be created with db table office--> 
                     <select name="office" v-model="formData.office" class="form-control form-select" aria-label="Default select example" id="editOffice" required>
                     <option value="0">Select Office</option>
                     <option value="RO">REGIONAL OFFICE</option>
@@ -149,7 +149,7 @@
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalToggleLabel">Add Event</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="resetFormData"></button>
               </div>
               <div class="modal-body">
                 <span style="font-weight:bold; color:blue;">Step 2/2</span>
@@ -179,29 +179,32 @@
                   <p>
                     <select name="event_location_barangay" v-model="formData.event_location_barangay" class="form-control form-select" id="event-location-barangay-id" required>
                       <option value="0">Select Barangay</option>
+                      <!-- <option value="1312">To be determined</option> -->
                       <option v-for="val in filteredBarangays" :value="val.id">{[ val.barangay ]}</option>
                     </select>
                   </p>
                   <p><input type="text" name="event_location_district" class="form-control" v-model="formData.event_location_district" placeholder="District" id="editDistrict" required></p>
                   <!-- <p><input type="text" name="event_location_barangay" class="form-control" v-model="formData.event_location_barangay" placeholder="Barangay" required></p> -->
                   <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px;">Time details</span>
-                  <p style="padding-top: 7px;"><input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" v-model="formData.whole_date_start" @change="updateStartDateFields" @input="updateStartDateFields" id="editDateStart" required></p>
+                  <p style="padding-top: 7px; display: flex; justify-content: space-between;">
+                    <input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" style="width: 48%" v-model="formData.whole_date_start" @change="updateStartDateFields" @input="updateStartDateFields" id="editDateStart" required>
+                    <input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" style="width: 48%" v-model="formData.whole_date_end" @change="updateEndDateFields" @input="updateEndDateFields" id="editDateEnd" required>
+                  </p>
                   <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="formData.event_day_start" id="editDayStart" style="display:none;"></p>
                   <p><input type="text" name="event_month_start" class="form-control" placeholder="Month Start"  v-model="formData.event_month_start" id="editMonthStart" style="display:none;"></p>
                   <p><input type="text" name="event_year_start" class="form-control" placeholder="Year Start"  v-model="formData.event_year_start" id="editYearStart" style="display:none;"></p>
                   <p><input type="text" name="event_time_start" class="form-control" placeholder="Time Start"  v-model="formData.event_time_start" id="editTimeStart" style="display:none;"></p>
                    <p><input type="text" name="whole_date_start_searchable" class="form-control" v-model="formData.whole_date_start_searchable" id="editDStartSearchable" style="display:none;"></p>
                   <!-- <p><input type="time" name="" class="form-control" placeholder="Time start" required></p> -->
-                  <p>
-                    <input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" v-model="formData.whole_date_end" @change="updateEndDateFields" @input="updateEndDateFields" id="editDateEnd" required>
-                    <span class="form-check-label" style="font-size: 12px;"><a href="#" @click="checkEventDate($event)">Check date for conflicts</a></span>
                   </p>
-                  <p>
+                 
                     <label class="form-check form-switch">
                       <input name="event_all_day" v-model="formData.event_all_day" class="form-check-input" type="checkbox" id="customSwitch" @change="handleDateTimeChange">
                       <span class="form-check-label" for="customSwitch">All day</span>
+                      &nbsp; &nbsp; <span class="form-check-label" style="font-size: 12px;"><a href="#" @click="checkEventDate($event)">Check date for conflicts</a></span>
                     </label>
-                  </p>
+                    
+                 
                   <!-- <p><input type="time" name="" class="form-control" placeholder="Time end" required></p> -->
                   <p><input type="text" name="event_day_end" class="form-control" v-model="formData.event_day_end" placeholder="Day End" id="editDayEnd" style="display:none;"></p>
                   <p><input type="text" name="event_month_end" class="form-control" v-model="formData.event_month_end" placeholder="Month End" id="editMonthEnd" style="display:none;"></p>
@@ -243,12 +246,15 @@
                             <p>No activities found</p>
                         </li>
                         <li v-else v-for="event in eventsListVue" :key="event.id" class="list-group-item">
-                            <h5>{[ event.event_title ]}</h5>
+                            <h5>{[ event.whole_date_start_searchable ]} - {[ event.whole_date_end_searchable ]}</h5>
+                            <hr>
+                            <p>Activity: {[ event.event_title ]}</p>
                             <p>Description: {[ event.event_desc ]}</p>
                             <p>Participants: {[ event.participants ]}</p>
                             <p>Location: {[ event.event_location ]}</p>
                             <p>Office: {[ event.office ]}</p>
-                            <p>Date: {[ event.whole_date_start_searchable ]}</p>
+                            <p>Division: {[ event.division_name ]}</p>
+                            <p>Unit: {[ event.unit_name ]}</p>
                             <!-- Add other event details as needed  -->
                         </li>
                     </ul>                  
@@ -449,10 +455,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                    <form action="{% url 'save-division' %}" method="post">
+                    <form @submit.prevent="saveDivData" enctype="multipart/form-data">
                       {% csrf_token %}
-                        <p><input type="text" name="division_name" class="form-control" placeholder="Division name" required></p>
-                        <p><input type="text" name="division_desc" class="form-control" placeholder="Description" required></p>
+                        <p><input type="text" name="division_name" class="form-control" placeholder="Division name" v-model="divFormData.division_name" required></p>
+                        <p><input type="text" name="division_desc" class="form-control" placeholder="Description" v-model="divFormData.division_desc" required></p>
                   <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">Save</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

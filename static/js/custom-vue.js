@@ -73,6 +73,12 @@ const app = Vue.createApp({
                 unit_name: '',
                 description: '',
                 division_id: 0
+            },
+            divFormData:{
+
+                division_name: '',
+                division_desc: '',
+
             }
         };
     },
@@ -554,6 +560,47 @@ const app = Vue.createApp({
             });
         }, // end of savePapsData() function
 
+        saveDivData() {
+            const divFormData = new FormData();
+            divFormData.append('division_name', this.divFormData.division_name);
+            divFormData.append('division_desc', this.divFormData.division_desc);
+           
+            //alert(this.papsFormData.oo_name);
+            // ajax call to save the paps data
+            fetch("/divisions/save-div-ajax/", {
+                method: "POST",
+                body: divFormData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json(); // Assuming the server returns JSON data
+            })
+            .then(data => {
+                // if message is true, then show the toast notification
+                if (data.message) {
+                // call the showToast() method and change the toast message to "PAPs saved successfully!"
+                this.message = "Division details saved";
+                // call the showToast() method to show the toast notification
+                this.showToast();
+                console.log("Data saved successfully:", data.message);
+                // reset the form data
+                this.divFormData.division_name = '';
+                this.divFormData.division_desc = '';
+            } // end of if (data.message)
+            else {
+                // Handle a failed response
+                console.log("Data save failed:", data.message);
+            }
+            }
+            ) // end of the first .then()
+            .catch(error => {
+                // Handle errors
+                console.error("Error while saving data:", error);
+            });
+        }, // end of savePapsData() function
+
         showModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $("#modal1").modal('show'); // Show the modal on page load
@@ -742,6 +789,12 @@ const app = Vue.createApp({
             // Filter the lguListVue array to only include items that match the selected province
             //this.filteredLGUs = this.lguListVue.filter(item => item.province_id === this.formData.event_location);
             this.filteredLGUs = this.lguListVue.filter(lgu => lgu.province_id === this.formData.event_location);
+
+             // Append the default value if it's not already in the filteredBarangays array
+             const defaultLgu = { id: 74, lgu: 'To be determined' };
+             if (!this.filteredLGUs.some(lgu => lgu.id === defaultLgu.id)) {
+             this.filteredLGUs.unshift(defaultLgu);
+             }
             console.log(this.filteredLGUs);
             console.log(this.formData.event_location);
             // reset the formData.event_location_lgu to 0
@@ -773,7 +826,14 @@ const app = Vue.createApp({
 
             // Filter the barangayListVue array to only include items that match the selected LGU
             this.filteredBarangays = this.barangayListVue.filter(barangay => barangay.lgu_id === this.formData.event_location_lgu);
-            this.formData.event_location_barangay = 0;
+
+            // Append the default value if it's not already in the filteredBarangays array
+            const defaultBarangay = { id: 1312, barangay: 'To be determined' };
+            if (!this.filteredBarangays.some(barangay => barangay.id === defaultBarangay.id)) {
+            this.filteredBarangays.unshift(defaultBarangay);
+            }
+
+            this.formData.event_location_barangay = 0; 
         },
         // Function to filter datatable events data by office, division and unit
         onDivisionChange() {
@@ -967,6 +1027,9 @@ const app = Vue.createApp({
                  var startDate = startDate.split('T')[0];
                  var endDate = endDate.split('T')[0];
 
+                    console.log(startDate);
+                    console.log(endDate);
+
                 // var saveButton = document.getElementById('saveButton');
                 // var displayPropertyValue = saveButton.style.display;
                 // if(displayPropertyValue === 'none'){
@@ -1156,26 +1219,7 @@ const app = Vue.createApp({
                     {'data': 'office', 'searchable': true, 'sortable': true},
                     {'data': 'division_name', 'searchable': true, 'sortable': true},
                     {'data': 'unit_name', 'searchable': true, 'sortable': true},
-                    // {
-                    //     'data': 'file_attachment',
-                    //     'searchable': true,
-                    //     'sortable': true,
-                    //     'render': function(data, type, row) {
-                        
-                    //             // Assuming the 'file_attachment' contains the full URL
-                    //             if (type === 'display') {
-                    //                 // check if the 'file_attachment' attribute has no file associated with it.
-                    //                 const fileName = data.substring(data.lastIndexOf('/') + 1); // Extracts the file name from the URL
-                    //                 const fileId = row.id; // Accessing the 'id' field from the row data
-                    //                 // check file name if empty
-                    //                 const displayFileName = (fileName==='NONE') ? 'No file attached' : '<a href="/events/download/' + fileId + '" download>' + fileName + '</a>';
-                    //                 return displayFileName
-                    //             }
-                    //             return data; // For other types or non-display, return the data as is
-                            
-                    //     }
-                    // },
-                    // Add more columns as needed
+                    
                 ],
                 'order': [[0, 'desc']], // Order by ID column, descending
                 

@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.http import HttpRequest
+from django.db.models.functions import Lower
 from events.models import Event
 from django.db.models import Q
 from calendars.models import Calendar
@@ -148,13 +149,12 @@ def get_events(request):
         print("order_direction:", order_direction)
 
          # Define the columns you want to search on
-        columns = ['id', 'event_title', 'event_desc', 'office', 'division_name', 'unit_name', 'whole_date_start_searchable', 'whole_date_end_searchable']
+        columns = ['id', 'whole_date_start_searchable', 'whole_date_end_searchable', 'event_title', 'event_desc', 'office', 'division_name', 'unit_name']
 
         #Create a Q object for filtering based on the search_value in all columns
         search_filter = Q()
-        for col in columns:
+        for col in columns: 
             search_filter |= Q(**{f'{col}__icontains': search_value})
-
 
         # Filter the events based on the search_value and user id
         events = Event.objects.filter(search_filter, user=request.user)
@@ -164,13 +164,41 @@ def get_events(request):
         # Get the total count of events (before filtering)
         total_records = Event.objects.count()
 
+        # # Apply sorting based on the column index and direction
+        # if order_direction == 'asc':
+        #     events = events.order_by(columns[order_column_index])
+        # else:
+        #     events = events.order_by(f'-{columns[order_column_index]}')
+
         # Apply sorting based on the column index and direction
         if order_direction == 'asc':
-            events = events.order_by(columns[order_column_index])
+            if columns[order_column_index] == 'whole_date_start_searchable':
+                events = events.order_by(F('whole_date_start'))
+            elif columns[order_column_index] == 'whole_date_end_searchable':
+                events = events.order_by(F('whole_date_end'))
+            else:
+                events = events.order_by(columns[order_column_index])
         else:
-            events = events.order_by(f'-{columns[order_column_index]}')
+            if columns[order_column_index] == 'whole_date_start_searchable':
+                events = events.order_by(F('whole_date_start').desc())
+            elif columns[order_column_index] == 'whole_date_end_searchable':
+                events = events.order_by(F('whole_date_end').desc())
+            else:
+                events = events.order_by(f'-{columns[order_column_index]}')
 
-        # Count of records after filtering
+        # Apply sorting based on the column index and direction
+        # if order_direction == 'asc':
+        #     if columns[order_column_index] in ['event_title', 'event_desc']:
+        #         events = events.order_by(Lower(columns[order_column_index]))
+        #     else:
+        #         events = events.order_by(columns[order_column_index])
+        # else:
+        #     if columns[order_column_index] in ['event_title', 'event_desc']:
+        #         events = events.order_by(Lower(columns[order_column_index])).reverse()
+        #     else:
+        #         events = events.order_by(f'-{columns[order_column_index]}')
+
+        # Count of records after filtering 
         filtered_records = events.count()
         
         # Apply distinct on 'event_code' and fetch the record with the smallest ID

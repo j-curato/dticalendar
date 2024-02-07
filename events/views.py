@@ -4,6 +4,11 @@
 from django.http import HttpResponse
 from django.http import JsonResponse
 
+
+from django.db import connection
+from django.db.models import F
+from django.db.models.functions import Lower
+
 from django.db import connection
 from calendars.models import Calendar
 from divisions.models import Division
@@ -534,6 +539,10 @@ def save_event_ajax_ver2(request):
             existing_event.province_id = province
             updated_fields['province_id'] = existing_event.province_id
 
+        if existing_event.lgu_id != request.POST['lgu_id']:
+            existing_event.lgu_id = request.POST['lgu_id']
+            updated_fields['lgu_id'] =  existing_event.lgu_id
+
         if existing_event.barangay_id != barangay:
             existing_event.barangay_id = barangay
             updated_fields['barangay_id'] = existing_event.barangay_id
@@ -629,7 +638,7 @@ def get_eventsListDate(request):
         return JsonResponse({'error': 'Invalid request body.'}, status=400)
     
     # define the desired fields to include in the JSON response
-    fields_to_include = ['id','event_title', 'event_desc', 'participants', 'event_location', 'whole_date_start_searchable', 'whole_date_end_searchable', 'event_time_start', 'event_time_end', 'office', 'org_outcome', 'paps', 'unit', 'division_name', 'actual_outcome', 'event_location_lgu', 'event_location_barangay', 'event_status', 'expected_outcome','event_all_day']
+    fields_to_include = ['id','event_title', 'event_desc', 'participants', 'event_location', 'whole_date_start_searchable', 'whole_date_end_searchable', 'event_time_start', 'event_time_end', 'office', 'org_outcome', 'paps', 'unit_name', 'division_name', 'actual_outcome', 'event_location_lgu', 'event_location_barangay', 'event_status', 'expected_outcome','event_all_day']
     # Filter events based on start_date and end_date
     events = Event.objects.filter(Q(whole_date_start__gte=start_date) & Q(whole_date_start__lte=end_date))
     events_json = []
@@ -757,8 +766,181 @@ def load_unit_datatbl_html(request):
     divisions = Division.objects.all()
     return render(request, 'events/events_display_unit.html', {'divisions': divisions, 'txturl': txturl, 'officetxt': officetxt, 'divtxt': divtxt})
 
+def fetch_events_by_unit_ajax_ver1(request):
+    try:
+        draw = int(request.GET.get('draw', 1))
+        start = int(request.GET.get('start', 0))
+        length = int(request.GET.get('length', 10))
+        search_value = request.GET.get('search[value]', '')
+        #office_txt = request.GET.get('office', '')
+
+        # Define the columns you want to search on
+        # columns = ['whole_date_start_searchable']
+        columns = ['whole_date_start_searchable', 'NC', 'EDU', 'TPU', 'CARP', 'GAD', 'PLANNING']
+
+        query = """
+        SELECT whole_date_start,
+            whole_date_start_searchable, 
+            MAX(CASE WHEN unit = 'NC' THEN event_titles END) AS NC,
+            MAX(CASE WHEN unit = 'EDU' THEN event_titles END) AS EDU,
+            MAX(CASE WHEN unit = 'TPU' THEN event_titles END) AS TPU,
+            MAX(CASE WHEN unit = 'CARP' THEN event_titles END) AS CARP,
+            MAX(CASE WHEN unit = 'GAD' THEN event_titles END) AS GAD,
+            MAX(CASE WHEN unit = 'PLANNING' THEN event_titles END) AS PLANNING
+        FROM (
+            SELECT whole_date_start,
+                whole_date_start_searchable,
+                unit,
+                STRING_AGG(event_title, ', ') AS event_titles, division_name, office
+            FROM events_event
+            WHERE division_name = %s AND office = %s
+            GROUP BY whole_date_start, whole_date_start_searchable, unit, division_name, office
+        ) AS subquery
+        GROUP BY whole_date_start, whole_date_start_searchable
+        ORDER BY 1;
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [request.GET.get('division'), request.GET.get('office')])
+            result = cursor.fetchall()
+
+        # Convert the result into a list of dictionaries
+        data = []
+        for row in result:
+            data.append({
+                'whole_date_start': row[0].strftime('%Y-%m-%d'),  # Format as needed
+                'whole_date_start_searchable': row[1],
+                'NC': row[2],
+                'EDU': row[3],
+                'TPU': row[4],
+                'CARP': row[5],
+                'GAD': row[6],
+                'PLANNING': row[7]
+                # Add more fields as needed
+            })
+            
+        # Apply the search filter to the data
+        # filtered_data = [entry for entry in data if any(search_value.lower() in entry[col].lower() for col in columns)]
+        filtered_data = [
+            entry for entry in data if any(
+                search_value.lower() in (str(entry[col]).lower() if entry[col] is not None else '') for col in columns
+            )
+        ]
+
+        response_data = {
+            'draw': draw,
+            'recordsTotal': len(data),
+            'recordsFiltered': len(filtered_data),
+            'data': filtered_data[start:start + length]
+        }
+
+        return JsonResponse(response_data)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
 
 def fetch_events_by_div_ajax(request):
+    try:
+        draw = int(request.GET.get('draw', 1))
+        start = int(request.GET.get('start', 0))
+        length = int(request.GET.get('length', 10))
+        search_value = request.GET.get('search[value]', '')
+
+        # Fetch unique division names from the database
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT DISTINCT division_name FROM divisions_division")
+            division_names = [row[0] for row in cursor.fetchall()]
+
+        # Generate the dynamic part of the SQL query based on the columns
+        columns_sql = ", ".join([
+            f"MAX(CASE WHEN division_name = '{col}' THEN event_titles END) AS {col}" for col in division_names
+        ])
+
+        query = f"""
+            SELECT
+                generated_date,
+                TO_CHAR(generated_date, 'FMMonth DD, YYYY') AS whole_date_start_searchable,
+                {columns_sql}
+            FROM (
+                SELECT
+                    generated_date,
+                    division_name,
+                    STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), ', ') AS event_titles
+                FROM (
+                    SELECT
+                        generate_series(whole_date_start::date, whole_date_end::date, '1 day'::interval)::date AS generated_date,
+                        division_name,
+                        event_title,
+                        id,
+                        unit_name,
+                        event_time_start,
+                        event_time_end
+                    FROM events_event
+                    WHERE office = %s
+                ) AS date_series
+                GROUP BY generated_date, division_name
+            ) AS subquery
+            GROUP BY generated_date
+            ORDER BY generated_date;
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [request.GET.get('office')])
+            result = cursor.fetchall()
+
+        # Sort by 'generated_date' if no specific column is specified
+        order_column_index = int(request.GET.get('order[0][column]', 0))
+        order_direction = request.GET.get('order[0][dir]', 'asc')
+
+        # Sort by specific column if specified
+        if order_direction == 'asc':
+            result = sorted(result, key=lambda x: x[order_column_index] if order_column_index < len(result[0]) else x[0])
+        else:
+            result = sorted(result, key=lambda x: x[order_column_index] if order_column_index < len(result[0]) else x[0], reverse=True)
+
+        # Convert the result into a list of dictionaries with dynamic keys
+        data = []
+        for row in result:
+            data_row = {'whole_date_start': row[0].strftime('%Y-%m-%d')}  # Format as needed
+
+            if isinstance(row[1], str):  # Check if row[1] is a string
+                data_row['whole_date_start_searchable'] = row[1]
+            else:
+                data_row['whole_date_start_searchable'] = row[1].strftime('%B %d, %Y')  # Format whole_date_start_searchable
+
+            data_row.update(zip(division_names, row[2:]))  # Update dynamically using zip
+            data.append(data_row)
+
+        # Apply the search filter to the data
+        filtered_data = [
+            entry for entry in data if any(
+                search_value.lower() in (str(entry[col]).lower() if entry[col] is not None else '') 
+                for col in ['whole_date_start_searchable'] + division_names
+            )
+        ]
+
+        # Generate the columns array with search information
+        columns = [{'data': 'whole_date_start', 'name': '', 'searchable': True, 'orderable': True, 'search': {} }]
+        columns.append({'data': 'whole_date_start_searchable', 'name': '', 'searchable': True, 'orderable': True, 'search': {'value': search_value} })
+        columns += [{'data': col, 'name': '', 'searchable': True, 'orderable': True, 'search': {} } for col in division_names]
+
+        response_data = {
+            'draw': draw,
+            'columns': columns,
+            'order': [],  # You may need to populate this based on user interaction
+            'start': start,
+            'length': length,
+            'recordsTotal': len(data),
+            'recordsFiltered': len(filtered_data),
+            'data': filtered_data[start:start + length]
+        }
+
+        return JsonResponse(response_data)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def fetch_events_by_div_ajax_ver2(request):
     try:
         draw = int(request.GET.get('draw', 1))
         start = int(request.GET.get('start', 0))
@@ -847,13 +1029,9 @@ def fetch_events_by_div_ajax(request):
             'data': filtered_data[start:start + length]
         }
 
-
-
         return JsonResponse(response_data)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-
 
     # get events by unit
 def fetch_events_by_unit_ajax(request):

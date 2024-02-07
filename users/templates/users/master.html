@@ -229,12 +229,15 @@
                 <div class="modal-body">
                   <ul class="list-group">
                     <li class="list-group-item" v-for="event in specificEventDetails" :key="event.id">
-                      <h5>{[ event.event_title ]}</h5>
+                      <h5>{[ event.whole_date_start_searchable ]} - {[ event.whole_date_end_searchable ]}</h5>
+                      <hr>
+                      <p>Activity: {[ event.event_title ]}</p>
                       <p>Description: {[ event.event_desc ]}</p>
                       <p>Participants: {[ event.participants ]}</p>
                       <p>Location: {[ event.event_location ]}</p>
                       <p>Office: {[ event.office ]}</p>
-                      <p>Date: {[ event.whole_date_start_searchable ]} - {[ event.whole_date_end_searchable ]}</p>
+                      <p>Division: {[ event.division_name ]}</p>
+                      <p>Unit: {[ event.unit_name ]}</p>
                       <p>Attachment: 
                         <a :href="`/events/download/${event.id}`" download>{[ extractFileName(event.file_attachment) ]}</a>
                       </p>
@@ -260,7 +263,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         <p>
-                            <select id="filterBy" class="form-control form-select" @change="filterEventsDatatbl">
+                            <select id="filterBy" class="form-control form-select" @change="filterEventsDatatbl" style="width:60%">
                                 <option value="0">Filter by</option>
                                 <option value="office">Office</option>
                                 <option value="division">Division</option>
