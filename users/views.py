@@ -1,6 +1,7 @@
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect
+from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.http import HttpRequest
@@ -55,6 +56,9 @@ def login_request(request):
 
 def profile(request):
     txturl = 'users'
+    context = {
+        'MEDIA_URL' : settings.MEDIA_URL
+    }
     # Check if the user is authenticated
     if not request.user.is_authenticated:
         return redirect('login')
@@ -127,7 +131,9 @@ def profile(request):
     #calList = Calendar.objects.all()
     divList = Division.objects.all()
     
-    return render(request, 'users/profile.html', {'eventsList': events, 'ooList': ooList, 'papList': papsList, 'provinceList': provinceList, 'divList': divList, 'msgvar': msgvar, 'txturl': txturl})
+    return render(request, 'users/profile.html', {'eventsList': events, 'ooList': ooList, 'papList': papsList, 
+                                                  'provinceList': provinceList, 'divList': divList, 'msgvar': msgvar, 'txturl': txturl,
+                                                  'context': context})
 
 
 # method to display event details using datatable server side processing
