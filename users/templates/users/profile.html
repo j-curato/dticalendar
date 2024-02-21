@@ -30,7 +30,7 @@
                     <img src=""
                       alt="Generic placeholder image" class="img-fluid"
                       style="width: 150px; border-radius: 10px;">
-                  </div> -->
+                  </div> -->  
                   <div class="flex-grow-1 ms-3">
                     <!-- <h5 class="mb-1">{{ user.first_name }}</h5> -->
                     <p class="mb-2 pb-1" style="color: #2b2a2a;"></p>
@@ -48,7 +48,7 @@
                         <p class="small text-muted mb-1">ID</p>
                         <p class="mb-0">{{ user.id }}</p>
                       </div>
-                      <div class="px-3">
+                      <div class="px-3"> 
                         <p class="small text-muted mb-1">Email</p>
                         <p class="mb-0">{{ user.email }}</p>
                       </div>
@@ -91,8 +91,8 @@
       
         <button @click="showModal" class="btn btn-primary"><i class="bi bi-calendar-event"></i> New Event</button>&nbsp;
         <!-- <button @click="showCalModal" class="btn btn-primary"><i class="bi bi-calendar-check"></i> Calendar Category</button>&nbsp; -->
-        <button @click="showDivModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Division</button>&nbsp;
-        <button @click="showUnitModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Unit</button>&nbsp;
+        <button @click="showDivModalPanel" class="btn btn-primary"><i class="bi bi-person-square"></i> Division</button>&nbsp;
+        <button @click="showUnitModalPanel" class="btn btn-primary"><i class="bi bi-person-square"></i> Unit</button>&nbsp;
         <button @click="showOrgModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Organizational Outcome</button>&nbsp;
         <button @click="showPapsModal" class="btn btn-primary"><i class="bi bi-person-square"></i> PAPs</button>&nbsp;
 
@@ -321,102 +321,6 @@
           </div>
       </div>
       
-          <!-- modal for editing events -->
-
-            <!-- <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Edit event</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    <form action="{% url 'profile' %}" method="post" enctype="multipart/form-data">
-                      {% csrf_token %}
-
-                        <p> 
-                          <select name="office" class="form-control" id="editOffice-id" aria-label="Default select example" required>
-                          <option >Select Office</option>
-                          <option value="RO" >REGIONAL OFFICE</option>
-                          <option value="ADN">AGUSAN DEL NORTE</option>
-                          <option value="ADS">AGUSAN DEL SUR</option>
-                          <option value="SDN">SURIGAO DEL NORTE</option>
-                          <option value="SDS">SURIGAO DEL SUR</option>
-                          <option value="PDI">PROVINCE OF DINAGAT ISLANDS</option>
-                        </select>
-                      </p>
-                        <p><select name="division_id" class="form-control form-select" id="editDivision-id" aria-label="Default select example" v-model="selectedDivisionId" @change="onDivisionChange" required>
-                          <option value="0">Select Division</option>
-                          {% for val in divisionList %}
-                          <option value="{{ val.id }}">{{ val.division_name }}</option>
-                          {% endfor %}
-                        </select></p>
-
-                        <p>
-                          <select name="unit" class="form-control form-select" id="editUnit-id" aria-label="Default select example" required>
-                          <option value="0">Select Unit</option>
-                          <option value="NC" >Negosyo Center</option>
-                          <option value="EDU">Enterprise Development Unit</option>
-                          <option value="TPU">Trade Promotion Unit</option>
-                          <option value="CARP">Comprehensive Agrarian Reform Program</option>
-                        </select>
-                      </p>
-
-                        <p> 
-                          <select name="org_outcome" class="form-control form-select" id="editOrgOutcome-id" aria-label="Default select example" required>
-                          <option value="0">Select Organizational Outcome</option>
-                          <option value="OO1" >OO1</option>
-                          <option value="OO2">OO2</option>
-                          <option value="OO3">OO3</option>
-                        </select>
-                      </p>
-
-                      <p> 
-                        <select name="paps" class="form-control form-select" id="editPAPs-id" aria-label="Default select example" required>
-                        <option value="0">Select PAPs</option>
-                        <option value="PAPs 1" >PAPs 1</option>
-                        <option value="PAPs 2">PAPs 2</option>
-                        <option value="PAPs 3">PAPs 3</option>
-                      </select>
-                    </p>
-
-                      <p><select name="calendar_id" class="form-control form-select" id="editCalendar-id" aria-label="Default select example" required>
-                        <option>Select Calendar</option>
-                        {% for val in calendarList %}
-                        <option value="{{ val.id }}">{{ val.calendar_name }}</option>
-                        {% endfor %}
-                      </select></p>
-
-                        <p><input type="text" name="user_id" class="form-control" id="editUser-id" placeholder="Event title" value="{{ user.id }}" style="display: none;"></p>
-                        <p><input type="text" name="event_title" class="form-control" id="editEventTitle-id" placeholder="Event title" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></p>
-                        <p><input type="text" name="event_location" class="form-control" id="editEventLocation-id" placeholder="Location" required></p>
-                        
-                        <p><input type="datetime-local" name="whole_date_start" class="form-control" id="editWholeDateStart-id" placeholder="Event Start" v-model="startdate" @change="updateStartDateFields" required></p>
-                        <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="dayStart" style="display:none;"></p>
-                        <p><input type="text" name="event_month_start" class="form-control" placeholder="Month Start"  v-model="monthStart" style="display:none;"></p>
-                        <p><input type="text" name="event_year_start" class="form-control" placeholder="Year Start"  v-model="yearStart" style="display:none;"></p>
-                        <p><input type="text" name="event_time_start" class="form-control" placeholder="Time Start"  v-model="timeStart" style="display:none;"></p>
-                       
-                        <p><input type="datetime-local" name="whole_date_end" class="form-control" id="editWholeDateEnd-id" placeholder="Event End" v-model="enddate" @change="updateEndDateFields" required></p>
-                        
-                        <p><input type="text" name="event_day_end" class="form-control" v-model="dayEnd" placeholder="Day End" style="display: none;"></p>
-                        <p><input type="text" name="event_month_end" class="form-control" v-model="monthEnd" placeholder="Month End" style="display: none;"></p>
-                        <p><input type="text" name="event_year_end" class="form-control" v-model="yearEnd" placeholder="Year end" style="display: none;"></p>
-                        <p><input type="text" name="event_time_end" class="form-control" v-model="timeEnd" placeholder="Time end" style="display: none;"></p>
-                        <p><textarea name="event_desc" class="form-control"  id="editEventDesc-id" placeholder="Add a description"></textarea></p>
-                        <p><textarea name="participants" class="form-control" id="editParticipants-id" placeholder="Participants"></textarea></p>
-                        <p><input type="file" name="file_attachment" class="form-control" id="editFileAttachment-id" ></p>
-                  
-                  <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Save</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  </div>
-                  </form>
-                  </div>
-                </div>
-              </div>
-            </div> -->
-
             <!-- Organizational Outcome Modal-->
             <div class="modal fade" id="orgOutcomeModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-slideout">
@@ -502,20 +406,62 @@
               </div>
             </div>
 
-            <div class="modal fade" id="myDivModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-slideout">
+            <div class="modal fade" id="myDivModalPanel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-slideout modal-xl">
                 <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Division Panel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <br>
+                  <div class="container-fluid">
+                    <div class="row">
+                      <div class="col-md-4"><button class="btn btn-primary" @click="callDivFunctions"><i class="bi bi-person-square"></i>Add</button></div>
+                    </div>
+                  </div>
+                  <div class="modal-body">
+                      <table id="divdataTable" class="display" style="width:100%">
+                        <thead>
+                            <tr >
+                                <th>ID</th>
+                                <th>Division Name</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                          <tr>
+                            <th>ID</th>
+                            <th>Division Name</th>
+                            <th>Description</th>
+                          </tr>
+                        </tfoot>
+                      </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal fade" id="myDivModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+              <div class="modal-dialog modal-dialog-slideout">
+                <div class="modal-content" style="border: 0.5px solid #e0dcdc;">
                   <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Add division</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
+                  <br>
+                  <div class="container-fluid">
+                  </div>
                   <div class="modal-body">
-                    <form @submit.prevent="saveDivData" enctype="multipart/form-data">
+                    <!-- <form @submit.prevent="saveDivData" enctype="multipart/form-data"> -->
+                    <form name="division-form" enctype="multipart/form-data">
                       {% csrf_token %}
-                        <p><input type="text" name="division_name" class="form-control" placeholder="Division name" v-model="divFormData.division_name" required></p>
-                        <p><input type="text" name="division_desc" class="form-control" placeholder="Description" v-model="divFormData.division_desc" required></p>
+                        <input type="text" placeholder="Field 1" id="div-ID" style="display:none;">
+                        <p><input type="text" name="division_name" class="form-control" placeholder="Division name" v-model="divFormData.division_name" id="division-name" required></p>
+                        <p><input type="text" name="division_desc" class="form-control" placeholder="Description" v-model="divFormData.division_desc" id="division-desc" required></p>
                   <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <!-- <button type="submit" class="btn btn-primary" id="div-save">Save</button> -->
+                    <button class="btn btn-primary" id="div-save" @click="saveDivData($event)">Save</button>
+                    <button class="btn btn-primary" id="div-update" @click="saveDivData($event)">Update</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                   </div>
                   </form>
@@ -524,18 +470,61 @@
               </div>
             </div>
 
-            <div class="modal fade" id="myUnitModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-slideout">
+            <div class="modal fade" id="myUnitModalPanel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+              <div class="modal-dialog modal-dialog-slideout modal-xl">
                 <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Unit Panel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <br>
+                  <div class="container-fluid">
+                    <div class="row">
+                      <div class="col-md-4">
+                        <!-- <button @click="showUnitModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Add</button>&nbsp; -->
+                        <button class="btn btn-primary" @click="callUnitFunctions"><i class="bi bi-person-square"></i>Add</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modal-body">
+                      <table id="unitdataTable" class="display" style="width:100%">
+                        <thead>
+                            <tr >
+                                <th>ID</th>
+                                <th>Unit Name</th>
+                                <th>Description</th>
+                                <th>Division</th>
+                                <th>Division ID</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                          <tr>
+                                <th>ID</th>
+                                <th>Unit Name</th>
+                                <th>Description</th>
+                                <th>Division</th>
+                                <th>Division ID</th>
+                          </tr>
+                        </tfoot>
+                      </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal fade" id="myUnitModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+              <div class="modal-dialog modal-dialog-slideout">
+                <div class="modal-content" style="border: 0.5px solid #e0dcdc;">
                   <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Add Unit</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                    <form @submit.prevent="saveUnitData" enctype="multipart/form-data">
+                    <form name="unit-form" enctype="multipart/form-data">
                       {% csrf_token %}
-                        <p><input type="text" name="unit_name" class="form-control" placeholder="Unit Name" v-model="unitFormData.unit_name" required></p>
-                        <p><input type="text" name="description" class="form-control" v-model="unitFormData.description" placeholder="Description" required></p>
+                        <input type="text" placeholder="Field 1" id="unit-ID" style="display: none;">
+                        <p><input type="text" name="unit_name" class="form-control" id="id-unitName" placeholder="Unit Name" v-model="unitFormData.unit_name" required></p>
+                        <p><input type="text" name="description" class="form-control" id="id-unitDesc" v-model="unitFormData.description" placeholder="Description" required></p>
                         <!-- Dropdown using loop for ooList = OrgOutcome.objects.all() -->
                         <p>
                           <select name="division_id" class="form-control form-select" id="divList-id" v-model="unitFormData.division_id" aria-label="Default select example" @change="onDivChange" required>
@@ -549,7 +538,9 @@
                           <input type="text" name="division_name" class="form-control" id="div-name-id" v-model="unitFormData.division_name" style="display: none;">
                         </p>
                         <div class="modal-footer">
-                          <button class="btn btn-primary">Save</button>
+                          <!-- <button class="btn btn-primary">Save</button> -->
+                          <button class="btn btn-primary" id="unit-save" @click="saveUnitData($event)">Save</button>
+                          <button class="btn btn-primary" id="unit-update" @click="saveUnitData($event)">Update</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                       </div>
                      </form>

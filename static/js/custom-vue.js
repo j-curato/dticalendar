@@ -70,14 +70,19 @@ const app = Vue.createApp({
                 oo_name: '',
             },
             unitFormData: {
+
+                unit_pid: 0,
                 unit_name: '',
                 description: '',
-                division_id: 0
+                division_id: 0,
+                division_name: ''
+
             },
             divFormData:{
 
                 division_name: '',
                 division_desc: '',
+                div_pid: 0
 
             }
         };
@@ -98,6 +103,16 @@ const app = Vue.createApp({
 
     },
     methods: {
+
+        callDivFunctions(){
+            this.showDivModal();
+            this.resetDivFormData();
+        },
+
+        callUnitFunctions(){
+            this.showUnitModal();
+            this.resetUnitFormData();
+        },
 
         nextModal() {
             $("#modal1").modal("hide");
@@ -175,16 +190,16 @@ const app = Vue.createApp({
 
             if (event.target === saveButton) {
 
-            // Get the selected Organizational Outcome text
-            const orgOutcomeText = this.ooListVue.find(item => item.id === this.formData.org_outcome).org_outcome;
-            // Get the selected PAPs text
-            const papsText = this.papsListVue.find(item => item.id === this.formData.paps).pap;
-            // get the selected event location text
-            const eventLocationText = this.provincesListVue.find(item => item.id === this.formData.event_location).province;
-            // get the selected lgu text
-            const lguText = this.lguListVue.find(item => item.id === this.formData.event_location_lgu).lgu;
-            // get the selected barangay text
-            const barangayText = this.barangayListVue.find(item => item.id === this.formData.event_location_barangay).barangay;
+                // Get the selected Organizational Outcome text
+                const orgOutcomeText = this.ooListVue.find(item => item.id === this.formData.org_outcome).org_outcome;
+                // Get the selected PAPs text
+                const papsText = this.papsListVue.find(item => item.id === this.formData.paps).pap;
+                // get the selected event location text
+                const eventLocationText = this.provincesListVue.find(item => item.id === this.formData.event_location).province;
+                // get the selected lgu text
+                const lguText = this.lguListVue.find(item => item.id === this.formData.event_location_lgu).lgu;
+                // get the selected barangay text
+                const barangayText = this.barangayListVue.find(item => item.id === this.formData.event_location_barangay).barangay;
 
                 buttonText = saveButton.textContent;
                     
@@ -516,89 +531,211 @@ const app = Vue.createApp({
             });
         }, // end of savePapsData() function
 
-        saveUnitData() {
+        saveUnitData(event) {
+
+            event.preventDefault();
+
+            const saveUnitButton = document.getElementById('unit-save');
+            const updateUnitButton = document.getElementById('unit-update');
+            console.log(updateUnitButton.textContent)
+            console.log(event.target.textContent)
             const unitFormData = new FormData();
-            unitFormData.append('unit_name', this.unitFormData.unit_name);
-            unitFormData.append('description', this.unitFormData.description);
-            unitFormData.append('division_id', this.unitFormData.division_id);
-            unitFormData.append('division_name', this.unitFormData.division_name);
-            //alert(this.papsFormData.oo_name);
-            // ajax call to save the paps data
-            fetch("/units/save-unit-ajax/", {
-                method: "POST",
-                body: unitFormData,
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Network response was not ok");
+
+            if(event.target.textContent === saveUnitButton.textContent){
+
+                unitFormData.append('bntUnitText', saveUnitButton.textContent);
+                unitFormData.append('unit_name', this.unitFormData.unit_name);
+                unitFormData.append('description', this.unitFormData.description);
+                unitFormData.append('division_id', this.unitFormData.division_id);
+                unitFormData.append('division_name', this.unitFormData.division_name);
+                //alert(this.papsFormData.oo_name);
+                // ajax call to save the paps data
+                fetch("/units/save-unit-ajax/", {
+                    method: "POST",
+                    body: unitFormData,
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json(); // Assuming the server returns JSON data
+                })
+                .then(data => {
+                    // if message is true, then show the toast notification
+                    if (data.message) {
+                    // call the showToast() method and change the toast message to "PAPs saved successfully!"
+                    this.message = "Unit details added!";
+                    // call the showToast() method to show the toast notification
+                    this.showToast();
+                    console.log("Data saved successfully:", data.message);
+                    // reset the form data
+                    this.unitFormData.unit_name = '';
+                    this.unitFormData.description = '';
+                    this.unitFormData.division_id = 0;
+                    this.unitFormData.division_name = '';
+                    $('#unitdataTable').DataTable().ajax.reload();
+                } // end of if (data.message)
+                else {
+                    // Handle a failed response
+                    console.log("Data save failed:", data.message);
                 }
-                return response.json(); // Assuming the server returns JSON data
-            })
-            .then(data => {
-                // if message is true, then show the toast notification
-                if (data.message) {
-                // call the showToast() method and change the toast message to "PAPs saved successfully!"
-                this.message = "Unit details added!";
-                // call the showToast() method to show the toast notification
-                this.showToast();
-                console.log("Data saved successfully:", data.message);
-                // reset the form data
-                this.unitFormData.unit_name = '';
-                this.unitFormData.description = '';
-                this.unitFormData.division_id = 0;
-                this.unitFormData.division_name = '';
-            } // end of if (data.message)
-            else {
-                // Handle a failed response
-                console.log("Data save failed:", data.message);
+                }
+                ) // end of the first .then()
+                .catch(error => {
+                    // Handle errors
+                    console.error("Error while saving data:", error);
+                });
+
+            }else if(event.target.textContent === updateUnitButton.textContent){
+
+                unitFormData.append('bntUnitText', updateUnitButton.textContent);
+                unitFormData.append('id', this.unitFormData.unit_pid);
+                unitFormData.append('unit_name', this.unitFormData.unit_name);
+                unitFormData.append('description', this.unitFormData.description);
+                unitFormData.append('division_id', this.unitFormData.division_id);
+                unitFormData.append('division_name', this.unitFormData.division_name);
+                //alert(this.papsFormData.oo_name);
+                // ajax call to save the paps data
+                fetch("/units/save-unit-ajax/", {
+                    method: "POST",
+                    body: unitFormData,
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json(); // Assuming the server returns JSON data
+                })
+                .then(data => {
+                    // if message is true, then show the toast notification
+                    if (data.message) {
+                    // call the showToast() method and change the toast message to "PAPs saved successfully!"
+                    this.message = "Unit details updated!";
+                    // call the showToast() method to show the toast notification
+                    this.showToast();
+                    console.log("Data updated successfully:", data.message);
+                    $("#unit-ID").val('');
+                    // refresh datatable
+                    $('#unitdataTable').DataTable().ajax.reload();
+                } // end of if (data.message)
+                else {
+                    // Handle a failed response
+                    console.log("Data save failed:", data.message);
+                }
+                }
+                ) // end of the first .then()
+                .catch(error => {
+                    // Handle errors
+                    console.error("Error while saving data:", error);
+                });
+
+            }else{
+                console.log("Failed transaction");
             }
-            }
-            ) // end of the first .then()
-            .catch(error => {
-                // Handle errors
-                console.error("Error while saving data:", error);
-            });
+
+
         }, // end of savePapsData() function
 
-        saveDivData() {
+        saveDivData(event) {
+
+            event.preventDefault();
+
+            const saveDivButton = document.getElementById('div-save');
+            const updateDivButton = document.getElementById('div-update');
+            console.log(updateDivButton.textContent)
+            console.log(event.target.textContent)
             const divFormData = new FormData();
-            divFormData.append('division_name', this.divFormData.division_name);
-            divFormData.append('division_desc', this.divFormData.division_desc);
-           
-            //alert(this.papsFormData.oo_name);
-            // ajax call to save the paps data
-            fetch("/divisions/save-div-ajax/", {
-                method: "POST",
-                body: divFormData,
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Network response was not ok");
+
+            if(event.target.textContent === saveDivButton.textContent){
+
+                divFormData.append('buttonDivTxt', saveDivButton.textContent)
+                divFormData.append('division_name', this.divFormData.division_name);
+                divFormData.append('division_desc', this.divFormData.division_desc);
+               
+                //alert(this.papsFormData.oo_name);
+                // ajax call to save the paps data
+                fetch("/divisions/save-div-ajax/", {
+                    method: "POST",
+                    body: divFormData,
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok"); 
+                    }
+                    return response.json(); // Assuming the server returns JSON data
+                })
+                .then(data => {
+                    // if message is true, then show the toast notification
+                    if (data.message) {
+                    // call the showToast() method and change the toast message to "PAPs saved successfully!"
+                    this.message = "Division details saved";
+                    // call the showToast() method to show the toast notification
+                    this.showToast();
+                    console.log("Data saved successfully:", data.message);
+                    // reset the form data
+                    this.divFormData.division_name = '';
+                    this.divFormData.division_desc = '';
+                } // end of if (data.message)
+                else {
+                    // Handle a failed response
+                    console.log("Data save failed:", data.message);
                 }
-                return response.json(); // Assuming the server returns JSON data
-            })
-            .then(data => {
-                // if message is true, then show the toast notification
-                if (data.message) {
-                // call the showToast() method and change the toast message to "PAPs saved successfully!"
-                this.message = "Division details saved";
-                // call the showToast() method to show the toast notification
-                this.showToast();
-                console.log("Data saved successfully:", data.message);
-                // reset the form data
-                this.divFormData.division_name = '';
-                this.divFormData.division_desc = '';
-            } // end of if (data.message)
-            else {
-                // Handle a failed response
-                console.log("Data save failed:", data.message);
+                $('#divdataTable').DataTable().ajax.reload();
+                }
+                ) // end of the first .then()
+                .catch(error => {
+                    // Handle errors
+                    console.error("Error while saving data:", error);
+                });
+
+            }else if(event.target.textContent === updateDivButton.textContent){
+
+                divFormData.append('buttonDivTxt', updateDivButton.textContent)
+                divFormData.append('id', this.divFormData.div_pid);
+                divFormData.append('division_name', this.divFormData.division_name);
+                divFormData.append('division_desc', this.divFormData.division_desc);
+               
+                //alert(this.papsFormData.oo_name);
+                // ajax call to save the paps data
+                fetch("/divisions/save-div-ajax/", {
+                    method: "POST",
+                    body: divFormData,
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json(); // Assuming the server returns JSON data
+                })
+                .then(data => {
+                    // if message is true, then show the toast notification
+                    if (data.message) {
+                    // call the showToast() method and change the toast message to "PAPs saved successfully!"
+                    this.message = "Division details updated";
+                    // call the showToast() method to show the toast notification
+                    this.showToast();
+                    console.log("Data saved successfully:", data.message);
+                    $("#div-ID").val("");
+                } // end of if (data.message)
+                else {
+                    // Handle a failed response
+                    console.log("Data save failed:", data.message);
+                }
+                $('#divdataTable').DataTable().ajax.reload();
+                }
+                ) // end of the first .then()
+                .catch(error => {
+                    // Handle errors
+                    console.error("Error while saving data:", error);
+                });
+
+            }else{
+
+                console.log("Failed transaction");
+
             }
-            }
-            ) // end of the first .then()
-            .catch(error => {
-                // Handle errors
-                console.error("Error while saving data:", error);
-            });
+            
+
         }, // end of savePapsData() function
 
         showModal() {
@@ -626,9 +763,20 @@ const app = Vue.createApp({
         showDivModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $('#myDivModal').modal('show');
+            $("#div-update").hide();
+            $("#div-save").show();
+        },
+        showDivModalPanel(){
+            // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
+            $('#myDivModalPanel').modal('show');
         },
         showUnitModal(){
             $("#myUnitModal").modal('show');
+            $("#unit-update").hide();
+            $("#unit-save").show();
+        },
+        showUnitModalPanel(){
+            $("#myUnitModalPanel").modal('show');
         },
         showCalModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
@@ -1126,11 +1274,23 @@ const app = Vue.createApp({
             this.$refs.eventForm.reset();
          },
 
+         resetDivFormData() {
+            // Reset the division form data to initial values
+            Object.assign(this.divFormData, this.$options.data().divFormData);
+         },
+
+         resetUnitFormData(){
+            // Reset the unit form data to initial values
+            Object.assign(this.unitFormData, this.$options.data().unitFormData);
+         }
+
     }, // end of methods
     mounted() {
 
         var table; //declare the table variable globally
         var tableEvents; //declare the table variable globally
+        var divTable;
+        var unitTable;
         const self = this;
 
         $(function() {
@@ -1380,7 +1540,210 @@ const app = Vue.createApp({
                 }
             }); // end of the $('#eventsTable tbody')
 
-        }); // end of the function
+            // server side display table for division
+            divTable = $('#divdataTable').DataTable({
+                'processing': true,
+                'serverSide': true,
+                'ajax': { 
+                    'url': '/get-division-details/',  // Replace with your API endpoint
+                    'type': 'GET',
+                },
+                'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
+                'buttons': [
+                    {
+                        extend: 'copy',
+                        exportOptions: {
+                            columns: ':not(:first-child)' // Excludes the first column from copy
+                        }
+                    },
+                    {
+                        extend: 'csv',
+                        exportOptions: {
+                            columns: ':not(:first-child)' // Excludes the first column from CSV export
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        exportOptions: {
+                            columns: ':not(:first-child)' // Excludes the first column from Excel export
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        exportOptions: {
+                            columns: ':not(:first-child)' // Excludes the first column from PDF export
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            columns: ':not(:first-child)' // Excludes the first column when printing
+                        }
+                    },
+                ],
+                'columns': [
+                    {'data': 'id', 'sortable': true, 'searchable': false},
+                    {'data': 'division_name', 'searchable': true, 'sortable': true},
+                    {'data': 'division_desc', 'searchable': true, 'sortable': true},
+                ],
+                'order': [[0, 'desc']], // Order by ID column, descending
+            
+            }); // end of the $('#divdataTable').DataTable()
+            
+            // edit data using datatable row click
+            $('#divdataTable tbody').on('click', 'tr', function () {
+
+                console.log('b');
+
+                var data = divTable.row(this).data();
+                // show cursor as pointer when hovering over the table row
+                $('#divdataTable tbody tr').css('cursor', 'pointer');
+               
+                if (data) {
+                    console.log('Selected Data:', data.id);
+                    console.log(data.division_name);
+                    console.log(data.division_desc);
+                    //query the database for the event details using the event id and display it in the #editEventModal
+            
+                    //console.log(data.event_code);
+                    //populate the editEventModal with the event details
+                    $("#div-ID").val(data.id);
+                    $("#division-name").val(data.division_name);
+                    $("#division-desc").val(data.division_desc);
+
+                    if (data) {
+                        $("#div-update").show(); // Show the update button
+                        $("#div-save").hide(); // Hide the save button
+                    } else {
+                        $("#div-update").hide(); // Hide the update button
+                        $("#div-save").show(); // Show the save button
+                    }
+
+                    $('#myDivModal').modal('show');
+                    
+                     const divpID = $("#div-ID").val();
+                     const divName = $("#division-name").val();
+                     const divDesc = $("#division-desc").val();
+                
+                     self.divFormData.div_pid = divpID;
+                     self.divFormData.division_name = divName;
+                     self.divFormData.division_desc = divDesc;
+                    // self.formData.division_id = eventDivision;
+                    // self.formData.division_name = eventDivName;                
+                      
+                }
+            }); // end of the $('#divdataTable tbody')
+
+        // server side display table for unit
+        unitTable = $('#unitdataTable').DataTable({
+            'processing': true,
+            'serverSide': true,
+            'ajax': { 
+                'url': '/units/get-unit-details/',  // Replace with your API endpoint
+                'type': 'GET',
+            },
+            'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
+            'buttons': [
+                {
+                    extend: 'copy',
+                    exportOptions: {
+                        columns: ':not(:first-child)' // Excludes the first column from copy
+                    }
+                },
+                {
+                    extend: 'csv',
+                    exportOptions: {
+                        columns: ':not(:first-child)' // Excludes the first column from CSV export
+                    }
+                },
+                {
+                    extend: 'excel',
+                    exportOptions: {
+                        columns: ':not(:first-child)' // Excludes the first column from Excel export
+                    }
+                },
+                {
+                    extend: 'pdf',
+                    exportOptions: {
+                        columns: ':not(:first-child)' // Excludes the first column from PDF export
+                    }
+                },
+                {
+                    extend: 'print',
+                    exportOptions: {
+                        columns: ':not(:first-child)' // Excludes the first column when printing
+                    }
+                },
+            ],
+            'columns': [
+                {'data': 'id', 'sortable': true, 'searchable': false},
+                {'data': 'unit_name', 'searchable': true, 'sortable': true},
+                {'data': 'description', 'searchable': true, 'sortable': true},
+                {'data': 'division_name', 'searchable': true, 'sortable': true},
+                {'data': 'division_id', 'searchable': true, 'sortable': true},
+            ],
+            columnDefs: [
+                {
+                    targets: [4],
+                    visible: false
+                }
+            ],
+            'order': [[0, 'desc']], // Order by ID column, descending
+        
+        }); // end of the $('#unitdataTable').DataTable()
+
+    // edit data using datatable row click
+        $('#unitdataTable tbody').on('click', 'tr', function () {
+
+            console.log('b');
+
+            var data = unitTable.row(this).data();
+            // show cursor as pointer when hovering over the table row
+            $('#unitdataTable tbody tr').css('cursor', 'pointer');
+            
+            if (data) {
+                
+                console.log('Selected Data:', data.id);
+                console.log(data.division_name);
+                console.log(data.division_desc);
+                //query the database for the event details using the event id and display it in the #editEventModal
+        
+                //console.log(data.event_code);
+                //populate the editEventModal with the event details
+                $("#unit-ID").val(data.id);
+                $("#id-unitName").val(data.unit_name);
+                $("#id-unitDesc").val(data.description);
+                $("#div-name-id").val(data.division_name);
+                $("#divList-id").val(data.division_id);
+
+                if (data) {
+                    $("#unit-update").show(); // Show the update button
+                    $("#unit-save").hide(); // Hide the save button
+                } else {
+                    $("#unit-update").hide(); // Hide the update button
+                    $("#unit-save").show(); // Show the save button
+                }
+
+                $('#myUnitModal').modal('show');
+                
+                    const unitpID = $("#unit-ID").val();
+                    const unitName = $("#id-unitName").val();
+                    const unitDesc = $("#id-unitDesc").val();
+                    const unitDivId = $("#divList-id").val();
+                    const unitDivName = $("#div-name-id").val();
+            
+                    self.unitFormData.unit_pid = unitpID;
+                    self.unitFormData.unit_name = unitName;
+                    self.unitFormData.description = unitDesc;
+                    self.unitFormData.division_id = unitDivId;
+                    self.unitFormData.division_name = unitDivName;
+                // self.formData.division_id = eventDivision;
+                // self.formData.division_name = eventDivName; 
+                    
+            }
+        }); // end of the $('#divdataTable tbody')
+
+    }); // end of the function
 
         //Datatables serverside for displaying events in different field sequence
         tableEvents = $('#eventsDisplayTable').DataTable({

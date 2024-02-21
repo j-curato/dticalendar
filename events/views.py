@@ -3,12 +3,9 @@
 # from .serializers import EventSerializer
 from django.http import HttpResponse
 from django.http import JsonResponse
-
-
 from django.db import connection
 from django.db.models import F
 from django.db.models.functions import Lower
-
 from django.db import connection
 from calendars.models import Calendar
 from divisions.models import Division
@@ -198,7 +195,7 @@ def save_event_ajax(request):
             existing_event.event_location_lgu = request.POST['event_location_lgu'].upper()
             updated_fields['event_location_lgu'] = existing_event.event_location_lgu
 
-        if existing_event.event_locatievent_location_barangayon_lgu != request.POST['event_location_barangay'].upper():
+        if existing_event.event_location_barangay != request.POST['event_location_barangay'].upper():
             existing_event.event_location_barangay = request.POST['event_location_barangay'].upper()
             updated_fields['event_location_barangay'] = existing_event.event_location_barangay
 
