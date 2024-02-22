@@ -26,7 +26,7 @@
         <!-- <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.print.js"></script> -->
         <script src="{% static 'js/buttons.print.js' %}"></script>
         <!-- <script src="https://printjs-4de6.kxcdn.com/print.min.js"></script> -->
-        <!-- <script src="{% static 'js/print.min.js' %}"></script> -->
+        <script src="{% static 'js/ColReorderWithResize.js' %}"></script>
 
 
         <!--CSS Bootstrap-->
@@ -159,6 +159,18 @@
             }
         } 
 
+    /* Customize border width and color for DataTable */
+    .dataTables_wrapper table.dataTable {
+        border-collapse: collapse; /* Collapse borders for a cleaner look */
+        border: 1px solid #ddd; /* Set border width and color */
+    }
+
+    .dataTables_wrapper table.dataTable th,
+    .dataTables_wrapper table.dataTable td {
+        border: 1px solid #ddd; /* Apply border to table cells */
+        padding: 8px; /* Add padding to improve readability */
+    }
+      
       
     </style>
         

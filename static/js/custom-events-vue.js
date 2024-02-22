@@ -329,6 +329,10 @@ const appEvents = Vue.createApp({
                 var tblEventsDiv;
                     // Create DataTable using dynamic configuration
                     tblEventsDiv = $('#eventsDivDisplayTable').DataTable({
+                        'dom': 'Rlfrtip',
+                        'colReorder': {
+                            'allowReorder': true
+                        },
                         'processing': true,
                         'serverSide': true,
                         'ajax': {
@@ -486,12 +490,14 @@ const appEvents = Vue.createApp({
                                 };
                             }
                         }),
+                        'colResize': true // Enable column resizing
                     });
 
                 // filter by division
                 tblEventsDiv = $('#eventsDivDisfffplayTable').DataTable({
                     'processing': true,
                     'serverSide': true,
+                    "sDom": 'Rlfrtip',
                     'ajax': { 
                         'url': '/events/fetch-events-by-div-ajax/',  // Replace with your API endpoint
                         'type': 'GET', 
@@ -693,6 +699,8 @@ const appEvents = Vue.createApp({
                         },
                         // Add more 'columnDefs' as needed
                     ],
+                    'colReorder': true, // Enable ColReorder extension
+                    'colResize': true   // Enable column resizing
                     
             }); // end of the $('#eventsDivDisplayTable').DataTable()
 

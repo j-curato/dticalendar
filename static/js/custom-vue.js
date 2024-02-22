@@ -59,15 +59,21 @@ const app = Vue.createApp({
             }, // end of formData
             // initialize the Org Outcome form data
             orgFormData: {
+
+                oo_pid: 0,
                 org_outcome: '', // Initialize with an empty string
                 description: '', // Initialize with an empty string
+
             },
             // initialize papsFormData
             papsFormData: {
+
+                pap_pid: 0,
                 pap: '', // Initialize with an empty string
                 description: '', // Initialize with an empty string
                 org_outcome_id: 0,
                 oo_name: '',
+
             },
             unitFormData: {
 
@@ -114,6 +120,13 @@ const app = Vue.createApp({
             this.resetUnitFormData();
         },
 
+        callOoFunctions(){
+            this.showOrgModal();
+            this.resetOoFormData();
+        },
+        callPapFunctions(){
+            this.showPapsModal();
+        },
         nextModal() {
             $("#modal1").modal("hide");
             $("#modal2").modal("show");
@@ -448,87 +461,201 @@ const app = Vue.createApp({
                     }); // end of the $('#eventsTable').DataTable()
         }, // end of loadFiltDatatable() function
         // function to save org outcome data
-        saveOoData() {
+        saveOoData(event) {
+
+            event.preventDefault();
+
+            const saveOoButton = document.getElementById('oo-save');
+            const updateOoButton = document.getElementById('oo-update');
             const orgFormData = new FormData();
-            orgFormData.append('org_outcome', this.orgFormData.org_outcome);
-            orgFormData.append('description', this.orgFormData.description);
-            // ajax call to save the org outcome data
-            fetch("/orgoutcomes/save-org-outcome-ajax/", {
-                method: "POST",
-                body: orgFormData,
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Network response was not ok");
+            
+
+            if(event.target.textContent === saveOoButton.textContent){
+
+                orgFormData.append('oobtntxt', saveOoButton.textContent)
+                orgFormData.append('org_outcome', this.orgFormData.org_outcome);
+                orgFormData.append('description', this.orgFormData.description);
+
+                // ajax call to save the org outcome data
+                fetch("/orgoutcomes/save-org-outcome-ajax/", {
+                    method: "POST",
+                    body: orgFormData,
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json(); // Assuming the server returns JSON data
+                })
+                .then(data => {
+                    // if message is true, then show the toast notification
+                    if (data.message) {
+                    // call the showToast() method and change the toast message to "Org Outcome saved successfully!"
+                    this.message = "Org Outcome saved successfully!";
+                    // call the showToast() method to show the toast notification
+                    this.showToast();
+                    console.log("Data saved successfully:", data);
+                    // reset the form data
+                    $('#oodataTable').DataTable().ajax.reload();
+                    this.orgFormData.org_outcome = '';
+                    this.orgFormData.description = '';
+                } // end of if (data.message)
+                else {
+                    // Handle a failed response
+                    console.log("Data save failed:", data);
                 }
-                return response.json(); // Assuming the server returns JSON data
-            })
-            .then(data => {
-                // if message is true, then show the toast notification
-                if (data.message) {
-                // call the showToast() method and change the toast message to "Org Outcome saved successfully!"
-                this.message = "Org Outcome saved successfully!";
-                // call the showToast() method to show the toast notification
-                this.showToast();
-                console.log("Data saved successfully:", data);
-                // reset the form data
-                this.orgFormData.org_outcome = '';
-                this.orgFormData.description = '';
-            } // end of if (data.message)
-            else {
-                // Handle a failed response
-                console.log("Data save failed:", data);
+                }) // end of the first .then()
+                .catch(error => {
+                    // Handle errors
+                    console.error("Error while saving data:", error);
+                });
+
+            }else if(event.target.textContent === updateOoButton.textContent){
+
+                orgFormData.append('oobtntxt', updateOoButton.textContent);
+                orgFormData.append('id', this.orgFormData.oo_pid);
+                orgFormData.append('org_outcome', this.orgFormData.org_outcome);
+                orgFormData.append('description', this.orgFormData.description);
+
+                // ajax call to save the org outcome data
+                fetch("/orgoutcomes/save-org-outcome-ajax/", {
+                    method: "POST",
+                    body: orgFormData,
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json(); // Assuming the server returns JSON data
+                })
+                .then(data => {
+                    // if message is true, then show the toast notification
+                    if (data.message) {
+                    // call the showToast() method and change the toast message to "Org Outcome saved successfully!"
+                    this.message = "Org Outcome detail/s updated!";
+                    // call the showToast() method to show the toast notification
+                    this.showToast();
+                    console.log("Data saved successfully:", data);
+                    // refresh the display table data
+                    $('#oodataTable').DataTable().ajax.reload();
+
+                } // end of if (data.message)
+                else {
+                    // Handle a failed response
+                    console.log("Data save failed:", data);
+                }
+                }) // end of the first .then()
+                .catch(error => {
+                    // Handle errors
+                    console.error("Error while saving data:", error);
+                });
+
+            }else{
+                console.log("Failed tx");
             }
-            }) // end of the first .then()
-            .catch(error => {
-                // Handle errors
-                console.error("Error while saving data:", error);
-            });
+
+
         }, // end of saveOrgOutcomeData() function
 
         // function to save paps data
-        savePapsData() {
+        savePapsData(event) {
+
+            event.preventDefault();
+            
             const papsFormData = new FormData();
-            papsFormData.append('pap', this.papsFormData.pap);
-            papsFormData.append('description', this.papsFormData.description);
-            papsFormData.append('org_outcome_id', this.papsFormData.org_outcome_id);
-            papsFormData.append('oo_name', this.papsFormData.oo_name);
-            //alert(this.papsFormData.oo_name);
-            // ajax call to save the paps data
-            fetch("/paps/save-paps-ajax/", {
-                method: "POST",
-                body: papsFormData,
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Network response was not ok");
+            const savePapButton = document.getElementById('pap-save');
+            const updatePapButton = document.getElementById('pap-update');
+
+            if(event.target.textContent === savePapButton.textContent){
+
+                papsFormData.append('papBtnTxt', savePapButton.textContent);
+                papsFormData.append('pap', this.papsFormData.pap);
+                papsFormData.append('description', this.papsFormData.description);
+                papsFormData.append('org_outcome_id', this.papsFormData.org_outcome_id);
+                papsFormData.append('oo_name', this.papsFormData.oo_name);
+                //alert(this.papsFormData.oo_name);
+                // ajax call to save the paps data
+                fetch("/paps/save-paps-ajax/", {
+                    method: "POST",
+                    body: papsFormData,
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json(); // Assuming the server returns JSON data
+                })
+                .then(data => {
+                    // if message is true, then show the toast notification
+                    if (data.message) {
+                    // call the showToast() method and change the toast message to "PAPs saved successfully!"
+                    this.message = "PAP details added";
+                    // call the showToast() method to show the toast notification
+                    this.showToast();
+                    console.log("Data saved successfully:", data.message);
+                    // reset the form data
+                    this.papsFormData.pap = '';
+                    this.papsFormData.description = '';
+                    this.papsFormData.org_outcome_id = 0;
+                    this.papsFormData.oo_name = '';
+                    $('#papdataTable').DataTable().ajax.reload();
+                } // end of if (data.message)
+                else {
+                    // Handle a failed response
+                    console.log("Data save failed:", data.message);
                 }
-                return response.json(); // Assuming the server returns JSON data
-            })
-            .then(data => {
-                // if message is true, then show the toast notification
-                if (data.message) {
-                // call the showToast() method and change the toast message to "PAPs saved successfully!"
-                this.message = "PAP data saved successfully!";
-                // call the showToast() method to show the toast notification
-                this.showToast();
-                console.log("Data saved successfully:", data.message);
-                // reset the form data
-                this.papsFormData.pap = '';
-                this.papsFormData.description = '';
-                this.papsFormData.org_outcome_id = 0;
-                this.papsFormData.oo_name = '';
-            } // end of if (data.message)
-            else {
-                // Handle a failed response
-                console.log("Data save failed:", data.message);
+                }
+                ) // end of the first .then()
+                .catch(error => {
+                    // Handle errors
+                    console.error("Error while saving data:", error);
+                });
+
+            }else if(event.target.textContent === updatePapButton.textContent){
+
+                papsFormData.append('papBtnTxt', updatePapButton.textContent);
+                papsFormData.append('id', this.papsFormData.pap_pid);
+                papsFormData.append('pap', this.papsFormData.pap);
+                papsFormData.append('description', this.papsFormData.description);
+                papsFormData.append('org_outcome_id', this.papsFormData.org_outcome_id);
+                papsFormData.append('oo_name', this.papsFormData.oo_name);
+                //alert(this.papsFormData.oo_name);
+                // ajax call to save the paps data
+                fetch("/paps/save-paps-ajax/", {
+                    method: "POST",
+                    body: papsFormData,
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json(); // Assuming the server returns JSON data
+                })
+                .then(data => {
+                    // if message is true, then show the toast notification
+                    if (data.message) {
+                    // call the showToast() method and change the toast message to "PAPs saved successfully!"
+                    this.message = "PAP detail/s updated";
+                    // call the showToast() method to show the toast notification
+                    this.showToast();
+                    console.log("Data saved successfully:", data.message);
+                    $('#papdataTable').DataTable().ajax.reload();
+                } // end of if (data.message)
+                else {
+                    // Handle a failed response
+                    console.log("Data save failed:", data.message);
+                }
+                }
+                ) // end of the first .then()
+                .catch(error => {
+                    // Handle errors
+                    console.error("Error while saving data:", error);
+                });
+
+            }else{
+                console.log("Failed tx");
             }
-            }
-            ) // end of the first .then()
-            .catch(error => {
-                // Handle errors
-                console.error("Error while saving data:", error);
-            });
+
         }, // end of savePapsData() function
 
         saveUnitData(event) {
@@ -564,7 +691,7 @@ const app = Vue.createApp({
                     // if message is true, then show the toast notification
                     if (data.message) {
                     // call the showToast() method and change the toast message to "PAPs saved successfully!"
-                    this.message = "Unit details added!";
+                    this.message = "Unit details added";
                     // call the showToast() method to show the toast notification
                     this.showToast();
                     console.log("Data saved successfully:", data.message);
@@ -610,11 +737,10 @@ const app = Vue.createApp({
                     // if message is true, then show the toast notification
                     if (data.message) {
                     // call the showToast() method and change the toast message to "PAPs saved successfully!"
-                    this.message = "Unit details updated!";
+                    this.message = "Unit detail/s updated";
                     // call the showToast() method to show the toast notification
                     this.showToast();
                     console.log("Data updated successfully:", data.message);
-                    $("#unit-ID").val('');
                     // refresh datatable
                     $('#unitdataTable').DataTable().ajax.reload();
                 } // end of if (data.message)
@@ -711,11 +837,11 @@ const app = Vue.createApp({
                     // if message is true, then show the toast notification
                     if (data.message) {
                     // call the showToast() method and change the toast message to "PAPs saved successfully!"
-                    this.message = "Division details updated";
+                    this.message = "Division detail/s updated";
                     // call the showToast() method to show the toast notification
                     this.showToast();
                     console.log("Data saved successfully:", data.message);
-                    $("#div-ID").val("");
+                    //$("#div-ID").val("");
                 } // end of if (data.message)
                 else {
                     // Handle a failed response
@@ -759,24 +885,55 @@ const app = Vue.createApp({
             console.log(this.formData.event_desc);
             console.log(this.formData.participants);
 
+            // Get the text content of the h5 tag
+            var h5Text = $('#h5-Event1').text();
+            var h5Text2 = $('#h5-Event2').text();
+
+            if (h5Text.includes('Update Event') || h5Text2.includes('Update Event')) {
+                // If it contains "Update Event", replace it with "Add Event"
+                $('#h5-Event1').text(h5Text.replace('Update Event', 'Add Event'));
+                $('#h5-Event2').text(h5Text2.replace('Update Event', 'Add Event'));
+            }
+
         },
         showDivModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $('#myDivModal').modal('show');
             $("#div-update").hide();
             $("#div-save").show();
+
+            var h5Text = $('#h5-Div').text();
+
+            if (h5Text.includes('Update Division')) {
+                // If it contains "Update Event", replace it with "Add Event"
+                $('#h5-Div').text(h5Text.replace('Update Division', 'Add Division'));
+            }
         },
         showDivModalPanel(){
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $('#myDivModalPanel').modal('show');
         },
         showUnitModal(){
+
             $("#myUnitModal").modal('show');
             $("#unit-update").hide();
             $("#unit-save").show();
+
+            var h5Text = $('#h5-Unit').text();
+
+            if (h5Text.includes('Update Unit')) {
+                // If it contains "Update Event", replace it with "Add Event"
+                $('#h5-Unit').text(h5Text.replace('Update Unit', 'Add Unit'));
+            }
         },
         showUnitModalPanel(){
             $("#myUnitModalPanel").modal('show');
+        },
+        showOrgModalPanel(){
+            $("#myOoModalPanel").modal('show');
+        },
+        showPapsModalPanel(){
+            $("#myPapsModalPanel").modal('show');
         },
         showCalModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
@@ -794,11 +951,29 @@ const app = Vue.createApp({
         showOrgModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $('#orgOutcomeModal').modal('show');
+            $("#oo-update").hide(); // Show the update button
+            $("#oo-save").show(); // Hide the save button
+
+            var h5Text = $('#h5-Oo').text();
+
+            if (h5Text.includes('Update Organizational Outcome')) {
+                // If it contains "Update Event", replace it with "Add Event"
+                $('#h5-Oo').text(h5Text.replace('Update Organizational Outcome', 'Add Organizational Outcome'));
+            }
         },
         // PAPs modal
         showPapsModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $('#papsModal').modal('show');
+            $("#pap-update").hide(); // Show the update button
+            $("#pap-save").show(); // Hide the save button
+
+            var h5Text = $('#h5-Paps').text();
+
+            if (h5Text.includes('Update Program and Project')) {
+                // If it contains "Update Event", replace it with "Add Event"
+                $('#h5-Paps').text(h5Text.replace('Update Program and Project', 'Add Program and Project'));
+            }
         },
         showToast() {
             const toastElement = document.getElementById('liveToast');
@@ -1277,11 +1452,19 @@ const app = Vue.createApp({
          resetDivFormData() {
             // Reset the division form data to initial values
             Object.assign(this.divFormData, this.$options.data().divFormData);
+            $("#div-ID").val("");
          },
 
          resetUnitFormData(){
             // Reset the unit form data to initial values
             Object.assign(this.unitFormData, this.$options.data().unitFormData);
+            $("#unit-ID").val('');
+         },
+
+         resetOoFormData(){
+            // Reset the unit form data to initial values
+            Object.assign(this.orgFormData, this.$options.data().orgFormData);
+            $("#oo-ID").val('');
          }
 
     }, // end of methods
@@ -1291,6 +1474,8 @@ const app = Vue.createApp({
         var tableEvents; //declare the table variable globally
         var divTable;
         var unitTable;
+        var ooTable;
+        var papTable;
         const self = this;
 
         $(function() {
@@ -1388,9 +1573,21 @@ const app = Vue.createApp({
 
             $('#eventsTable tbody').on('click', 'tr', function () {
 
-                console.log('b');
-
                 var data = table.row(this).data();
+                // Get the text content of the h5 tag
+                var h5Text = $('#h5-Event1').text();
+                var h5Text2 = $('#h5-Event2').text();
+
+                // Check if the text contains "Add Event"
+                if (h5Text.includes('Add Event') || h5Text2.includes('Add Event')) {
+                    // If it does, replace it with "Update Event"
+                    $('#h5-Event1').text(h5Text.replace('Add Event', 'Update Event'));
+                    $('#h5-Event2').text(h5Text.replace('Add Event', 'Update Event'));
+                } else if (h5Text.includes('Update Event')) {
+                    // If it contains "Update Event", replace it with "Add Event"
+                    $('#h5-Event1').text(h5Text.replace('Update Event', 'Add Event'));
+                }
+
                 // show cursor as pointer when hovering over the table row
                 $('#eventsTable tbody tr').css('cursor', 'pointer');
                
@@ -1593,9 +1790,15 @@ const app = Vue.createApp({
             // edit data using datatable row click
             $('#divdataTable tbody').on('click', 'tr', function () {
 
-                console.log('b');
-
                 var data = divTable.row(this).data();
+
+                var h5Text = $('#h5-Div').text();
+
+                if (h5Text.includes('Add Division')) {
+                    // If it contains "Update Event", replace it with "Add Event"
+                    $('#h5-Div').text(h5Text.replace('Add Division', 'Update Division'));
+                }
+
                 // show cursor as pointer when hovering over the table row
                 $('#divdataTable tbody tr').css('cursor', 'pointer');
                
@@ -1692,12 +1895,18 @@ const app = Vue.createApp({
         
         }); // end of the $('#unitdataTable').DataTable()
 
-    // edit data using datatable row click
+        // edit unit data using datatable row click
         $('#unitdataTable tbody').on('click', 'tr', function () {
 
-            console.log('b');
-
             var data = unitTable.row(this).data();
+
+            var h5Text = $('#h5-Unit').text();
+
+            if (h5Text.includes('Add Unit')) {
+                // If it contains "Update Event", replace it with "Add Event"
+                $('#h5-Unit').text(h5Text.replace('Add Unit', 'Update Unit'));
+            }
+
             // show cursor as pointer when hovering over the table row
             $('#unitdataTable tbody tr').css('cursor', 'pointer');
             
@@ -1741,7 +1950,219 @@ const app = Vue.createApp({
                 // self.formData.division_name = eventDivName; 
                     
             }
-        }); // end of the $('#divdataTable tbody')
+        }); // end of the $('#unitdataTable tbody')
+
+        // server side display table for unit
+        ooTable = $('#oodataTable').DataTable({
+            'processing': true,
+            'serverSide': true,
+            'ajax': { 
+                'url': '/orgoutcomes/get-oo-details/',  // Replace with your API endpoint
+                'type': 'GET',
+            },
+            'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
+            'buttons': [
+                {
+                    extend: 'copy',
+                    exportOptions: {
+                        //columns: ':not(:first-child)' // Excludes the first column from copy
+                    }
+                },
+                {
+                    extend: 'csv',
+                    exportOptions: {
+                        //columns: ':not(:first-child)' // Excludes the first column from CSV export
+                    }
+                },
+                {
+                    extend: 'excel',
+                    exportOptions: {
+                        //columns: ':not(:first-child)' // Excludes the first column from Excel export
+                    }
+                },
+                {
+                    extend: 'pdf',
+                    exportOptions: {
+                        //columns: ':not(:first-child)' // Excludes the first column from PDF export
+                    }
+                },
+                {
+                    extend: 'print',
+                    exportOptions: {
+                        //columns: ':not(:first-child)' // Excludes the first column when printing
+                    }
+                },
+            ],
+
+            'columns': [
+                {'data': 'id', 'sortable': true, 'searchable': false},
+                {'data': 'org_outcome', 'searchable': true, 'sortable': true},
+                {'data': 'description', 'searchable': true, 'sortable': true}
+            ],
+
+            'order': [[0, 'desc']], // Order by ID column, descending
+        
+        }); // end of the $('#oodataTable').DataTable()
+
+
+        // edit orgoutcome
+        $('#oodataTable tbody').on('click', 'tr', function () {
+
+            var data = ooTable.row(this).data();
+
+            var h5Text = $('#h5-Oo').text();
+
+            if (h5Text.includes('Add Organizational Outcome')) {
+                // If it contains "Add Organizational Outcome", replace it with "Update Organizational Outcome"
+                $('#h5-Oo').text(h5Text.replace('Add Organizational Outcome', 'Update Organizational Outcome'));
+            }
+            
+            // show cursor as pointer when hovering over the table row
+            $('#oodataTable tbody tr').css('cursor', 'pointer');
+            
+            if (data) {
+                
+                console.log('Selected Data:', data.id);
+                console.log(data.org_outcome);
+                console.log(data.description);
+                //query the database for the event details using the event id and display it in the #editEventModal
+    
+                //populate the editEventModal with the event details
+                $("#oo-ID").val(data.id);
+                $("#id-orgoutcome").val(data.org_outcome);
+                $("#id-oodesc").val(data.description);
+    
+                if (data) {
+                    $("#oo-update").show(); // Show the update button
+                    $("#oo-save").hide(); // Hide the save button
+                } else {
+                    $("#oo-update").hide(); // Hide the update button
+                    $("#oo-save").show(); // Show the save button
+                }
+
+                $('#orgOutcomeModal').modal('show');
+                
+                const oopID = $("#oo-ID").val();
+                const ooName = $("#id-orgoutcome").val();
+                const ooDesc = $("#id-oodesc").val();
+        
+                self.orgFormData.oo_pid = oopID;
+                self.orgFormData.org_outcome = ooName;
+                self.orgFormData.description = ooDesc;
+                    
+            }
+        }); // end of the $('#oodataTable tbody')
+
+        // server side display table for paps
+        papTable = $('#papdataTable').DataTable({
+            'processing': true,
+            'serverSide': true,
+            'ajax': { 
+                'url': '/paps/get-paps-details/',  // Replace with your API endpoint
+                'type': 'GET',
+            },
+            'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
+            'buttons': [
+                {
+                    extend: 'copy',
+                    exportOptions: {
+                        //columns: ':not(:first-child)' // Excludes the first column from copy
+                    }
+                },
+                {
+                    extend: 'csv',
+                    exportOptions: {
+                        //columns: ':not(:first-child)' // Excludes the first column from CSV export
+                    }
+                },
+                {
+                    extend: 'excel',
+                    exportOptions: {
+                        //columns: ':not(:first-child)' // Excludes the first column from Excel export
+                    }
+                },
+                {
+                    extend: 'pdf',
+                    exportOptions: {
+                        //columns: ':not(:first-child)' // Excludes the first column from PDF export
+                    }
+                },
+                {
+                    extend: 'print',
+                    exportOptions: {
+                        //columns: ':not(:first-child)' // Excludes the first column when printing
+                    }
+                },
+            ],
+
+            'columns': [
+                {'data': 'id', 'sortable': true, 'searchable': false},
+                {'data': 'pap', 'searchable': true, 'sortable': true},
+                {'data': 'description', 'searchable': true, 'sortable': true},
+                {'data': 'oo_name', 'searchable': true, 'sortable': true},
+                {'data': 'org_outcome_id', 'searchable': true, 'sortable': true}
+            ],
+
+            'order': [[0, 'desc']], // Order by ID column, descending
+        
+        }); // end of the $('#oodataTable').DataTable()
+
+        // edit pap data using datatable row click
+        $('#papdataTable tbody').on('click', 'tr', function () {
+
+            var data = papTable.row(this).data();
+
+            var h5Text = $('#h5-Paps').text();
+
+            if (h5Text.includes('Add Program and Project')) {
+                // If it contains "Update Event", replace it with "Add Event"
+                $('#h5-Paps').text(h5Text.replace('Add Program and Project', 'Update Program and Project'));
+            }
+
+            // show cursor as pointer when hovering over the table row
+            $('#papdataTable tbody tr').css('cursor', 'pointer');
+            
+            if (data) {
+                
+                console.log('Selected Data:', data.id);
+                console.log(data.pap);
+                console.log(data.description);
+                //query the database for the event details using the event id and display it in the #editEventModal
+        
+                //console.log(data.event_code);
+                //populate the editEventModal with the event details
+                $("#pap-ID").val(data.id);
+                $("#id-pap").val(data.pap);
+                $("#id-papdesc").val(data.description);
+                $("#orgOutcome-id").val(data.org_outcome_id);
+                $("#oo-name-id").val(data.oo_name);
+
+                if (data) {
+                    $("#pap-update").show(); // Show the update button
+                    $("#pap-save").hide(); // Hide the save button
+                } else {
+                    $("#pap-update").hide(); // Hide the update button
+                    $("#pap-save").show(); // Show the save button
+                }
+
+                $('#papsModal').modal('show');
+                
+                    const pappID = $("#pap-ID").val();
+                    const papName = $("#id-pap").val();
+                    const papDesc = $("#id-papdesc").val();
+                    const papOrgId = $("#orgOutcome-id").val();
+                    const papOrgName = $("#oo-name-id").val();
+            
+                    self.papsFormData.pap_pid = pappID;
+                    self.papsFormData.pap = papName;
+                    self.papsFormData.description = papDesc;
+                    self.papsFormData.org_outcome_id = papOrgId;
+                    self.papsFormData.oo_name = papOrgName;
+                // self.formData.division_id = eventDivision;
+                // self.formData.division_name = eventDivName; 
+                    
+            }
+        }); // end of the $('#papdataTable tbody')
 
     }); // end of the function
 

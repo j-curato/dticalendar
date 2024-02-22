@@ -68,33 +68,13 @@
 
     <div class="container-fluid">
 
-     <!-- <section style="background-color: #9de2ff;"> -->
-    
-      <!-- {% if msgvar %}
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-          <ul class="messages">
-            {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-      {% else %}
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-          <ul class="messages">
-            {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-      {% endif %} -->
-      <HR>
-      
+      <hr>
         <button @click="showModal" class="btn btn-primary"><i class="bi bi-calendar-event"></i> New Event</button>&nbsp;
         <!-- <button @click="showCalModal" class="btn btn-primary"><i class="bi bi-calendar-check"></i> Calendar Category</button>&nbsp; -->
         <button @click="showDivModalPanel" class="btn btn-primary"><i class="bi bi-person-square"></i> Division</button>&nbsp;
         <button @click="showUnitModalPanel" class="btn btn-primary"><i class="bi bi-person-square"></i> Unit</button>&nbsp;
-        <button @click="showOrgModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Organizational Outcome</button>&nbsp;
-        <button @click="showPapsModal" class="btn btn-primary"><i class="bi bi-person-square"></i> PAPs</button>&nbsp;
+        <button @click="showOrgModalPanel" class="btn btn-primary"><i class="bi bi-person-square"></i> Organizational Outcome</button>&nbsp;
+        <button @click="showPapsModalPanel" class="btn btn-primary"><i class="bi bi-person-square"></i> PAPs</button>&nbsp;
 
         <pre>{{ divisionListVue }}</pre>
 
@@ -113,7 +93,7 @@
           <div class="modal-dialog modal-dialog-slideout">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalToggleLabel">Add Event</h5>
+                <h5 class="modal-title" id="h5-Event1">Add Event</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="resetFormData"></button>
               </div>
               <div class="modal-body">
@@ -203,7 +183,7 @@
           <div class="modal-dialog modal-dialog-slideout">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalToggleLabel">Add Event</h5>
+                <h5 class="modal-title" id="h5-Event2">Add Event</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="resetFormData"></button>
               </div>
               <div class="modal-body">
@@ -320,69 +300,6 @@
               </div>
           </div>
       </div>
-      
-            <!-- Organizational Outcome Modal-->
-            <div class="modal fade" id="orgOutcomeModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-slideout">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Add Organizational Outcome</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    <form @submit.prevent="saveOoData" enctype="multipart/form-data">
-                      {% csrf_token %}
-                        <p><input type="text" name="org_outcome" class="form-control" v-model="orgFormData.org_outcome" placeholder="Org Outcome" required></p>
-                        <p><input type="text" name="description" class="form-control" v-model="orgFormData.description" placeholder="Description" required></p>
-
-                        <div class="modal-footer">
-                          <button class="btn btn-primary">Save</button>
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                  </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!--end OrgOutcome modal -->
-
-            <!--PAPs Modal-->
-
-            <div class="modal fade" id="papsModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-slideout">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Add Programs and Projects</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    <form @submit.prevent="savePapsData" enctype="multipart/form-data">
-                      {% csrf_token %}
-                        <p><input type="text" name="pap" class="form-control" placeholder="PAPs" v-model="papsFormData.pap" required></p>
-                        <p><input type="text" name="description" class="form-control" v-model="papsFormData.description" placeholder="Description" required></p>
-                        <!-- Dropdown using loop for ooList = OrgOutcome.objects.all() -->
-                        <p>
-                          <select name="org_outcome" class="form-control form-select" id="orgOutcome-id" v-model="papsFormData.org_outcome_id" aria-label="Default select example" @change="onOoChange" required>
-                            <option value="0">Select Organizational Outcome</option>
-                            {% for val in ooList %}
-                            <option value="{{ val.id }}">{{ val.org_outcome }}</option>
-                            {% endfor %}
-                          </select>
-                        </p>
-                        <p>
-                          <input type="text" name="oo_name" class="form-control" id="oo-name-id" v-model="papsFormData.oo_name" style="display: none;">
-                        </p>
-                        <div class="modal-footer">
-                          <button class="btn btn-primary">Save</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                      </div>
-                     </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- end PAPs modal -->
 
             <div class="modal fade" id="myCalModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-slideout">
@@ -445,7 +362,7 @@
               <div class="modal-dialog modal-dialog-slideout">
                 <div class="modal-content" style="border: 0.5px solid #e0dcdc;">
                   <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Add division</h5>
+                    <h5 class="modal-title" id="h5-Div">Add Division</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <br>
@@ -455,7 +372,7 @@
                     <!-- <form @submit.prevent="saveDivData" enctype="multipart/form-data"> -->
                     <form name="division-form" enctype="multipart/form-data">
                       {% csrf_token %}
-                        <input type="text" placeholder="Field 1" id="div-ID" style="display:none;">
+                        <input type="text" placeholder="Field 1" id="div-ID" style="display: none;">
                         <p><input type="text" name="division_name" class="form-control" placeholder="Division name" v-model="divFormData.division_name" id="division-name" required></p>
                         <p><input type="text" name="division_desc" class="form-control" placeholder="Description" v-model="divFormData.division_desc" id="division-desc" required></p>
                   <div class="modal-footer">
@@ -516,7 +433,7 @@
               <div class="modal-dialog modal-dialog-slideout">
                 <div class="modal-content" style="border: 0.5px solid #e0dcdc;">
                   <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Add Unit</h5>
+                    <h5 class="modal-title" id="h5-Unit">Add Unit</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
@@ -548,6 +465,157 @@
                 </div>
               </div>
             </div>
+
+            <!-- Orgoutcome Modal Panel -->
+            <div class="modal fade" id="myOoModalPanel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+              <div class="modal-dialog modal-dialog-slideout modal-xl">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Organizational Outcome Panel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <br>
+                  <div class="container-fluid">
+                    <div class="row">
+                      <div class="col-md-4">
+                        <!-- <button @click="showUnitModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Add</button>&nbsp; -->
+                        <button class="btn btn-primary" @click="callOoFunctions"><i class="bi bi-person-square"></i>Add</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modal-body">
+                      <table id="oodataTable" class="display" style="width:100%">
+                        <thead>
+                            <tr >
+                                <th>ID</th>
+                                <th>Orgoutcome</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                          <tr>
+                                <th>ID</th>
+                                <th>Orgoutcome</th>
+                                <th>Description</th>
+                          </tr>
+                        </tfoot>
+                      </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- end Oo Panel -->
+
+            <!-- Organizational Outcome Modal-->
+            <div class="modal fade" id="orgOutcomeModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-slideout">
+                <div class="modal-content" style="border: 0.5px solid #e0dcdc;">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="h5-Oo">Add Organizational Outcome</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form name="oo-form" enctype="multipart/form-data">
+                      {% csrf_token %}
+                        <input type="text" placeholder="Field 1" id="oo-ID" style="display:none;">
+                        <p><input type="text" name="org_outcome" class="form-control" id="id-orgoutcome" v-model="orgFormData.org_outcome" placeholder="Org Outcome" required></p>
+                        <p><input type="text" name="description" class="form-control" id="id-oodesc" v-model="orgFormData.description" placeholder="Description" required></p>
+
+                        <div class="modal-footer">
+                          <!-- <button class="btn btn-primary">Save</button> -->
+                          <button class="btn btn-primary" id="oo-save" @click="saveOoData($event)">Save</button>
+                          <button class="btn btn-primary" id="oo-update" @click="saveOoData($event)">Update</button>
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                  </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--end OrgOutcome modal -->
+
+             <!-- Paps Modal Panel -->
+             <div class="modal fade" id="myPapsModalPanel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+              <div class="modal-dialog modal-dialog-slideout modal-xl">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="h5-PapsPanel">Program and Project Panel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <br>
+                  <div class="container-fluid">
+                    <div class="row">
+                      <div class="col-md-4">
+                        <!-- <button @click="showUnitModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Add</button>&nbsp; -->
+                        <button class="btn btn-primary" @click="callPapFunctions"><i class="bi bi-person-square"></i>Add</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modal-body">
+                      <table id="papdataTable" class="display" style="width:100%">
+                        <thead>
+                            <tr >
+                              <th>ID</th>
+                              <th>PAPs</th>
+                              <th>Description</th>
+                              <th>Organizational Outcome</th>
+                              <th>Org ID</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                          <tr>
+                            <th>ID</th>
+                            <th>PAPs</th>
+                            <th>Description</th>
+                            <th>Organizational Outcome</th>
+                            <th>Org ID</th>
+                          </tr>
+                        </tfoot>
+                      </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- end Paps Panel -->
+
+            <!--PAPs Modal-->
+            <div class="modal fade" id="papsModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-slideout">
+                <div class="modal-content" style="border: 0.5px solid #e0dcdc;">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="h5-Paps">Add Program and Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form name="pap-form" enctype="multipart/form-data">
+                      {% csrf_token %}
+                      <input type="text" placeholder="Field 1" id="pap-ID" >
+                        <p><input type="text" name="pap" class="form-control" id="id-pap" placeholder="PAPs" v-model="papsFormData.pap" required></p>
+                        <p><input type="text" name="description" class="form-control" id="id-papdesc" v-model="papsFormData.description" placeholder="Description" required></p>
+                        <!-- Dropdown using loop for ooList = OrgOutcome.objects.all() -->
+                        <p>
+                          <select name="org_outcome" class="form-control form-select" id="orgOutcome-id" v-model="papsFormData.org_outcome_id" aria-label="Default select example" @change="onOoChange" required>
+                            <option value="0">Select Organizational Outcome</option>
+                            {% for val in ooList %}
+                            <option value="{{ val.id }}">{{ val.org_outcome }}</option>
+                            {% endfor %}
+                          </select>
+                        </p>
+                        <p>
+                          <input type="text" name="oo_name" class="form-control" id="oo-name-id" v-model="papsFormData.oo_name" style="display: none;">
+                        </p>
+                        <div class="modal-footer">
+                          <!-- <button class="btn btn-primary">Save</button> -->
+                          <button class="btn btn-primary" id="pap-save" @click="savePapsData($event)">Save</button>
+                          <button class="btn btn-primary" id="pap-update" @click="savePapsData($event)">Update</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      </div>
+                     </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- end PAPs modal -->
 
     <hr>
 
