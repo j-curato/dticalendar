@@ -1122,6 +1122,36 @@ def download_file(request, id):
 def tooltips(request):
     return render(request, 'events/tooltip.html')
 
+def remove_event_ajax(request):
+     
+    if request.method == 'POST':
+        # Fetch existing division based on id
+        divPrimaryID = request.POST['id']
+        existing_division = Division.objects.filter(id=divPrimaryID).first()
+
+        if existing_division:
+
+            if existing_division.division_name != request.POST['division_name'].upper():
+                existing_division.division_name = request.POST['division_name'].upper()
+
+            if existing_division.division_desc != request.POST['division_desc'].upper():
+                existing_division.division_desc = request.POST['division_desc'].upper()
+
+                # Save the updated division
+            existing_division.save()
+
+            return JsonResponse({'message': 'True'})  . .m
+        else:
+            return JsonResponse({'message': 'Division not found'})
+    else:
+        return JsonResponse({'message': 'False'})
+   
+
+
+       
+
+    
+
 
     
 

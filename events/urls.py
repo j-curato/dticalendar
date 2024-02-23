@@ -16,4 +16,5 @@ urlpatterns = [
     # path to download files from the media folder
     path('download/<int:id>/', views.download_file, name='download_file'),
     path('tooltips/', views.tooltips, name='tooltips'),
+    path('remove-event-ajax/', views.remove_event_ajax, name="remove-event-ajax")
 ]

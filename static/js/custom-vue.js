@@ -94,6 +94,7 @@ const app = Vue.createApp({
         };
     },
     created() {
+
         // Initialize the date property with the current date and time in Manila, Philippines (UTC+8)
         const now = new Date();
         const manilaOffset = 8 * 60; // UTC+8 offset for Manila
@@ -1465,7 +1466,8 @@ const app = Vue.createApp({
             // Reset the unit form data to initial values
             Object.assign(this.orgFormData, this.$options.data().orgFormData);
             $("#oo-ID").val('');
-         }
+         }, 
+
 
     }, // end of methods
     mounted() {
@@ -1477,8 +1479,17 @@ const app = Vue.createApp({
         var ooTable;
         var papTable;
         const self = this;
-
+    
         $(function() {
+
+            // Function to handle "Confirm" button click
+            $("#confirm-btn").click(function(event) {
+                // Get the ID from the data attribute
+                var eventId = $(this).data("eventId");
+                alert(eventId);
+                // Call the removeEvent function passing the event ID
+                removeEvent(eventId);
+            });
 
             document.getElementById('closeButton').addEventListener('click', function () {
 
@@ -1564,6 +1575,21 @@ const app = Vue.createApp({
                     {'data': 'office', 'searchable': true, 'sortable': true},
                     {'data': 'division_name', 'searchable': true, 'sortable': true},
                     {'data': 'unit_name', 'searchable': true, 'sortable': true},
+                    {
+                        'data': null,
+                        'searchable': false,
+                        'sortable': false,
+                        'render': function(data, type, row) {
+                            // Generate dropdown list HTML with select tag
+                            var dropdownHtml = '<select class="form-select ellipsis-dropdown" onchange="dropdownChange(this, ' + row.id + ')">' +
+                                               '<option selected disabled>Action</option>' +
+                                               '<option value="remove">Remove</option>' +
+                                            //    '<option value="delete">Delete</option>' +
+                                               '</select>';
+                            
+                            return dropdownHtml;
+                        }
+                    }       
                     
                 ],
                 'order': [[0, 'desc']], // Order by ID column, descending
@@ -1571,170 +1597,175 @@ const app = Vue.createApp({
                
             }); // end of the $('#eventsTable').DataTable()
 
-            $('#eventsTable tbody').on('click', 'tr', function () {
+            $('#eventsTablesss tbody').on('click', 'tr', function (event) {
 
-                var data = table.row(this).data();
-                // Get the text content of the h5 tag
-                var h5Text = $('#h5-Event1').text();
-                var h5Text2 = $('#h5-Event2').text();
+                // Check if the clicked element is within the ellipsis column
+                if (!$(event.target).hasClass('ellipsis-icon')) {
 
-                // Check if the text contains "Add Event"
-                if (h5Text.includes('Add Event') || h5Text2.includes('Add Event')) {
-                    // If it does, replace it with "Update Event"
-                    $('#h5-Event1').text(h5Text.replace('Add Event', 'Update Event'));
-                    $('#h5-Event2').text(h5Text.replace('Add Event', 'Update Event'));
-                } else if (h5Text.includes('Update Event')) {
-                    // If it contains "Update Event", replace it with "Add Event"
-                    $('#h5-Event1').text(h5Text.replace('Update Event', 'Add Event'));
-                }
+                    var data = table.row(this).data();
+                    // Get the text content of the h5 tag
+                    var h5Text = $('#h5-Event1').text();
+                    var h5Text2 = $('#h5-Event2').text();
 
-                // show cursor as pointer when hovering over the table row
-                $('#eventsTable tbody tr').css('cursor', 'pointer');
-               
-                if (data) {
-                    console.log('Selected Data:', data.id);
-                    console.log(data.division_name);
-                    //query the database for the event details using the event id and display it in the #editEventModal
-                    $.ajax({
-                        url: '/get_event_details_to_edit/',
-                        type: 'GET',
-                        data: {
-                            'event_id': data.id,
-                            'division_name': data.division_name
-                        },
-                        dataType: 'json',
-                        success: function (data) {
+                    // Check if the text contains "Add Event"
+                    if (h5Text.includes('Add Event') || h5Text2.includes('Add Event')) {
+                        // If it does, replace it with "Update Event"
+                        $('#h5-Event1').text(h5Text.replace('Add Event', 'Update Event'));
+                        $('#h5-Event2').text(h5Text.replace('Add Event', 'Update Event'));
+                    } else if (h5Text.includes('Update Event')) {
+                        // If it contains "Update Event", replace it with "Add Event"
+                        $('#h5-Event1').text(h5Text.replace('Update Event', 'Add Event'));
+                    }
+
+                    // show cursor as pointer when hovering over the table row
+                    $('#eventsTable tbody tr').css('cursor', 'pointer');
+                
+                    if (data) {
+                        console.log('Selected Data:', data.id);
+                        console.log(data.division_name);
+                        //query the database for the event details using the event id and display it in the #editEventModal
+                        $.ajax({
+                            url: '/get_event_details_to_edit/',
+                            type: 'GET',
+                            data: {
+                                'event_id': data.id,
+                                'division_name': data.division_name
+                            },
+                            dataType: 'json',
+                            success: function (data) {
+                                
+                                // Assuming data.whole_dateStart_with_time is in the format "2024-01-08 09:00:00+08"
+                                
+                                // Assuming data.whole_dateStart_with_time is in the format "2024-01-08 09:00:00+08"
+                                const startDateString = data.whole_dateStart_with_time.replace(' ', 'T'); // Convert to "YYYY-MM-DDTHH:MM:SS+HH:MM" format
+
+                                // Adjusting for time zone offset
+                                const startDate = new Date(startDateString);
+                                const adjustedStartDate = new Date(startDate.getTime() - (startDate.getTimezoneOffset() * 60000)); // Adjusting for local time
+
+                                const endDateString = data.whole_dateEnd_with_time.replace(' ', 'T'); // Convert to "YYYY-MM-DDTHH:MM:SS+HH:MM" format
+
+                                // Adjusting for time zone offset
+                                const endDate = new Date(endDateString);
+                                const adjustedEndDate = new Date(endDate.getTime() - (endDate.getTimezoneOffset() * 60000)); // Adjusting for local time
+
+                                // Formatting the adjusted dates back to "YYYY-MM-DDTHH:MM" format
+                                const formattedStartDate = adjustedStartDate.toISOString().slice(0, 16);
+                                const formattedEndDate = adjustedEndDate.toISOString().slice(0, 16);
+
+                                // Assuming data.file_attachment contains the file path
+                                const fullPath = data.file_attachment; // Replace this with your file path
+                                const editFileName = fullPath.split('/').pop(); // Extract the file name from the path
+
+                                //console.log(data.event_code);
+                                //populate the editEventModal with the event details
+                                $("#event-id").val(data.id);
+                                $("#editOffice").val(data.office);
+                                $("#division-id").val(data.division_id);
+                                $("#editUnit").val(data.unit_id);
+                                $("#editOrgOutcome").val(data.orgoutcome_id);
+                                $("#editPaps").val(data.pap_id);
+                                $("#event-title-input").val(data.event_title);
+                                $("#editLocProv").val(data.province_id);
+                                $("#event-location-lgu-id").val(data.lgu_id);
+                                $("#event-location-barangay-id").val(data.barangay_id);
+                                $("#editDistrict").val(data.event_location_district);
+                                $("#editDateStart").val(formattedStartDate);
+                                $("#editDateEnd").val(formattedEndDate);
+                                $("#customSwitch").prop('checked', data.event_all_day);
+                                $("#editEventDesc").val(data.event_desc);
+                                $("#editParticipants").val(data.participants);
+                                //$("#editWholeDateStart-id").val(data.event_date_start);
+                                //$("#editWholeDateEnd-id").val(data.event_date_end);
+                                $("#editFileAttachment").text(data.file_attachment); 
+                                $("#editDayStart").val(data.event_day_start);
+                                $("#editMonthStart").val(data.event_month_start);
+                                $("#editYearStart").val(data.event_year_start);
+                                $("#editTimeStart").val(data.event_time_start);
+                                $("#editDStartSearchable").val(data.whole_date_start_searchable);
+                                $("#editDayEnd").val(data.event_day_end);
+                                $("#editMonthEnd").val(data.event_month_end);
+                                $("#editYearEnd").val(data.event_year_end);
+                                $("#editTimeEnd").val(data.event_time_end);
+                                $("#editDEndSearchable").val(data.whole_date_end_searchable);
+                                $("#division-name-id").val(data.division_name);
+                                // Assuming data.file_attachment contains the file name
+                                $("#fileAttachmentName").text(editFileName);
+
+                                if (data) {
+                                    $("#updateButton").show(); // Show the update button
+                                    $("#saveButton").hide(); // Hide the save button
+                                } else {
+                                    $("#updateButton").hide(); // Hide the update button
+                                    $("#saveButton").show(); // Show the save button
+                                }
+
+                                $('#modal1').modal('show');
+                                //self.onDivisionChange(data.division_id);
+                                const eventpID = $("#event-id").val();
+                                const eventTitle = $("#event-title-input").val();
+                                const eventOffice = $("#editOffice").val();
+                                const eventDivision = $("#division-id").val();
+                                const eventDivName = $("#division-name-id").val();
+                                const eventUnit = $("#editUnit").val();
+                                const eventOo = $("#editOrgOutcome").val();
+                                const eventpap = $("#editPaps").val();
+                                const eventLocation = $("#editLocProv").val();
+                                const eventLgu = $("#event-location-lgu-id").val();
+                                const eventBrgy = $("#event-location-barangay-id").val();
+                                const eventDistrict = $("#editDistrict").val();
+                                const eventDateStart = $("#editDateStart").val();
+                                const eventDateEnd = $("#editDateEnd").val();
+                                const eventAllDay = $("#customSwitch").prop('checked');
+                                const eventDesc = $("#editEventDesc").val();
+                                const eventParticipants = $("#editParticipants").val();
+                                //const eventfile = $("#fileAttachmentName").text(fileName);
+                                const eventDayStart = $("#editDayStart").val();
+                                const eventMonthStart = $("#editMonthStart").val();
+                                const eventYearStart = $("#editYearStart").val();
+                                const eventTimeStart = $("#editTimeStart").val();
+                                const eventDateStartSearchable = $("#editDStartSearchable").val();
+                                const eventDayEnd = $("#editDayEnd").val();
+                                const eventMonthEnd = $("#editMonthEnd").val();
+                                const eventYearEnd = $("#editYearEnd").val();
+                                const eventTimeEnd = $("#editTimeEnd").val();
+                                const eventDateEndSearchable = $("#editDEndSearchable").val();
+
+                                self.formData.event_pid = eventpID;
+                                self.formData.event_title = eventTitle;
+                                self.formData.office = eventOffice;
+                                self.formData.division_id = eventDivision;
+                                self.formData.division_name = eventDivName;
+                                self.formData.unit = eventUnit;
+                                self.formData.org_outcome = eventOo;
+                                self.formData.paps = eventpap;
+                                self.formData.event_location = eventLocation;
+                                self.formData.event_location_lgu = eventLgu;
+                                self.formData.event_location_barangay = eventBrgy;
+                                self.formData.event_location_district = eventDistrict;
+                                self.formData.whole_date_start = eventDateStart;
+                                self.formData.whole_date_end = eventDateEnd;
+                                self.formData.event_all_day = eventAllDay;
+                                self.formData.event_desc = eventDesc;
+                                self.formData.participants = eventParticipants;
+                                self.formData.file_attachment = editFileName;
+                                self.formData.event_day_start = eventDayStart;
+                                self.formData.event_month_start = eventMonthStart;
+                                self.formData.event_year_start = eventYearStart;
+                                self.formData.event_time_start = eventTimeStart;
+                                self.formData.whole_date_start_searchable = eventDateStartSearchable;
+                                self.formData.event_day_end = eventDayEnd;
+                                self.formData.event_month_end = eventMonthEnd;
+                                self.formData.event_year_end = eventYearEnd;
+                                self.formData.event_time_end = eventTimeEnd;
+                                self.formData.whole_date_end_searchable = eventDateEndSearchable;
+
                             
-                            // Assuming data.whole_dateStart_with_time is in the format "2024-01-08 09:00:00+08"
-                            
-                            // Assuming data.whole_dateStart_with_time is in the format "2024-01-08 09:00:00+08"
-                            const startDateString = data.whole_dateStart_with_time.replace(' ', 'T'); // Convert to "YYYY-MM-DDTHH:MM:SS+HH:MM" format
-
-                            // Adjusting for time zone offset
-                            const startDate = new Date(startDateString);
-                            const adjustedStartDate = new Date(startDate.getTime() - (startDate.getTimezoneOffset() * 60000)); // Adjusting for local time
-
-                            const endDateString = data.whole_dateEnd_with_time.replace(' ', 'T'); // Convert to "YYYY-MM-DDTHH:MM:SS+HH:MM" format
-
-                            // Adjusting for time zone offset
-                            const endDate = new Date(endDateString);
-                            const adjustedEndDate = new Date(endDate.getTime() - (endDate.getTimezoneOffset() * 60000)); // Adjusting for local time
-
-                            // Formatting the adjusted dates back to "YYYY-MM-DDTHH:MM" format
-                            const formattedStartDate = adjustedStartDate.toISOString().slice(0, 16);
-                            const formattedEndDate = adjustedEndDate.toISOString().slice(0, 16);
-
-                            // Assuming data.file_attachment contains the file path
-                            const fullPath = data.file_attachment; // Replace this with your file path
-                            const editFileName = fullPath.split('/').pop(); // Extract the file name from the path
-
-                            //console.log(data.event_code);
-                            //populate the editEventModal with the event details
-                            $("#event-id").val(data.id);
-                            $("#editOffice").val(data.office);
-                            $("#division-id").val(data.division_id);
-                            $("#editUnit").val(data.unit_id);
-                            $("#editOrgOutcome").val(data.orgoutcome_id);
-                            $("#editPaps").val(data.pap_id);
-                            $("#event-title-input").val(data.event_title);
-                            $("#editLocProv").val(data.province_id);
-                            $("#event-location-lgu-id").val(data.lgu_id);
-                            $("#event-location-barangay-id").val(data.barangay_id);
-                            $("#editDistrict").val(data.event_location_district);
-                            $("#editDateStart").val(formattedStartDate);
-                            $("#editDateEnd").val(formattedEndDate);
-                            $("#customSwitch").prop('checked', data.event_all_day);
-                            $("#editEventDesc").val(data.event_desc);
-                            $("#editParticipants").val(data.participants);
-                            //$("#editWholeDateStart-id").val(data.event_date_start);
-                            //$("#editWholeDateEnd-id").val(data.event_date_end);
-                            $("#editFileAttachment").text(data.file_attachment); 
-                            $("#editDayStart").val(data.event_day_start);
-                            $("#editMonthStart").val(data.event_month_start);
-                            $("#editYearStart").val(data.event_year_start);
-                            $("#editTimeStart").val(data.event_time_start);
-                            $("#editDStartSearchable").val(data.whole_date_start_searchable);
-                            $("#editDayEnd").val(data.event_day_end);
-                            $("#editMonthEnd").val(data.event_month_end);
-                            $("#editYearEnd").val(data.event_year_end);
-                            $("#editTimeEnd").val(data.event_time_end);
-                            $("#editDEndSearchable").val(data.whole_date_end_searchable);
-                            $("#division-name-id").val(data.division_name);
-                            // Assuming data.file_attachment contains the file name
-                            $("#fileAttachmentName").text(editFileName);
-
-                            if (data) {
-                                $("#updateButton").show(); // Show the update button
-                                $("#saveButton").hide(); // Hide the save button
-                            } else {
-                                $("#updateButton").hide(); // Hide the update button
-                                $("#saveButton").show(); // Show the save button
                             }
-
-                            $('#modal1').modal('show');
-                            //self.onDivisionChange(data.division_id);
-                            const eventpID = $("#event-id").val();
-                            const eventTitle = $("#event-title-input").val();
-                            const eventOffice = $("#editOffice").val();
-                            const eventDivision = $("#division-id").val();
-                            const eventDivName = $("#division-name-id").val();
-                            const eventUnit = $("#editUnit").val();
-                            const eventOo = $("#editOrgOutcome").val();
-                            const eventpap = $("#editPaps").val();
-                            const eventLocation = $("#editLocProv").val();
-                            const eventLgu = $("#event-location-lgu-id").val();
-                            const eventBrgy = $("#event-location-barangay-id").val();
-                            const eventDistrict = $("#editDistrict").val();
-                            const eventDateStart = $("#editDateStart").val();
-                            const eventDateEnd = $("#editDateEnd").val();
-                            const eventAllDay = $("#customSwitch").prop('checked');
-                            const eventDesc = $("#editEventDesc").val();
-                            const eventParticipants = $("#editParticipants").val();
-                            //const eventfile = $("#fileAttachmentName").text(fileName);
-                            const eventDayStart = $("#editDayStart").val();
-                            const eventMonthStart = $("#editMonthStart").val();
-                            const eventYearStart = $("#editYearStart").val();
-                            const eventTimeStart = $("#editTimeStart").val();
-                            const eventDateStartSearchable = $("#editDStartSearchable").val();
-                            const eventDayEnd = $("#editDayEnd").val();
-                            const eventMonthEnd = $("#editMonthEnd").val();
-                            const eventYearEnd = $("#editYearEnd").val();
-                            const eventTimeEnd = $("#editTimeEnd").val();
-                            const eventDateEndSearchable = $("#editDEndSearchable").val();
-
-                            self.formData.event_pid = eventpID;
-                            self.formData.event_title = eventTitle;
-                            self.formData.office = eventOffice;
-                            self.formData.division_id = eventDivision;
-                            self.formData.division_name = eventDivName;
-                            self.formData.unit = eventUnit;
-                            self.formData.org_outcome = eventOo;
-                            self.formData.paps = eventpap;
-                            self.formData.event_location = eventLocation;
-                            self.formData.event_location_lgu = eventLgu;
-                            self.formData.event_location_barangay = eventBrgy;
-                            self.formData.event_location_district = eventDistrict;
-                            self.formData.whole_date_start = eventDateStart;
-                            self.formData.whole_date_end = eventDateEnd;
-                            self.formData.event_all_day = eventAllDay;
-                            self.formData.event_desc = eventDesc;
-                            self.formData.participants = eventParticipants;
-                            self.formData.file_attachment = editFileName;
-                            self.formData.event_day_start = eventDayStart;
-                            self.formData.event_month_start = eventMonthStart;
-                            self.formData.event_year_start = eventYearStart;
-                            self.formData.event_time_start = eventTimeStart;
-                            self.formData.whole_date_start_searchable = eventDateStartSearchable;
-                            self.formData.event_day_end = eventDayEnd;
-                            self.formData.event_month_end = eventMonthEnd;
-                            self.formData.event_year_end = eventYearEnd;
-                            self.formData.event_time_end = eventTimeEnd;
-                            self.formData.whole_date_end_searchable = eventDateEndSearchable;
-
-                           
-                        }
-                    }); // end of the $.ajax()
+                        }); // end of the $.ajax()
+                    }
                 }
+
             }); // end of the $('#eventsTable tbody')
 
             // server side display table for division
@@ -2102,7 +2133,12 @@ const app = Vue.createApp({
                 {'data': 'oo_name', 'searchable': true, 'sortable': true},
                 {'data': 'org_outcome_id', 'searchable': true, 'sortable': true}
             ],
-
+            columnDefs: [
+                {
+                    targets: [4],
+                    visible: false
+                }
+            ],
             'order': [[0, 'desc']], // Order by ID column, descending
         
         }); // end of the $('#oodataTable').DataTable()
@@ -2212,5 +2248,49 @@ const app = Vue.createApp({
     } // end of the mounted() function
 
 });
+
+
+function removeEvent(eventId) {
+
+    alert(eventId);
+
+    // ajax call to save the event data
+    fetch("/events/remove-event-ajax/", {
+        method: "POST",
+        body: JSON.stringify({ eventId: eventId }), // Pass the event ID in the request body
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
+        }
+        return response.json(); // Assuming the server returns JSON data
+    })
+    .then(data => {
+        // if message is true, then show the toast notification
+        if (data.message) {
+        // call the showToast() method and change the toast message to "Event saved successfully!"
+        this.message = "Event Added!";
+        // call the showToast() method to show the toast notification
+        this.showToast();
+        // refresh the server-side datatables events table
+        $('#eventsTable').DataTable().ajax.reload();
+        // Handle a successful response
+        console.log("Event added", data);
+        // reset the form data all at once using one line of code
+        //Object.assign(this.formData, this.$options.data().formData);
+
+    } // end of if (data.message)
+    else {
+        // Handle a failed response
+        console.log("Data save failed:", data);     
+    }
+    
+    }) // end of the first .then()
+    .catch(error => {
+        // Handle errors
+        console.error("Error while saving data:", error);
+    });
+        
+}
 
 app.mount('#app');
