@@ -163,18 +163,12 @@ def get_events(request):
             search_filter |= Q(**{f'{col}__icontains': search_value})
 
         # Filter the events based on the search_value and user id
-        events = Event.objects.filter(search_filter, user=request.user)
+        events = Event.objects.filter(search_filter, user=request.user, display_status=True)
         
         #events = Event.objects.filter(search_filter)
 
         # Get the total count of events (before filtering)
         total_records = Event.objects.count()
-
-        # # Apply sorting based on the column index and direction
-        # if order_direction == 'asc':
-        #     events = events.order_by(columns[order_column_index])
-        # else:
-        #     events = events.order_by(f'-{columns[order_column_index]}')
 
         # Apply sorting based on the column index and direction
         if order_direction == 'asc':
@@ -191,18 +185,6 @@ def get_events(request):
                 events = events.order_by(F('whole_date_end').desc())
             else:
                 events = events.order_by(f'-{columns[order_column_index]}')
-
-        # Apply sorting based on the column index and direction
-        # if order_direction == 'asc':
-        #     if columns[order_column_index] in ['event_title', 'event_desc']:
-        #         events = events.order_by(Lower(columns[order_column_index]))
-        #     else:
-        #         events = events.order_by(columns[order_column_index])
-        # else:
-        #     if columns[order_column_index] in ['event_title', 'event_desc']:
-        #         events = events.order_by(Lower(columns[order_column_index])).reverse()
-        #     else:
-        #         events = events.order_by(f'-{columns[order_column_index]}')
 
         # Count of records after filtering 
         filtered_records = events.count()

@@ -19,6 +19,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.shortcuts import render
 from django.http import FileResponse
 from mimetypes import guess_type
@@ -1122,31 +1123,27 @@ def download_file(request, id):
 def tooltips(request):
     return render(request, 'events/tooltip.html')
 
-def remove_event_ajax(request):
-     
+@csrf_exempt
+def mark_event_false(request):
+    
     if request.method == 'POST':
-        # Fetch existing division based on id
-        divPrimaryID = request.POST['id']
-        existing_division = Division.objects.filter(id=divPrimaryID).first()
 
-        if existing_division:
+        eventPID = request.POST['event-primaryID']
+        existing_event = Event.objects.filter(id=eventPID).first()
+        existing_event.display_status = False
+       # Save the update display status
+        existing_event.save()
 
-            if existing_division.division_name != request.POST['division_name'].upper():
-                existing_division.division_name = request.POST['division_name'].upper()
-
-            if existing_division.division_desc != request.POST['division_desc'].upper():
-                existing_division.division_desc = request.POST['division_desc'].upper()
-
-                # Save the updated division
-            existing_division.save()
-
-            return JsonResponse({'message': 'True'})  . .m
-        else:
-            return JsonResponse({'message': 'Division not found'})
+        return JsonResponse({'message': 'True'})
     else:
         return JsonResponse({'message': 'False'})
-   
 
+        # # Debugging: Print the event ID to verify
+        # print("Event ID:", eventPID)
+        # return JsonResponse({'message': eventPID})
+    
+
+            
 
        
 

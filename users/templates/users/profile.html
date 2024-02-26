@@ -9,7 +9,6 @@
 <!-- <img src="{{ context.MEDIA_URL }}profile-pic.jpg" alt="Example Image">
 <p>Debugging: MEDIA_URL is {{ context.MEDIA_URL }}</p> -->
 
-
     <!-- <h2>Profile</h2>
     <p>ID: {{ user.id }}</p>
     <p>Username: {{ user.username }}</p>
@@ -589,7 +588,7 @@
                   <div class="modal-body">
                     <form name="pap-form" enctype="multipart/form-data">
                       {% csrf_token %}
-                      <input type="text" placeholder="Field 1" id="pap-ID" >
+                      <input type="text" placeholder="Field 1" id="pap-ID" style="display:none;">
                         <p><input type="text" name="pap" class="form-control" id="id-pap" placeholder="PAPs" v-model="papsFormData.pap" required></p>
                         <p><input type="text" name="description" class="form-control" id="id-papdesc" v-model="papsFormData.description" placeholder="Description" required></p>
                         <!-- Dropdown using loop for ooList = OrgOutcome.objects.all() -->
@@ -625,7 +624,7 @@
                   </div>
                   <div class="modal-body">
                    
-                      <button type="button" class="btn btn-primary" id="confirm-btn" @click="removeEvent($event)">Confirm</button>
+                      <button type="button" class="btn btn-primary" id="confirm-btn" @click="confirmRemoveEvent($event)">Confirm</button>
                       <span>&nbsp;</span>
                       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                    
@@ -680,6 +679,7 @@
           </tr>
       </tfoot>
     </table>
+  
     <!-- <button type="button" class="btn btn-lg btn-danger" data-bs-toggle="popover" data-bs-title="Popover title" data-bs-content="And here's some amazing content. It's very engaging. Right?">Click to toggle popover</button> -->
    </div>
 {% endblock %}

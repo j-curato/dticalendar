@@ -55,7 +55,9 @@ const app = Vue.createApp({
                 calendar_id: 0, // Initialize with an empty string
                 event_all_day: false, // Initialize with false
                 event_code: '',
-                event_pid: 0
+                event_pid: 0,
+                display_status: 0,
+
             }, // end of formData
             // initialize the Org Outcome form data
             orgFormData: {
@@ -110,6 +112,41 @@ const app = Vue.createApp({
 
     },
     methods: {
+
+        confirmRemoveEvent(event) {
+            var eventId = $(event.target).data("eventId");
+            this.removeEvent(eventId);
+        },
+        
+        // removeEvent(eventpId) {
+        //     console.log(eventpId)
+        //     // Make an AJAX request to the Django backend
+        //     fetch("/events/remove-event-ajax/", {
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //             // Add any additional headers if needed
+        //         },
+        //         body: JSON.stringify({ eventpId: eventpId }), // Pass the eventId in the request body
+        //     })
+        //     .then(response => {
+        //         // Check if the response is successful
+        //         if (!response.ok) {
+        //             throw new Error("Network response was not ok");
+        //         }
+        //         // Parse the JSON response
+        //         return response.json();
+        //     })
+        //     .then(data => {
+        //         // Handle the response data
+        //         console.log(data); // Log the response data to the console
+        //         // You can perform further actions based on the response, such as showing a notification
+        //     })
+        //     .catch(error => {
+        //         // Handle errors
+        //         console.error("Error removing event:", error);
+        //     });
+        // },
 
         callDivFunctions(){
             this.showDivModal();
@@ -865,6 +902,47 @@ const app = Vue.createApp({
 
         }, // end of savePapsData() function
 
+        removeEvent(eventID) {
+
+            const eventdisplayStatus = new FormData();
+
+            eventdisplayStatus.append('event-primaryID', eventID)
+                // ajax call to update events data
+                fetch("/events/mark-event-false/", {
+                    method: "POST",
+                    body: eventdisplayStatus,
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok"); 
+                    }
+                    return response.json(); // Assuming the server returns JSON data
+                })
+                .then(data => {
+                    // if message is true, then show the toast notification
+                    if (data.message) {
+                        console.log(data.message);
+                    // call the showToast() method and change the toast message to "PAPs saved successfully!"
+                    this.message = "Event ID "+eventID+" removed";
+                    // call the showToast() method to show the toast notification
+                    this.showToast();
+                    $("#confirm-modal").modal('hide');
+                } // end of if (data.message)
+                else {
+                    // Handle a failed response
+                    console.log("Event data update failed:", data.message);
+                }
+                $('#eventsTable').DataTable().ajax.reload();
+                }
+                ) // end of the first .then()
+                .catch(error => {
+                    // Handle errors
+                    console.error("Error while saving data:", error);
+                });
+  
+
+        }, // end of remove event() function
+
         showModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $("#modal1").modal('show'); // Show the modal on page load
@@ -1482,15 +1560,6 @@ const app = Vue.createApp({
     
         $(function() {
 
-            // Function to handle "Confirm" button click
-            $("#confirm-btn").click(function(event) {
-                // Get the ID from the data attribute
-                var eventId = $(this).data("eventId");
-                alert(eventId);
-                // Call the removeEvent function passing the event ID
-                removeEvent(eventId);
-            });
-
             document.getElementById('closeButton').addEventListener('click', function () {
 
                 console.log('a');
@@ -1597,7 +1666,7 @@ const app = Vue.createApp({
                
             }); // end of the $('#eventsTable').DataTable()
 
-            $('#eventsTablesss tbody').on('click', 'tr', function (event) {
+            $('#eventsTable tbody').on('click', 'tr', function (event) {
 
                 // Check if the clicked element is within the ellipsis column
                 if (!$(event.target).hasClass('ellipsis-icon')) {
@@ -2248,49 +2317,5 @@ const app = Vue.createApp({
     } // end of the mounted() function
 
 });
-
-
-function removeEvent(eventId) {
-
-    alert(eventId);
-
-    // ajax call to save the event data
-    fetch("/events/remove-event-ajax/", {
-        method: "POST",
-        body: JSON.stringify({ eventId: eventId }), // Pass the event ID in the request body
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Network response was not ok");
-        }
-        return response.json(); // Assuming the server returns JSON data
-    })
-    .then(data => {
-        // if message is true, then show the toast notification
-        if (data.message) {
-        // call the showToast() method and change the toast message to "Event saved successfully!"
-        this.message = "Event Added!";
-        // call the showToast() method to show the toast notification
-        this.showToast();
-        // refresh the server-side datatables events table
-        $('#eventsTable').DataTable().ajax.reload();
-        // Handle a successful response
-        console.log("Event added", data);
-        // reset the form data all at once using one line of code
-        //Object.assign(this.formData, this.$options.data().formData);
-
-    } // end of if (data.message)
-    else {
-        // Handle a failed response
-        console.log("Data save failed:", data);     
-    }
-    
-    }) // end of the first .then()
-    .catch(error => {
-        // Handle errors
-        console.error("Error while saving data:", error);
-    });
-        
-}
 
 app.mount('#app');
