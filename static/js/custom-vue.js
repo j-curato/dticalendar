@@ -1669,7 +1669,7 @@ const app = Vue.createApp({
             $('#eventsTable tbody').on('click', 'tr', function (event) {
 
                 // Check if the clicked element is within the ellipsis column
-                if (!$(event.target).hasClass('ellipsis-icon')) {
+                if (!$(event.target).hasClass('ellipsis-dropdown')) {
 
                     var data = table.row(this).data();
                     // Get the text content of the h5 tag

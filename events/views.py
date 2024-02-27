@@ -22,6 +22,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.shortcuts import render
 from django.http import FileResponse
+from datetime import datetime
 from mimetypes import guess_type
 from .models import Event
 import os
@@ -620,6 +621,7 @@ def save_event_ajax_ver2(request):
 def get_eventsList(request):
     txturl = 'events'
     events = Event.objects.all()
+    #events = Event.objects.filter(display_status=True)
     return render(request, 'events/event_display.html', {'events': events, 'txturl': txturl})
 
 @csrf_exempt
@@ -705,6 +707,7 @@ def fetch_events_ajax(request):
                     event_time_start,
                     event_time_end
                 FROM events_event
+                WHERE display_status = true
             ) AS date_series
             GROUP BY generated_date, office
         ) AS subquery
@@ -875,6 +878,103 @@ def fetch_events_by_div_ajax(request):
                         event_time_end
                     FROM events_event
                     WHERE office = %s
+                      AND display_status = true
+                ) AS date_series
+                GROUP BY generated_date, division_name
+            ) AS subquery
+            GROUP BY generated_date
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [request.GET.get('office')])
+            result = cursor.fetchall()
+
+        # Convert the result into a list of dictionaries with dynamic keys
+        data = []
+        for row in result:
+            data_row = {
+                'whole_date_start': row[0].strftime('%Y-%m-%d'),
+                'whole_date_start_searchable': row[1],
+                **{division_names[i]: row[i + 2] for i in range(len(division_names))}
+            }
+            data.append(data_row)
+
+        # Sort the data based on 'whole_date_start'
+        order_column_index = int(request.GET.get('order[0][column]', 0))
+        order_direction = request.GET.get('order[0][dir]', 'asc')
+        data.sort(key=lambda x: x['whole_date_start'], reverse=(order_direction == 'desc'))
+
+        # Apply the search filter to the data
+        filtered_data = [
+            entry for entry in data if any(
+                search_value.lower() in (str(entry[col]).lower() if entry[col] is not None else '') 
+                for col in ['whole_date_start_searchable'] + division_names
+            )
+        ]
+
+        # Generate the columns array with search information
+        columns = [
+            {'data': 'whole_date_start', 'name': '', 'searchable': True, 'orderable': True, 'search': {} },
+            {'data': 'whole_date_start_searchable', 'name': '', 'searchable': True, 'orderable': True, 'search': {'value': search_value} }
+        ]
+        columns += [{'data': col, 'name': '', 'searchable': True, 'orderable': True, 'search': {} } for col in division_names]
+
+        response_data = {
+            'draw': draw,
+            'columns': columns,
+            'order': [],  # You may need to populate this based on user interaction
+            'start': start,
+            'length': length,
+            'recordsTotal': len(data),
+            'recordsFiltered': len(filtered_data),
+            'data': filtered_data[start:start + length]
+        }
+
+        return JsonResponse(response_data)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+
+def fetch_events_by_div_ajax_02272024(request):
+    try:
+        draw = int(request.GET.get('draw', 1))
+        start = int(request.GET.get('start', 0))
+        length = int(request.GET.get('length', 10))
+        search_value = request.GET.get('search[value]', '')
+
+        # Fetch unique division names from the database
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT DISTINCT division_name FROM divisions_division")
+            division_names = [row[0] for row in cursor.fetchall()]
+
+        # Generate the dynamic part of the SQL query based on the columns
+        columns_sql = ", ".join([
+            f"MAX(CASE WHEN division_name = '{col}' THEN event_titles END) AS {col}" for col in division_names
+        ])
+
+        query = f"""
+            SELECT
+                generated_date,
+                TO_CHAR(generated_date, 'FMMonth DD, YYYY') AS whole_date_start_searchable,
+                {columns_sql}
+            FROM (
+                SELECT
+                    generated_date,
+                    division_name,
+                    STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), ', ') AS event_titles
+                FROM (
+                    SELECT
+                        generate_series(whole_date_start::date, whole_date_end::date, '1 day'::interval)::date AS generated_date,
+                        division_name,
+                        event_title,
+                        id,
+                        unit_name,
+                        event_time_start,
+                        event_time_end
+                    FROM events_event
+                    WHERE office = %s
+                      AND display_status = true
                 ) AS date_series
                 GROUP BY generated_date, division_name
             ) AS subquery
@@ -976,6 +1076,7 @@ def fetch_events_by_div_ajax_ver2(request):
                         event_time_end
                     FROM events_event
                     WHERE office = %s
+                      AND display_status = true
                 ) AS date_series
                 GROUP BY generated_date, division_name
             ) AS subquery
