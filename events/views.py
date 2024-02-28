@@ -753,7 +753,7 @@ def fetch_events_ajax(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
-    # load division datatables html page - events_display_div.html
+# load division datatables html page - events_display_div.html
 def load_div_datatbl_html(request):
     txturl = 'events'
     officetxt = request.GET.get('dtioffice')
@@ -1242,12 +1242,6 @@ def mark_event_false(request):
         # # Debugging: Print the event ID to verify
         # print("Event ID:", eventPID)
         # return JsonResponse({'message': eventPID})
-    
-
-            
-
-       
-
     
 
 

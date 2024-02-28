@@ -24,6 +24,10 @@ const appEvents = Vue.createApp({
         $(function() {
 
             table = $('#eventsDisplayTable').DataTable({  
+                'dom': 'Rlfrtip',
+                        'colReorder': {
+                            'allowReorder': true
+                        },
                 'processing': true,
                 'serverSide': true,
                 'ajax': { 
@@ -307,6 +311,8 @@ const appEvents = Vue.createApp({
                     {'width': '10%', 'targets': 7},
                     // Add more 'columnDefs' as needed
                 ],
+
+                'colResize': true
                 
                 }); // end of the $('#').DataTable()
 
