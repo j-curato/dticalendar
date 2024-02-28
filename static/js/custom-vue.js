@@ -1596,6 +1596,10 @@ const app = Vue.createApp({
 
             //Datatables serverside for displaying events
             table = $('#eventsTable').DataTable({
+                'dom': 'Rlfrtip',
+                        'colReorder': {
+                            'allowReorder': true
+                        },
                 'processing': true,
                 'serverSide': true,
                 'ajax': { 
@@ -1662,6 +1666,7 @@ const app = Vue.createApp({
                     
                 ],
                 'order': [[0, 'desc']], // Order by ID column, descending
+                'colResize': true
                 
                
             }); // end of the $('#eventsTable').DataTable()
