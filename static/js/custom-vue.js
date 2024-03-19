@@ -1744,6 +1744,11 @@ const app = Vue.createApp({
 
             $('#eventsTable tbody').on('click', 'tr', function (event) {
 
+                self.fetchDivisionData();
+                self.fetchUnitData();
+                self.fetchOrgOutcomeData();
+                self.fetchPapsData();
+
                 // Check if the clicked element is within the ellipsis column
                 if (!$(event.target).hasClass('ellipsis-dropdown')) {
 
