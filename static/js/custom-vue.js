@@ -154,8 +154,33 @@ const app = Vue.createApp({
         },
 
         callUnitFunctions(){
+            // Call a function to fetch the latest division list from the server
+            this.fetchDivisionData();
+
             this.showUnitModal();
+
             this.resetUnitFormData();
+        },
+
+        fetchDivisionList() {
+            // Make an AJAX call to fetch the latest division list
+            fetch("/divisions/fetch-division-list/", {
+                method: "GET",
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json(); // Assuming the server returns JSON data with the latest division list
+            })
+            .then(data => {
+                // Update the division dropdown options
+                this.divList = data.divisions;
+            })
+            .catch(error => {
+                // Handle errors
+                console.error("Error while fetching division list:", error);
+            });
         },
 
         callOoFunctions(){
@@ -230,6 +255,45 @@ const app = Vue.createApp({
         saveEventData(event) {
             // Prevent the default submit action
             event.preventDefault();
+
+             // Check if any required fields are empty
+             const requiredFields = [
+                { name: 'Office', value: this.formData.office },
+                { name: 'Division ID', value: this.formData.division_id },
+                { name: 'Unit', value: this.formData.unit },
+                { name: 'Organizational Outcome', value: this.formData.org_outcome },
+                { name: 'PAPs', value: this.formData.paps },
+                { name: 'Event Title', value: this.formData.event_title },
+                { name: 'Event Location', value: this.formData.event_location },
+                { name: 'Event Description', value: this.formData.event_desc },
+                { name: 'Participants', value: this.formData.participants },
+                { name: 'Whole Date Start', value: this.formData.whole_date_start },
+                { name: 'Whole Date End', value: this.formData.whole_date_end },
+                { name: 'Division Name', value: this.formData.division_name },
+                { name: 'Event Location District', value: this.formData.event_location_district },
+                { name: 'Event Location LGU', value: this.formData.event_location_lgu },
+                { name: 'Event Location Barangay', value: this.formData.event_location_barangay },
+            ];
+
+            const emptyFields = requiredFields.filter(field => !field.value);
+
+            if (emptyFields.length > 0) {
+                // Display an error message or handle the empty fields as needed
+                const emptyFieldNames = emptyFields.map(field => field.name).join(',\n');
+                alert(`Please fill in the following required fields:\n${emptyFieldNames}`);
+                return; // Stop further processing if there are empty fields
+            }
+        
+            // const emptyFields = requiredFields.filter(field => !field.value);
+
+            // if (emptyFields.length > 0) {
+            //     const emptyFieldNames = emptyFields.map(field => field.name).join(',\n');
+            //     document.getElementById('errorModalBody').innerHTML = `Please fill in the following required fields:<br>${emptyFieldNames}`;
+            //     $('#errorModal').modal('show'); // Show the modal
+            //     return; // Stop further processing if there are empty fields
+            // }
+
+
             // Get the button elements by their IDs
             const saveButton = document.getElementById('saveButton');
             const updateButton = document.getElementById('updateButton');
@@ -900,7 +964,7 @@ const app = Vue.createApp({
             }
             
 
-        }, // end of savePapsData() function
+        }, // end of saveDivData() function
 
         removeEvent(eventID) {
 
@@ -944,6 +1008,11 @@ const app = Vue.createApp({
         }, // end of remove event() function
 
         showModal() {
+
+            this.fetchDivisionData();
+            this.fetchUnitData();
+            this.fetchOrgOutcomeData();
+            this.fetchPapsData();
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $("#modal1").modal('show'); // Show the modal on page load
             $("#updateButton").hide(); // Show the update button
@@ -1012,6 +1081,7 @@ const app = Vue.createApp({
             $("#myOoModalPanel").modal('show');
         },
         showPapsModalPanel(){
+            this.fetchOrgOutcomeData();
             $("#myPapsModalPanel").modal('show');
         },
         showCalModal() {
@@ -1067,6 +1137,7 @@ const app = Vue.createApp({
         },
         // Function to fetch division data
         fetchDivisionData() {
+            //alert('true');
             fetch('/users/api/divisions/') // Replace with the actual API endpoint
             .then(response => response.json())
             .then(data => {

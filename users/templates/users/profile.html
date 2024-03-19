@@ -86,8 +86,28 @@
           </div>
         </div>
 
-        <!-- vue.js 2 modal test -->
+        <!-- error modal -->
 
+        <div class="modal" id="errorModal" tabindex="-1" role="dialog">
+          <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title">Error: Required Fields</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                      </button>
+                  </div>
+                  <div class="modal-body" id="errorModalBody">
+                      <!-- Error message will be displayed here -->
+                  </div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+      
+        <!-- vue.js 2 modal test -->
         <div class="modal fade" id="modal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
           <div class="modal-dialog modal-dialog-slideout">
             <div class="modal-content">
@@ -444,10 +464,12 @@
                         <!-- Dropdown using loop for ooList = OrgOutcome.objects.all() -->
                         <p>
                           <select name="division_id" class="form-control form-select" id="divList-id" v-model="unitFormData.division_id" aria-label="Default select example" @change="onDivChange" required>
-                            <option value="0">Select Division</option>
+                            <!-- <option value="0">Select Division</option>
                             {% for val in divList %}
                             <option value="{{ val.id }}">{{ val.division_name }}</option>
-                            {% endfor %}
+                            {% endfor %} -->
+                            <option value="0">Select Division</option>
+                            <option v-for="val in divisionListVue" :value="val.id">{[ val.division_name ]}</option>
                           </select>
                         </p>
                         <p>
@@ -594,10 +616,12 @@
                         <!-- Dropdown using loop for ooList = OrgOutcome.objects.all() -->
                         <p>
                           <select name="org_outcome" class="form-control form-select" id="orgOutcome-id" v-model="papsFormData.org_outcome_id" aria-label="Default select example" @change="onOoChange" required>
-                            <option value="0">Select Organizational Outcome</option>
+                            <!-- <option value="0">Select Organizational Outcome</option>
                             {% for val in ooList %}
                             <option value="{{ val.id }}">{{ val.org_outcome }}</option>
-                            {% endfor %}
+                            {% endfor %} -->
+                            <option value="0">Select Organizational Outcome</option>
+                            <option v-for="val in ooListVue" :value="val.id">{[ val.org_outcome ]}</option>
                           </select>
                         </p>
                         <p>
