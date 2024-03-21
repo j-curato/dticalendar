@@ -107,6 +107,12 @@ def get_unit_details(request):
         search_filter = Q()
         for col in columns: 
             search_filter |= Q(**{f'{col}__icontains': search_value})
+        
+        for col in columns:
+            if col == 'division_name':  # Handle division name separately
+                search_filter |= Q(**{'division__division_name__icontains': search_value})
+            else:
+                search_filter |= Q(**{f'{col}__icontains': search_value})
 
         # Filter the events based on the search_value
         unitList = Unit.objects.filter(search_filter)
@@ -142,7 +148,7 @@ def get_unit_details(request):
                 'id': unit.id,
                 'unit_name': unit.unit_name,
                 'description': unit.description,
-                'division_name': unit.division_name,
+                'division_name': unit.division.division_name if unit.division else '',  # Access division name if division exists,
                 'division_id': unit.division_id
         })
 

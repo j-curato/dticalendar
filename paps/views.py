@@ -87,8 +87,13 @@ def get_paps_details(request):
 
         #Create a Q object for filtering based on the search_value in all columns
         search_filter = Q()
-        for col in columns: 
-            search_filter |= Q(**{f'{col}__icontains': search_value})
+        # for col in columns: 
+        #     search_filter |= Q(**{f'{col}__icontains': search_value})
+        for col in columns:
+            if col == 'oo_name':  # Handle division name separately
+                search_filter |= Q(**{'org_outcome__org_outcome__icontains': search_value})
+            else:
+                search_filter |= Q(**{f'{col}__icontains': search_value})
 
         # Filter the events based on the search_value
         papList = Pap.objects.filter(search_filter)
@@ -124,7 +129,7 @@ def get_paps_details(request):
                 'id': papval.id,
                 'pap': papval.pap,
                 'description': papval.description,
-                'oo_name': papval.oo_name,
+                'oo_name': papval.org_outcome.org_outcome,
                 'org_outcome_id': papval.org_outcome_id
         })
 

@@ -154,13 +154,20 @@ def get_events(request):
         print("order_column_index:", order_column_index)
         print("order_direction:", order_direction)
 
-         # Define the columns you want to search on
+        # Define the columns you want to search on
         columns = ['id', 'whole_date_start_searchable', 'whole_date_end_searchable', 'event_title', 'event_desc', 'office', 'division_name', 'unit_name']
 
         #Create a Q object for filtering based on the search_value in all columns
         search_filter = Q()
-        for col in columns: 
-            search_filter |= Q(**{f'{col}__icontains': search_value})
+        # for col in columns: 
+        #     search_filter |= Q(**{f'{col}__icontains': search_value})
+        for col in columns:
+            if col == 'division_name':  # Handle division name separately
+                search_filter |= Q(**{'division__division_name__icontains': search_value})
+            elif col == 'unit_name': # Handle unit name separately
+                search_filter |= Q(**{'unit__unit_name__icontains': search_value})
+            else:
+                search_filter |= Q(**{f'{col}__icontains': search_value})
 
         # Filter the events based on the search_value and user id
         events = Event.objects.filter(search_filter, user=request.user, display_status=True)
@@ -206,8 +213,8 @@ def get_events(request):
                 'event_title': event.event_title,
                 'event_desc': event.event_desc,
                 'office': event.office,
-                'division_name': event.division_name,
-                'unit_name': event.unit_name,
+                'division_name': event.division.division_name if event.division else '',  # Access division name if division exists
+                'unit_name': event.unit.unit_name if event.unit else '', # Access unit name if unit exists
                 # get the file_attachment download url
                 'file_attachment': event.file_attachment.url,
                 # whole date start format should be like January 01, 2023

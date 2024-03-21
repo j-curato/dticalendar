@@ -571,7 +571,6 @@ const app = Vue.createApp({
             const updateOoButton = document.getElementById('oo-update');
             const orgFormData = new FormData();
             
-
             if(event.target.textContent === saveOoButton.textContent){
 
                 orgFormData.append('oobtntxt', saveOoButton.textContent)
@@ -640,6 +639,7 @@ const app = Vue.createApp({
                     console.log("Data saved successfully:", data);
                     // refresh the display table data
                     $('#oodataTable').DataTable().ajax.reload();
+                    $('#papdataTable').DataTable().ajax.reload();
 
                 } // end of if (data.message)
                 else {
@@ -845,6 +845,7 @@ const app = Vue.createApp({
                     console.log("Data updated successfully:", data.message);
                     // refresh datatable
                     $('#unitdataTable').DataTable().ajax.reload();
+                    $('#eventsTable').DataTable().ajax.reload();
                 } // end of if (data.message)
                 else {
                     // Handle a failed response
@@ -950,6 +951,8 @@ const app = Vue.createApp({
                     console.log("Data save failed:", data.message);
                 }
                 $('#divdataTable').DataTable().ajax.reload();
+                $('#eventsTable').DataTable().ajax.reload();
+                $('#unitdataTable').DataTable().ajax.reload();
                 }
                 ) // end of the first .then()
                 .catch(error => {
