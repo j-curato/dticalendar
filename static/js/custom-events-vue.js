@@ -303,11 +303,11 @@ const appEvents = Vue.createApp({
                     },
                     {'width': '5%', 'targets': 0},  // Adjust the percentage for each column
                     {'width': '15%', 'targets': 1},
-                    {'width': '15%', 'targets': 2},
-                    {'width': '15%', 'targets': 3},
-                    {'width': '15%', 'targets': 4},
-                    {'width': '15%', 'targets': 5},
-                    {'width': '15%', 'targets': 6},
+                    {'width': '30%', 'targets': 2},
+                    {'width': '10%', 'targets': 3},
+                    {'width': '10%', 'targets': 4},
+                    {'width': '10%', 'targets': 5},
+                    {'width': '10%', 'targets': 6},
                     {'width': '10%', 'targets': 7},
                     // Add more 'columnDefs' as needed
                 ],
@@ -452,7 +452,19 @@ const appEvents = Vue.createApp({
                         ],
                         'columns': dynamicColumns,
                         'order': [[0, 'asc']],
-                        'columnDefs': dynamicColumns.map((column, index) => {
+                        'columnDefs': [
+
+                        {'width': '0%', 'targets': 0},  // Adjust the percentage for each column
+                        {'width': '10%', 'targets': 1},
+                        {'width': '10%', 'targets': 2},
+                        {'width': '10%', 'targets': 3},
+                        {'width': '20%', 'targets': 4},
+                        {'width': '15%', 'targets': 5},
+                        {'width': '10%', 'targets': 6},
+                        {'width': '10%', 'targets': 7},
+                        {'width': '15%', 'targets': 8},
+
+                        ...dynamicColumns.map((column, index) => {
                             if (index === 1) {
                                 // For whole_date_start_searchable column
                                 return {
@@ -494,9 +506,13 @@ const appEvents = Vue.createApp({
                                         }
                                     },
                                 };
-                            }
-                        }),
-                        'colResize': true // Enable column resizing
+                             }
+
+                          }),
+
+                       ],
+
+                        'colResize': true, // Enable column resizing
                     });
 
                 // filter by division
