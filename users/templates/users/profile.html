@@ -213,7 +213,8 @@
                   <p><input type="text" name="user_id" class="form-control" placeholder="Event title" v-model="formData.user_id" style="display: none;"></p>
                   <p>
                     <!-- <input type="text" name="event_title" class="form-control" id="event-title-input" placeholder="Event title" @keyup="handleEventTitleText" @change="handleEventTitleText" @click="handleEventTitleText" data-autocomplete-source="{% url 'suggest_event_titles' %}" required> -->
-                    <textarea name="event_title" class="form-control" id="event-title-input" placeholder="Event title" @keyup="handleEventTitleText" @change="handleEventTitleText" @click="handleEventTitleText" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></textarea>
+                    <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px; margin: 5px 0;">Activity Title</span>
+                    <textarea name="event_title" class="form-control" id="event-title-input" placeholder="Activity title" @keyup="handleEventTitleText" @change="handleEventTitleText" @click="handleEventTitleText" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></textarea>
                   </p>
                   <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px;">Location details</span>
                   <p style="padding-top: 7px;">
