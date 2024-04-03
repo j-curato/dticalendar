@@ -1739,6 +1739,16 @@ const app = Vue.createApp({
                     }       
                     
                 ],
+                'columnDefs': [
+
+                    {'width': '5%', 'targets': 0},  // Adjust the percentage for each column
+                    {'width': '8%', 'targets': 1},
+                    {'width': '8%', 'targets': 2},
+                    {'width': '25%', 'targets': 3},
+                    {'width': '25%', 'targets': 4},
+                    {'width': '8%', 'targets': 7},
+                    {'width': '8%', 'targets': 8},
+                ],
                 'order': [[0, 'desc']], // Order by ID column, descending
                 'colResize': true
                 
