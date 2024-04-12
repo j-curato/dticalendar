@@ -190,9 +190,26 @@ const app = Vue.createApp({
         callPapFunctions(){
             this.showPapsModal();
         },
+
         nextModal() {
             $("#modal1").modal("hide");
             $("#modal2").modal("show");
+        },
+
+        closeModal1() {
+            $("#modal2").modal("hide");
+            $("#modal1").modal("hide");
+            Object.assign(this.formData, this.$options.data().formData);
+            // Alternatively, you can reset the form using the form reference
+            this.$refs.eventForm.reset();
+        },
+
+         closeModal2() {
+            $("#modal2").modal("hide");
+            $("#modal1").modal("hide");
+            Object.assign(this.formData, this.$options.data().formData);
+            // Alternatively, you can reset the form using the form reference
+            this.$refs.eventForm.reset();
         },
 
         previousModal() {
@@ -387,6 +404,8 @@ const app = Vue.createApp({
                         this.showToast();
                         // refresh the server-side datatables events table
                         $('#eventsTable').DataTable().ajax.reload();
+                        this.closeModal1();
+                        //this.resetFormData();
                         // Handle a successful response
                         console.log("Event added", data);
                         // reset the form data all at once using one line of code
@@ -398,7 +417,7 @@ const app = Vue.createApp({
                         $("#editUnit").val(0);
                         $("#editOrgOutcome").val(0);
                         $("#editPaps").val(0);
-                        $("#event-title-input").val(" ");
+                        $("#event-title-input").val("");
                         $("#editLocProv").val(0);
                         $("#event-location-lgu-id").val(0);
                         $("#event-location-barangay-id").val(0);
@@ -500,10 +519,9 @@ const app = Vue.createApp({
                         this.showToast();
                         // refresh the server-side datatables events table
                         $('#eventsTable').DataTable().ajax.reload();
+                        this.closeModal2();
                         // Handle a successful response
                         console.log("Event added", data);
-                        // reset the form data all at once using one line of code
-                        //Object.assign(this.formData, this.$options.data().formData);
                         
                     } // end of if (data.message)
                     else {
@@ -1011,7 +1029,7 @@ const app = Vue.createApp({
         }, // end of remove event() function
 
         showModal() {
-
+            
             this.fetchDivisionData();
             this.fetchUnitData();
             this.fetchOrgOutcomeData();
@@ -1028,7 +1046,8 @@ const app = Vue.createApp({
             $("#editDateStart").val(isoDate);
             $("#editDateEnd").val(isoDate);
 
-            this.formData.event_title = '';
+            //this.formData.event_title = '';
+            $("#event-title-input").val("");
             this.formData.event_desc = '';
             this.formData.participants = '';
 
