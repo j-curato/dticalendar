@@ -157,7 +157,7 @@ const appEvents = Vue.createApp({
                         'targets': [2],
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">empty</span>';
+                                return '<span class="highlight-vacant-">-</span>';
                             } else {
                                 var formattedData = data.replace(/,/g, '<br>');
                                 let html = '';
@@ -182,7 +182,7 @@ const appEvents = Vue.createApp({
                         'targets': [3],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">empty</span>';
+                                return '<span class="highlight-vacant-">-</span>';
                             } else {
                                 var formattedData = data.replace(/,/g, ' <br>');
                                 let html = '';
@@ -207,7 +207,7 @@ const appEvents = Vue.createApp({
                         'targets': [4],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">empty</span>';
+                                return '<span class="highlight-vacant-">-</span>';
                             } else {
                                 var formattedData = data.replace(/,/g, ' <br>');
                                 let html = '';
@@ -231,7 +231,7 @@ const appEvents = Vue.createApp({
                         'targets': [5],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">empty</span>';
+                                return '<span class="highlight-vacant-">-</span>';
                             } else {
                                 var formattedData = data.replace(/,/g, ' <br>');
                                 let html = '';
@@ -256,7 +256,7 @@ const appEvents = Vue.createApp({
                         'targets': [6],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">empty</span>';
+                                return '<span class="highlight-vacant-">-</span>';
                             } else {
                                 var formattedData = data.replace(/,/g, ' <br>');
                                 let html = '';
@@ -281,7 +281,7 @@ const appEvents = Vue.createApp({
                         'targets': [7],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">empty</span>';
+                                return '<span class="highlight-vacant-">-</span>';
                             } else {
                                 var formattedData = data.replace(/,/g, ' <br>');
                                 let html = '';
@@ -481,7 +481,7 @@ const appEvents = Vue.createApp({
                                     'searchable': true,
                                     'render': function (data, type, row) {
                                         if (data === null || data === undefined) {
-                                            return '<span class="highlight-vacant">empty</span>';
+                                            return '<span class="highlight-vacant-">-</span>';
                                         } else {
                                             try {
                                                 var formattedData = data.replace(/,/g, '<br>');
@@ -506,6 +506,39 @@ const appEvents = Vue.createApp({
                                         }
                                     },
                                 };
+                                // return {
+                                //     'targets': [index],
+                                //     'searchable': true,
+                                //     'render': function (data, type, row) {
+                                //         if (data === null || data === undefined) {
+                                //             return '<span class="highlight-vacant">empty</span>';
+                                //         } else {
+                                //             try {
+                                //                 var formattedData = data.replace(/,/g, '<br>');
+                                //                 let html = '';
+                                
+                                //                 if (formattedData.includes('<br>')) {
+                                //                     const splitData = formattedData.split('<br>');
+                                //                     splitData.forEach(pair => {
+                                //                         const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
+                                //                         const truncatedTitle = title.length > 30 ? title.substring(0, 30) + '...' : title;
+                                //                         html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${truncatedTitle}</span><br>`;
+                                //                     });
+                                //                 } else {
+                                //                     const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
+                                //                     const truncatedTitle = title.length > 30 ? title.substring(0, 30) + '...' : title;
+                                //                     html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${truncatedTitle}</span>`;
+                                //                 }
+                                
+                                //                 return html;
+                                //             } catch (error) {
+                                //                 console.error("Error rendering column:", error);
+                                //                 return '<span class="highlight-vacant">Error</span>';
+                                //             }
+                                //         }
+                                //     },
+                                // };
+                                
                              }
 
                           }),
