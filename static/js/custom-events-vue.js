@@ -372,7 +372,7 @@ const appEvents = Vue.createApp({
                                     // Modify the content before exporting to PDF
                                     const sheet = xlsx.xl.worksheets['sheet1.xml'];
                                     // Ensure that the text containing bullet points is formatted properly and move to the next line after each bullet point
-                                    ['B', 'C', 'D', 'E', 'F', 'G'].forEach(function(columnLetter) {
+                                    ['B', 'C', 'D', 'E', 'F', 'G', 'H'].forEach(function(columnLetter) {
                                         $('row c[r^="' + columnLetter + '"]', sheet).each(function () {
                                             if ($(this).text().includes('•')) {
                                                 // apply wrap text style
