@@ -1,4 +1,5 @@
 from django.contrib.auth import login, authenticate
+from django.contrib.auth import logout  # Import the logout function
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect
 from django.conf import settings
@@ -377,6 +378,12 @@ def get_calendars(request):
     calendars = Calendar.objects.all()
     data = [{'id': calendar.id, 'calendar_name': calendar.calendar_name} for calendar in calendars]
     return JsonResponse(data, safe=False)
+
+
+def logout_view(request):
+    logout(request)
+    # Redirect to a page after logout (e.g., home page)
+    return redirect('/users/login/')  # Replace 'home' with the name of your desired redirect URL
 
 
 
