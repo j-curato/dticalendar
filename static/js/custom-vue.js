@@ -1770,7 +1770,10 @@ const app = Vue.createApp({
                     {'width': '8%', 'targets': 8},
                 ],
                 'order': [[0, 'desc']], // Order by ID column, descending
-                'colResize': true
+                'colResize': true,
+                'fixedColumns': {
+                    leftColumns: 9 // Adjust this number to the number of columns you want to freeze
+                }
                 
                
             }); // end of the $('#eventsTable').DataTable()

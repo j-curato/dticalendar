@@ -312,7 +312,10 @@ const appEvents = Vue.createApp({
                     // Add more 'columnDefs' as needed
                 ],
 
-                'colResize': true
+                'colResize': true,
+                'fixedColumns': {
+                    leftColumns: 7 // Adjust this number to the number of columns you want to freeze
+                }
                 
                 }); // end of the $('#').DataTable()
 
@@ -546,6 +549,9 @@ const appEvents = Vue.createApp({
                        ],
 
                         'colResize': true, // Enable column resizing
+                        'fixedColumns': {
+                            leftColumns: 8 // Adjust this number to the number of columns you want to freeze
+                        }
                     });
 
                 // filter by division
