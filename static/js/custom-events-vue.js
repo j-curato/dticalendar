@@ -491,11 +491,11 @@ const appEvents = Vue.createApp({
                                                     const splitData = formattedData.split('<br>');
                                                     splitData.forEach(pair => {
                                                         const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
-                                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span><br>`;
+                                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title} @ ${timeStart} - ${timeEnd}</span><br>`;
                                                     });
                                                 } else {
                                                     const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
-                                                    html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span>`;
+                                                    html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title} @ ${timeStart} - ${timeEnd}</span>`;
                                                 }
 
                                                 return html;
