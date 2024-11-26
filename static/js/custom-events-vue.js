@@ -459,13 +459,13 @@ const appEvents = Vue.createApp({
 
                         {'width': '0%', 'targets': 0},  // Adjust the percentage for each column
                         {'width': '10%', 'targets': 1},
-                        {'width': '10%', 'targets': 2},
-                        {'width': '10%', 'targets': 3},
-                        {'width': '20%', 'targets': 4},
-                        {'width': '15%', 'targets': 5},
-                        {'width': '10%', 'targets': 6},
-                        {'width': '10%', 'targets': 7},
-                        {'width': '15%', 'targets': 8},
+                        {'width': '10%', 'targets': 2, 'className': 'column-light-green'},
+                        {'width': '10%', 'targets': 3, 'className': 'column-light-yellow'},
+                        {'width': '20%', 'targets': 4, 'className': 'column-light-pink'},
+                        {'width': '15%', 'targets': 5, 'className': 'column-light-orange'},
+                        {'width': '10%', 'targets': 6, 'className': 'column-light-purple'},
+                        {'width': '10%', 'targets': 7, 'className': 'column-light-cyan'},
+                        {'width': '15%', 'targets': 8, 'className': 'column-light-gray'},
 
                         ...dynamicColumns.map((column, index) => {
                             if (index === 1) {
@@ -473,6 +473,7 @@ const appEvents = Vue.createApp({
                                 return {
                                     'targets': [index],
                                     'searchable': true,
+                                    'className': `custom-column-${index}`, // Add dynamic classes if needed
                                     'render': function (data) {
                                         return data;
                                     },
@@ -482,9 +483,11 @@ const appEvents = Vue.createApp({
                                 return {
                                     'targets': [index],
                                     'searchable': true,
+                                    'className': `custom-column-${index}`, // Add dynamic classes if needed
                                     'render': function (data, type, row) {
                                         if (data === null || data === undefined) {
-                                            return '<span class="highlight-vacant-">-</span>';
+                                            //return '<span class="highlight-vacant-">-</span>';
+                                            return '<span class="highlight-vacant">-</span>';
                                         } else {
                                             try {
                                                 var formattedData = data.replace(/,/g, '<br>');
