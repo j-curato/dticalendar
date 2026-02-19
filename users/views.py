@@ -1,9 +1,12 @@
 from django.contrib.auth import login, authenticate
+from django.contrib.auth import logout  # Import the logout function
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect
+from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.http import HttpRequest
+from django.db.models.functions import Lower
 from events.models import Event
 from django.db.models import Q
 from calendars.models import Calendar
@@ -54,6 +57,9 @@ def login_request(request):
 
 def profile(request):
     txturl = 'users'
+    context = {
+        'MEDIA_URL' : settings.MEDIA_URL
+    }
     # Check if the user is authenticated
     if not request.user.is_authenticated:
         return redirect('login')
@@ -124,10 +130,11 @@ def profile(request):
     # load Province object from the database into provinceList variable sorted in ascending order
     provinceList = Province.objects.all().order_by('province_name')
     #calList = Calendar.objects.all()
-    #divList = Division.objects.all()
+    divList = Division.objects.all()
     
-
-    return render(request, 'users/profile.html', {'eventsList': events, 'ooList': ooList, 'papList': papsList, 'provinceList': provinceList, 'msgvar': msgvar, 'txturl': txturl})
+    return render(request, 'users/profile.html', {'eventsList': events, 'ooList': ooList, 'papList': papsList, 
+                                                  'provinceList': provinceList, 'divList': divList, 'msgvar': msgvar, 'txturl': txturl,
+                                                  'context': context})
 
 
 # method to display event details using datatable server side processing
@@ -144,22 +151,27 @@ def get_events(request):
         order_column_index = int(request.GET.get('order[0][column]', 0))
         order_direction = request.GET.get('order[0][dir]', 'asc')
 
-        
         # Print the values for debugging
         print("order_column_index:", order_column_index)
         print("order_direction:", order_direction)
 
-         # Define the columns you want to search on
-        columns = ['id', 'event_title', 'event_desc', 'office', 'division_name', 'unit', 'whole_date_start_searchable', 'whole_date_end_searchable']
+        # Define the columns you want to search on
+        columns = ['id', 'whole_date_start_searchable', 'whole_date_end_searchable', 'event_title', 'event_desc', 'office', 'division_name', 'unit_name']
 
         #Create a Q object for filtering based on the search_value in all columns
         search_filter = Q()
+        # for col in columns: 
+        #     search_filter |= Q(**{f'{col}__icontains': search_value})
         for col in columns:
-            search_filter |= Q(**{f'{col}__icontains': search_value})
-
+            if col == 'division_name':  # Handle division name separately
+                search_filter |= Q(**{'division__division_name__icontains': search_value})
+            elif col == 'unit_name': # Handle unit name separately
+                search_filter |= Q(**{'unit__unit_name__icontains': search_value})
+            else:
+                search_filter |= Q(**{f'{col}__icontains': search_value})
 
         # Filter the events based on the search_value and user id
-        events = Event.objects.filter(search_filter, user=request.user)
+        events = Event.objects.filter(search_filter, user=request.user, display_status=True)
         
         #events = Event.objects.filter(search_filter)
 
@@ -168,11 +180,21 @@ def get_events(request):
 
         # Apply sorting based on the column index and direction
         if order_direction == 'asc':
-            events = events.order_by(columns[order_column_index])
+            if columns[order_column_index] == 'whole_date_start_searchable':
+                events = events.order_by(F('whole_date_start'))
+            elif columns[order_column_index] == 'whole_date_end_searchable':
+                events = events.order_by(F('whole_date_end'))
+            else:
+                events = events.order_by(columns[order_column_index])
         else:
-            events = events.order_by(f'-{columns[order_column_index]}')
+            if columns[order_column_index] == 'whole_date_start_searchable':
+                events = events.order_by(F('whole_date_start').desc())
+            elif columns[order_column_index] == 'whole_date_end_searchable':
+                events = events.order_by(F('whole_date_end').desc())
+            else:
+                events = events.order_by(f'-{columns[order_column_index]}')
 
-        # Count of records after filtering
+        # Count of records after filtering 
         filtered_records = events.count()
         
         # Apply distinct on 'event_code' and fetch the record with the smallest ID
@@ -192,8 +214,8 @@ def get_events(request):
                 'event_title': event.event_title,
                 'event_desc': event.event_desc,
                 'office': event.office,
-                'division_name': event.division_name,
-                'unit': event.unit,
+                'division_name': event.division.division_name if event.division else '',  # Access division name if division exists
+                'unit_name': event.unit.unit_name if event.unit else '', # Access unit name if unit exists
                 # get the file_attachment download url
                 'file_attachment': event.file_attachment.url,
                 # whole date start format should be like January 01, 2023
@@ -213,24 +235,42 @@ def get_events(request):
         return JsonResponse({'error': str(e)}, status=500)
     
     # method to get the event details and return it as JSON and display it in the modal #editEventModal
-def get_event_details(request):
+def get_event_details_to_edit(request):
     try:
         # Get the event ID from the GET parameters
         event_id = request.GET.get('event_id')
+        division_name = request.GET.get('division_name')
 
         # Get the event details from the database
         event = Event.objects.get(pk=event_id)
 
-        # Prepare the JSON response
+        # Prepare the JSON response returning all the daabase fields
         response_data = {
+
             'id': event.id,
+            'office': event.office,
+            'division_name': event.division_name,
+            'division_id': event.division_id,
+            'orgoutcome_id': event.orgoutcome_id,
+            'pap_id': event.pap_id,
+            'province_id': event.province_id,
+            'lgu_id': event.lgu_id,
+            'barangay_id': event.barangay_id,
+            'unit_id': event.unit_id,
+            'org_outcome': event.org_outcome,
+            'paps': event.paps,
             'event_title': event.event_title,
-            'event_desc': event.event_desc,
-            'whole_date_start_searchable': event.whole_date_start_searchable,
-            'whole_date_end_searchable': event.whole_date_end_searchable,
             'event_location': event.event_location,
+            'event_location_lgu': event.event_location_lgu,
+            'event_location_barangay': event.event_location_barangay,
+            'event_location_district': event.event_location_district,
+            'whole_dateEnd_with_time': event.whole_dateEnd_with_time,
+            'whole_dateStart_with_time': event.whole_dateStart_with_time,
+            'event_all_day': event.event_all_day,
+            'event_desc': event.event_desc,
             'participants': event.participants,
             'file_attachment': event.file_attachment.url,
+            'event_code': event.event_code,
             'event_day_start': event.event_day_start,
             'event_month_start': event.event_month_start,
             'event_year_start': event.event_year_start,
@@ -239,10 +279,11 @@ def get_event_details(request):
             'event_month_end': event.event_month_end,
             'event_year_end': event.event_year_end,
             'event_time_end': event.event_time_end,
-            'office': event.office,
-            'org_outcome': event.org_outcome,
-            'paps': event.paps,
-            'unit': event.unit
+            'whole_date_start': event.whole_date_start,
+            'whole_date_end': event.whole_date_end,
+            'whole_date_start_searchable': event.whole_date_start_searchable,
+            'whole_date_end_searchable': event.whole_date_end_searchable
+
         }
  
         return JsonResponse(response_data)
@@ -337,6 +378,12 @@ def get_calendars(request):
     calendars = Calendar.objects.all()
     data = [{'id': calendar.id, 'calendar_name': calendar.calendar_name} for calendar in calendars]
     return JsonResponse(data, safe=False)
+
+
+def logout_view(request):
+    logout(request)
+    # Redirect to a page after logout (e.g., home page)
+    return redirect('/users/login/')  # Replace 'home' with the name of your desired redirect URL
 
 
 

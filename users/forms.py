@@ -4,6 +4,16 @@ from django.contrib.auth.models import User
 from django.contrib.auth import password_validation
 
 class UserRegisterForm(UserCreationForm):
+    first_name = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'maxlength': '30'}),
+        help_text='Optional. Your first name.',
+        required=False,
+    )
+    last_name = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'maxlength': '30'}),
+        help_text='Optional. Your last name.',
+        required=False,
+    )
     email = forms.EmailField()
     username = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-control', 'maxlength': '30'}),
@@ -26,6 +36,6 @@ class UserRegisterForm(UserCreationForm):
     
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2']
 
 

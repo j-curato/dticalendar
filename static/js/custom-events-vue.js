@@ -15,7 +15,7 @@ const appEvents = Vue.createApp({
         var tblEventsUnit; //declare the table variable globally
         const self = this; // Preserve reference to Vue component
 
-        $('#eventsDisplayTable').on('click', '.regional-office', function() {
+        $('#eventsDisplayTable, #eventsDivDisplayTable').on('click', '.regional-office', function() {
             const id = $(this).attr('data-id');
             self.fetchEventDetails(id);
         });
@@ -24,6 +24,10 @@ const appEvents = Vue.createApp({
         $(function() {
 
             table = $('#eventsDisplayTable').DataTable({  
+                'dom': 'Rlfrtip',
+                        'colReorder': {
+                            'allowReorder': true
+                        },
                 'processing': true,
                 'serverSide': true,
                 'ajax': { 
@@ -142,7 +146,7 @@ const appEvents = Vue.createApp({
                     {'data': 'PDI', 'sortable': true, 'searchable': true},
                     // Add more columns as needed
                 ],
-                'order': [[0, 'asc']], // Order by ID column, descending
+                'order': [[1, 'asc']], // Sort by visible Event Date column (column 1)
                 //apply css style to the columns
                 'columnDefs': [
                     {
@@ -153,7 +157,7 @@ const appEvents = Vue.createApp({
                         'targets': [2],
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">empty</span>';
+                                return '<span class="highlight-vacant-">-</span>';
                             } else {
                                 var formattedData = data.replace(/,/g, '<br>');
                                 let html = '';
@@ -161,12 +165,12 @@ const appEvents = Vue.createApp({
                                 if (formattedData.includes('<br>')) {
                                     const splitData = formattedData.split('<br>');
                                     splitData.forEach(pair => {
-                                        const [title, id, divname, unitname] = pair.trim().split('*');
-                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}">• ${title}</span><br>`;
+                                        const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
+                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span><br>`;
                                     });
                                 } else {
-                                    const [title, id, divname, unitname] = formattedData.trim().split('*');
-                                    html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}">• ${title}</span>`;
+                                    const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
+                                    html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span>`;
                                 }
                                 
                                 return html;
@@ -178,7 +182,7 @@ const appEvents = Vue.createApp({
                         'targets': [3],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">empty</span>';
+                                return '<span class="highlight-vacant-">-</span>';
                             } else {
                                 var formattedData = data.replace(/,/g, ' <br>');
                                 let html = '';
@@ -203,7 +207,7 @@ const appEvents = Vue.createApp({
                         'targets': [4],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">empty</span>';
+                                return '<span class="highlight-vacant-">-</span>';
                             } else {
                                 var formattedData = data.replace(/,/g, ' <br>');
                                 let html = '';
@@ -219,7 +223,6 @@ const appEvents = Vue.createApp({
                                     html += `<span class="highlight-offices po-ads" data-id="${id}" style="cursor: pointer;" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span>`;
                                 }
                                 
-                    
                                 return html;
                             }
                         },
@@ -228,7 +231,7 @@ const appEvents = Vue.createApp({
                         'targets': [5],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">empty</span>';
+                                return '<span class="highlight-vacant-">-</span>';
                             } else {
                                 var formattedData = data.replace(/,/g, ' <br>');
                                 let html = '';
@@ -253,7 +256,7 @@ const appEvents = Vue.createApp({
                         'targets': [6],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">empty</span>';
+                                return '<span class="highlight-vacant-">-</span>';
                             } else {
                                 var formattedData = data.replace(/,/g, ' <br>');
                                 let html = '';
@@ -278,7 +281,7 @@ const appEvents = Vue.createApp({
                         'targets': [7],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
                         'render': function (data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">empty</span>';
+                                return '<span class="highlight-vacant-">-</span>';
                             } else {
                                 var formattedData = data.replace(/,/g, ' <br>');
                                 let html = '';
@@ -300,27 +303,274 @@ const appEvents = Vue.createApp({
                     },
                     {'width': '5%', 'targets': 0},  // Adjust the percentage for each column
                     {'width': '15%', 'targets': 1},
-                    {'width': '15%', 'targets': 2},
-                    {'width': '15%', 'targets': 3},
-                    {'width': '15%', 'targets': 4},
-                    {'width': '15%', 'targets': 5},
-                    {'width': '15%', 'targets': 6},
+                    {'width': '30%', 'targets': 2},
+                    {'width': '10%', 'targets': 3},
+                    {'width': '10%', 'targets': 4},
+                    {'width': '10%', 'targets': 5},
+                    {'width': '10%', 'targets': 6},
                     {'width': '10%', 'targets': 7},
                     // Add more 'columnDefs' as needed
                 ],
+
+                'colResize': true,
+                'fixedColumns': {
+                    leftColumns: 7 // Adjust this number to the number of columns you want to freeze
+                }
                 
-                }); // end of the $('#eventsDivDisplayTable').DataTable()
+                }); // end of the $('#').DataTable()
+
+                // Define your dynamic column configuration
+                let dynamicColumns = [
+                    
+                    {'data': 'whole_date_start', 'sortable': true, 'searchable': true, 'visible': false},
+                    {'data': 'whole_date_start_searchable', 'sortable': true, 'searchable': true},
+                    {'data': 'ORD', 'sortable': true, 'searchable': true},
+                    {'data': 'OARD', 'sortable': true, 'searchable': true},
+                    {'data': 'SDD', 'sortable': true, 'searchable': true},
+                    {'data': 'IDD', 'sortable': true, 'searchable': true},
+                    {'data': 'CPD', 'sortable': true, 'searchable': true},
+                    {'data': 'FAD', 'sortable': true, 'searchable': true},
+                    {'data': 'MSSD', 'sortable': true, 'searchable': true},
+                    
+                    // Add more columns as needed
+                ];
+
+                var tblEventsDiv;
+                    // Create DataTable using dynamic configuration
+                    tblEventsDiv = $('#eventsDivDisplayTable').DataTable({
+                        'dom': 'Rlfrtip',
+                        'colReorder': {
+                            'allowReorder': true
+                        },
+                        'processing': true,
+                        'serverSide': true,
+                        'ajax': {
+                            'url': '/events/fetch-events-by-div-ajax/',  // Replace with your API endpoint
+                            'type': 'GET',
+                            'data': function (d) {
+                                d.office = $("#office-txt").val();
+                                console.log(d);
+                            }
+                        },
+                        'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
+                        'buttons': [
+                            {
+                                extend: 'copy',
+                                exportOptions: {
+                                    columns: ':not(:first)' // Excludes the first visible column
+                                }
+                            },
+                            {
+                                extend: 'csv',
+                                exportOptions: {
+                                    columns: ':not(:first)' // Excludes the first visible column
+                                }
+                            },
+                            {
+                                extend: 'excel',
+                                exportOptions: {
+                                    columns: ':not(:first)' // Excludes the first visible column
+                                },   
+                                customize: function (xlsx) {
+                                    // Modify the content before exporting to PDF
+                                    const sheet = xlsx.xl.worksheets['sheet1.xml'];
+                                    // Ensure that the text containing bullet points is formatted properly and move to the next line after each bullet point
+                                    ['B', 'C', 'D', 'E', 'F', 'G', 'H'].forEach(function(columnLetter) {
+                                        $('row c[r^="' + columnLetter + '"]', sheet).each(function () {
+                                            if ($(this).text().includes('•')) {
+                                                // apply wrap text style
+                                                $(this).attr('s', '55');
+                                                // Insert line breaks after each bullet point
+                                                $(this).html($(this).html().replace(/• /g, '\n• ')); // Insert line breaks after each bullet point
+                                            }
+                                        });
+                                    });
+                                    
+                                }
+                            },
+                            {
+                                extend: 'pdf',
+                                exportOptions: {
+                                    columns: ':not(:first)' // Excludes the first visible column
+                                },
+                                customize: function (doc) {
+
+                                    // Modify the content before exporting to PDF
+                                    doc.content[1].table.body.forEach(row => {
+                                        row.forEach(cell => {
+                                            // Set border property for each cell
+                                            cell['style'] = 'tableCell'; // Apply the table cell style
+                                        });
+                                    });
+                                    // Apply the table border style
+                                    doc.content[1].layout = {
+                                        hLineWidth: function () { return 1; },
+                                        vLineWidth: function () { return 1; },
+                                        hLineColor: function () { return '#b3b3b3'; },
+                                        vLineColor: function () { return '#b3b3b3'; },
+                                    };
+
+                                    // increase header width
+                                    doc.content[1].table.widths = ['*', '*', '*', '*', '*', '*', '*', '*'];
+
+                                    // apply header background color
+                                    doc.content[1].table.body[0].forEach(cell => {
+                                        cell['fillColor'] = '#e6e6e6'; // Apply the header background color
+                                    });
+
+                                    // Increase the width of the exported PDF
+                                    doc.pageOrientation = 'landscape'; // Change orientation to landscape
+                                    doc.pageSize = 'A4'; // Set page size to A3
+                            
+                                    // Modify the content before exporting to PDF
+                                    doc.content[1].table.body.forEach(row => {
+                                        row.forEach((cell, index) => {
+                                            // Ensure that the text containing bullet points is formatted properly
+                                            if (typeof cell.text === 'string' && cell.text.includes('•')) {
+                                                cell.text = cell.text.replace(/• /g, '\n• '); // Insert line breaks after each bullet point
+                                            }
+                                        });
+                                    });
+                                }
+                            },
+                            {
+                                extend: 'print',
+                                exportOptions: {
+                                    columns: ':not(:first)' // Excludes the first visible column
+                                },
+                                customize: function (win) {
+                                    const table = $(win.document.body).find('table tbody');
+                            
+                                    table.find('tr').each(function () {
+                                        const cells = $(this).find('td');
+                            
+                                        cells.each(function () {
+                                            const newText = $(this).text().replace(/•/g, '\n•');
+                                            $(this).text(newText);
+                                        });
+                                    });
+                                } 
+                                
+                            },
+                        ],
+                        'columns': dynamicColumns,
+                        'order': [[0, 'asc']],
+                        'columnDefs': [
+
+                        {'width': '0%', 'targets': 0},  // Adjust the percentage for each column
+                        {'width': '10%', 'targets': 1},
+                        {'width': '10%', 'targets': 2, 'className': 'column-light-green'},
+                        {'width': '10%', 'targets': 3, 'className': 'column-light-yellow'},
+                        {'width': '20%', 'targets': 4, 'className': 'column-light-pink'},
+                        {'width': '15%', 'targets': 5, 'className': 'column-light-orange'},
+                        {'width': '10%', 'targets': 6, 'className': 'column-light-purple'},
+                        {'width': '10%', 'targets': 7, 'className': 'column-light-cyan'},
+                        {'width': '15%', 'targets': 8, 'className': 'column-light-gray'},
+
+                        ...dynamicColumns.map((column, index) => {
+                            if (index === 1) {
+                                // For whole_date_start_searchable column
+                                return {
+                                    'targets': [index],
+                                    'searchable': true,
+                                    'className': `custom-column-${index}`, // Add dynamic classes if needed
+                                    'render': function (data) {
+                                        return data;
+                                    },
+                                };
+                            } else {
+                                // For other columns
+                                return {
+                                    'targets': [index],
+                                    'searchable': true,
+                                    'className': `custom-column-${index}`, // Add dynamic classes if needed
+                                    'render': function (data, type, row) {
+                                        if (data === null || data === undefined) {
+                                            //return '<span class="highlight-vacant-">-</span>';
+                                            return '<span class="highlight-vacant">-</span>';
+                                        } else {
+                                            try {
+                                                var formattedData = data.replace(/,/g, '<br>');
+                                                let html = '';
+
+                                                if (formattedData.includes('<br>')) {
+                                                    const splitData = formattedData.split('<br>');
+                                                    splitData.forEach(pair => {
+                                                        const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
+                                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title} @ ${timeStart} - ${timeEnd}</span><br>`;
+                                                    });
+                                                } else {
+                                                    const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
+                                                    html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title} @ ${timeStart} - ${timeEnd}</span>`;
+                                                }
+
+                                                return html;
+                                            } catch (error) {
+                                                console.error("Error rendering column:", error);
+                                                return '<span class="highlight-vacant">Error</span>';
+                                            }
+                                        }
+                                    },
+                                };
+                                // return {
+                                //     'targets': [index],
+                                //     'searchable': true,
+                                //     'render': function (data, type, row) {
+                                //         if (data === null || data === undefined) {
+                                //             return '<span class="highlight-vacant">empty</span>';
+                                //         } else {
+                                //             try {
+                                //                 var formattedData = data.replace(/,/g, '<br>');
+                                //                 let html = '';
+                                
+                                //                 if (formattedData.includes('<br>')) {
+                                //                     const splitData = formattedData.split('<br>');
+                                //                     splitData.forEach(pair => {
+                                //                         const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
+                                //                         const truncatedTitle = title.length > 30 ? title.substring(0, 30) + '...' : title;
+                                //                         html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${truncatedTitle}</span><br>`;
+                                //                     });
+                                //                 } else {
+                                //                     const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
+                                //                     const truncatedTitle = title.length > 30 ? title.substring(0, 30) + '...' : title;
+                                //                     html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${truncatedTitle}</span>`;
+                                //                 }
+                                
+                                //                 return html;
+                                //             } catch (error) {
+                                //                 console.error("Error rendering column:", error);
+                                //                 return '<span class="highlight-vacant">Error</span>';
+                                //             }
+                                //         }
+                                //     },
+                                // };
+                                
+                             }
+
+                          }),
+
+                       ],
+
+                        'colResize': true, // Enable column resizing
+                        'fixedColumns': {
+                            leftColumns: 8 // Adjust this number to the number of columns you want to freeze
+                        }
+                    });
 
                 // filter by division
-
-                tblEventsDiv = $('#eventsDivDisplayTable').DataTable({
+                tblEventsDiv = $('#eventsDivDisfffplayTable').DataTable({
                     'processing': true,
                     'serverSide': true,
+                    "sDom": 'Rlfrtip',
                     'ajax': { 
                         'url': '/events/fetch-events-by-div-ajax/',  // Replace with your API endpoint
                         'type': 'GET', 
                         'data': function (d) {
                             d.office = $("#office-txt").val();
+                            console.log(d);
+                        },
+                        success: function (response) {
+                            console.log(response);
                         }
                     },
                     'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
@@ -349,15 +599,21 @@ const appEvents = Vue.createApp({
                                 if (data === null || data === undefined) {
                                     return '<span class="highlight-vacant">empty</span>';
                                 } else {
-                                    // Replace commas with bullets and add line breaks
-                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
-                                    
+                                    var formattedData = data.replace(/,/g, '<br>');
+                                    let html = '';
+    
                                     if (formattedData.includes('<br>')) {
-                                        // If the data contains a line break, apply multiline CSS
-                                        return '<span class="highlight-offices regional-office multiline">&#8226; ' + formattedData + '</span>';
+                                        const splitData = formattedData.split('<br>');
+                                        splitData.forEach(pair => {
+                                            const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
+                                            html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span><br>`;
+                                        });
                                     } else {
-                                        return '<span class="highlight-offices regional-office">&#8226; ' + formattedData + '</span>';
+                                        const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
+                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span>`;
                                     }
+                                    
+                                    return html;
                                 }
                             },
                         },
@@ -367,15 +623,21 @@ const appEvents = Vue.createApp({
                                 if (data === null || data === undefined) {
                                     return '<span class="highlight-vacant">empty</span>';available
                                 } else {
-                                    // Replace commas with bullets and add line breaks
-                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
-                                    
+                                    var formattedData = data.replace(/,/g, '<br>');
+                                    let html = '';
+    
                                     if (formattedData.includes('<br>')) {
-                                        // If the data contains a line break, apply multiline CSS
-                                        return '<span class="highlight-offices po-adn multiline">&#8226; ' + formattedData + '</span>';
+                                        const splitData = formattedData.split('<br>');
+                                        splitData.forEach(pair => {
+                                            const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
+                                            html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span><br>`;
+                                        });
                                     } else {
-                                        return '<span class="highlight-offices po-adn">&#8226; ' + formattedData + '</span>';
+                                        const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
+                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span>`;
                                     }
+                                    
+                                    return html;
                                 }
                             },
                         },
@@ -385,15 +647,21 @@ const appEvents = Vue.createApp({
                                 if (data === null || data === undefined) {
                                     return '<span class="highlight-vacant">empty</span>';
                                 } else {
-                                    // Replace commas with bullets and add line breaks
-                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
-                                    
+                                    var formattedData = data.replace(/,/g, '<br>');
+                                    let html = '';
+    
                                     if (formattedData.includes('<br>')) {
-                                        // If the data contains a line break, apply multiline CSS
-                                        return '<span class="highlight-offices po-ads multiline">&#8226; ' + formattedData + '</span>';
+                                        const splitData = formattedData.split('<br>');
+                                        splitData.forEach(pair => {
+                                            const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
+                                            html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span><br>`;
+                                        });
                                     } else {
-                                        return '<span class="highlight-offices po-ads">&#8226; ' + formattedData + '</span>';
+                                        const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
+                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span>`;
                                     }
+                                    
+                                    return html;
                                 }
                             },
                         },
@@ -403,15 +671,21 @@ const appEvents = Vue.createApp({
                                 if (data === null || data === undefined) {
                                     return '<span class="highlight-vacant">empty</span>';
                                 } else {
-                                    // Replace commas with bullets and add line breaks
-                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
-                                    
+                                    var formattedData = data.replace(/,/g, '<br>');
+                                    let html = '';
+    
                                     if (formattedData.includes('<br>')) {
-                                        // If the data contains a line break, apply multiline CSS
-                                        return '<span class="highlight-offices po-sdn multiline">&#8226; ' + formattedData + '</span>';
+                                        const splitData = formattedData.split('<br>');
+                                        splitData.forEach(pair => {
+                                            const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
+                                            html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span><br>`;
+                                        });
                                     } else {
-                                        return '<span class="highlight-offices po-sdn">&#8226; ' + formattedData + '</span>';
+                                        const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
+                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span>`;
                                     }
+                                    
+                                    return html;
                                 }
                             },
                         },
@@ -421,15 +695,21 @@ const appEvents = Vue.createApp({
                                 if (data === null || data === undefined) {
                                     return '<span class="highlight-vacant">empty</span>';
                                 } else {
-                                    // Replace commas with bullets and add line breaks
-                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
-                                    
+                                    var formattedData = data.replace(/,/g, '<br>');
+                                    let html = '';
+    
                                     if (formattedData.includes('<br>')) {
-                                        // If the data contains a line break, apply multiline CSS
-                                        return '<span class="highlight-offices po-sds multiline">&#8226; ' + formattedData + '</span>';
+                                        const splitData = formattedData.split('<br>');
+                                        splitData.forEach(pair => {
+                                            const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
+                                            html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span><br>`;
+                                        });
                                     } else {
-                                        return '<span class="highlight-offices po-sds">&#8226; ' + formattedData + '</span>';
+                                        const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
+                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span>`;
                                     }
+                                    
+                                    return html;
                                 }
                             },
                         },
@@ -439,15 +719,21 @@ const appEvents = Vue.createApp({
                                 if (data === null || data === undefined) {
                                     return '<span class="highlight-vacant">empty</span>';
                                 } else {
-                                    // Replace commas with bullets and add line breaks
-                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
-                                    
+                                    var formattedData = data.replace(/,/g, '<br>');
+                                    let html = '';
+    
                                     if (formattedData.includes('<br>')) {
-                                        // If the data contains a line break, apply multiline CSS
-                                        return '<span class="highlight-offices po-pdi multiline">&#8226; ' + formattedData + '</span>';
+                                        const splitData = formattedData.split('<br>');
+                                        splitData.forEach(pair => {
+                                            const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
+                                            html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span><br>`;
+                                        });
                                     } else {
-                                        return '<span class="highlight-offices po-pdi">&#8226; ' + formattedData + '</span>';
+                                        const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
+                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span>`;
                                     }
+                                    
+                                    return html;
                                 }
                             },
                         },
@@ -457,20 +743,28 @@ const appEvents = Vue.createApp({
                                 if (data === null || data === undefined) {
                                     return '<span class="highlight-vacant">empty</span>';
                                 } else {
-                                    // Replace commas with bullets and add line breaks
-                                    var formattedData = data.replace(/,/g, ' <br>&nbsp;&#8226;');
-                                    
+                                    var formattedData = data.replace(/,/g, '<br>');
+                                    let html = '';
+    
                                     if (formattedData.includes('<br>')) {
-                                        // If the data contains a line break, apply multiline CSS
-                                        return '<span class="highlight-offices po-pdi multiline">&#8226; ' + formattedData + '</span>';
+                                        const splitData = formattedData.split('<br>');
+                                        splitData.forEach(pair => {
+                                            const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
+                                            html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span><br>`;
+                                        });
                                     } else {
-                                        return '<span class="highlight-offices po-pdi">&#8226; ' + formattedData + '</span>';
+                                        const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
+                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span>`;
                                     }
+                                    
+                                    return html;
                                 }
                             },
                         },
                         // Add more 'columnDefs' as needed
                     ],
+                    'colReorder': true, // Enable ColReorder extension
+                    'colResize': true   // Enable column resizing
                     
             }); // end of the $('#eventsDivDisplayTable').DataTable()
 
