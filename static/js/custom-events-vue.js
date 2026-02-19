@@ -146,7 +146,7 @@ const appEvents = Vue.createApp({
                     {'data': 'PDI', 'sortable': true, 'searchable': true},
                     // Add more columns as needed
                 ],
-                'order': [[0, 'asc']], // Order by ID column, descending
+                'order': [[1, 'asc']], // Sort by visible Event Date column (column 1)
                 //apply css style to the columns
                 'columnDefs': [
                     {

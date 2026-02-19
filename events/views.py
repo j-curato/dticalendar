@@ -675,14 +675,16 @@ def fetch_events_ajax(request):
         start = int(request.GET.get('start', 0))
         length = int(request.GET.get('length', 10))
         search_value = request.GET.get('search[value]', '')
+        order_direction = request.GET.get('order[0][dir]', 'asc')
+        sort_dir = 'DESC' if order_direction == 'desc' else 'ASC'
 
         # Define the columns you want to search on
         # columns = ['whole_date_start_searchable']
         columns = ['whole_date_start_searchable', 'RO', 'ADN', 'ADS', 'SDN', 'SDS', 'PDI']
 
 
-        query = """
-        SELECT 
+        query = f"""
+        SELECT
             DISTINCT generated_date,
             TO_CHAR(generated_date, 'FMMonth DD, YYYY') AS whole_date_start_searchable,
             MAX(CASE WHEN office = 'RO' THEN event_titles END) AS RO,
@@ -692,12 +694,12 @@ def fetch_events_ajax(request):
             MAX(CASE WHEN office = 'SDS' THEN event_titles END) AS SDS,
             MAX(CASE WHEN office = 'PDI' THEN event_titles END) AS PDI
         FROM (
-            SELECT 
+            SELECT
                 generated_date,
                 office,
                 STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), ', ') AS event_titles
             FROM (
-                SELECT 
+                SELECT
                     generate_series(whole_date_start::date, whole_date_end::date, '1 day'::interval)::date AS generated_date,
                     office,
                     event_title,
@@ -712,7 +714,7 @@ def fetch_events_ajax(request):
             GROUP BY generated_date, office
         ) AS subquery
         GROUP BY generated_date
-        ORDER BY generated_date;
+        ORDER BY generated_date {sort_dir};
         """
 
         with connection.cursor() as cursor:
