@@ -35,5 +35,5 @@ urlpatterns = [
     path('provinces/', include('provinces.urls')),
     path('lgus/', include('lgus.urls')),
     path('barangays/', include('barangays.urls')),
-    
+    path('offices/', include('offices.urls')),
 ]

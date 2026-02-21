@@ -23,7 +23,53 @@ const appEvents = Vue.createApp({
         // initialize the datatable
         $(function() {
 
-            table = $('#eventsDisplayTable').DataTable({  
+            // Fetch offices from tbl_offices dynamically, then init DataTable
+            fetch('/offices/api/get-offices-list/')
+                .then(function(r) { return r.json(); })
+                .then(function(officeList) {
+
+                    // Inject <th> into thead and tfoot from the same source (guarantees count match)
+                    const theadRow = $('#eventsDisplayTable thead tr');
+                    const tfootRow = $('#eventsDisplayTable tfoot tr');
+                    officeList.forEach(function(office) {
+                        theadRow.append('<th>' + office.office_initials + '</th>');
+                        tfootRow.append('<th>' + office.office_initials + '</th>');
+                    });
+
+                    // Build columns array dynamically
+                    const dtColumns = [
+                        {'data': 'whole_date_start', 'sortable': true, 'searchable': true, 'visible': false},
+                        {'data': 'whole_date_start_searchable', 'sortable': true, 'searchable': true},
+                    ];
+                    officeList.forEach(function(office) {
+                        dtColumns.push({'data': office.office_initials, 'sortable': true, 'searchable': true});
+                    });
+
+                    // Indices for all office columns (2, 3, 4, ...)
+                    const officeTargets = officeList.map(function(_, i) { return i + 2; });
+
+                    // Unified render function for all office columns
+                    function renderOfficeCell(data, type, row) {
+                        if (data === null || data === undefined) {
+                            return '<span class="highlight-vacant-">-</span>';
+                        }
+                        var formattedData = data.replace(/,/g, '<br>');
+                        let html = '';
+                        const parts = formattedData.includes('<br>') ? formattedData.split('<br>') : [formattedData];
+                        parts.forEach(function(pair) {
+                            const segs = pair.trim().split('*');
+                            const title = segs[0] || '';
+                            const id = segs[1] || '';
+                            const divname = segs[2] || '';
+                            const unitname = segs[3] || '';
+                            const timeStart = segs[4] || '';
+                            const timeEnd = segs[5] || '';
+                            html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname}&#13;Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span><br>`;
+                        });
+                        return html;
+                    }
+
+            table = $('#eventsDisplayTable').DataTable({
                 'dom': 'Rlfrtip',
                         'colReorder': {
                             'allowReorder': true
@@ -135,202 +181,43 @@ const appEvents = Vue.createApp({
                         
                     },
                 ],
-                'columns': [
-                    {'data': 'whole_date_start', 'sortable': true, 'searchable': true, 'visible': false},
-                    {'data': 'whole_date_start_searchable', 'sortable': true, 'searchable': true},
-                    {'data': 'RO', 'sortable': true, 'searchable': true},
-                    {'data': 'ADN', 'sortable': true, 'searchable': true},
-                    {'data': 'ADS', 'sortable': true, 'searchable': true},
-                    {'data': 'SDN', 'sortable': true, 'searchable': true},
-                    {'data': 'SDS', 'sortable': true, 'searchable': true},
-                    {'data': 'PDI', 'sortable': true, 'searchable': true},
-                    // Add more columns as needed
-                ],
+                'columns': dtColumns,
                 'order': [[1, 'asc']], // Sort by visible Event Date column (column 1)
-                //apply css style to the columns
                 'columnDefs': [
-                    {
-                        'targets': [1],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
-                        className: 'bold-column',
-                    },
-                    {
-                        'targets': [2],
-                        'render': function (data, type, row) {
-                            if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant-">-</span>';
-                            } else {
-                                var formattedData = data.replace(/,/g, '<br>');
-                                let html = '';
-
-                                if (formattedData.includes('<br>')) {
-                                    const splitData = formattedData.split('<br>');
-                                    splitData.forEach(pair => {
-                                        const [title, id, divname, unitname, timeStart, timeEnd] = pair.trim().split('*');
-                                        html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span><br>`;
-                                    });
-                                } else {
-                                    const [title, id, divname, unitname, timeStart, timeEnd] = formattedData.trim().split('*');
-                                    html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span>`;
-                                }
-                                
-                                return html;
-                            }
-                        }
-                    },
-                    
-                    {
-                        'targets': [3],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
-                        'render': function (data, type, row) {
-                            if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant-">-</span>';
-                            } else {
-                                var formattedData = data.replace(/,/g, ' <br>');
-                                let html = '';
-                    
-                                if (formattedData.includes('<br>')) {
-                                    const splitData = formattedData.split('<br>');
-                                    splitData.forEach(pair => {
-                                        const [title, id, divname, unitname] = pair.trim().split('*');
-                                        html += `<span class="highlight-offices po-adn multiline" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span><br>`;
-                                    });
-                                } else {
-                                    const [title, id, divname, unitname] = formattedData.trim().split('*');
-                                    html += `<span class="highlight-offices po-adn" data-id="${id}" style="cursor: pointer;" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span>`;
-                                }
-                                
-                    
-                                return html;
-                            }
-                        },
-                    },
-                    {
-                        'targets': [4],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
-                        'render': function (data, type, row) {
-                            if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant-">-</span>';
-                            } else {
-                                var formattedData = data.replace(/,/g, ' <br>');
-                                let html = '';
-                    
-                                if (formattedData.includes('<br>')) {
-                                    const splitData = formattedData.split('<br>');
-                                    splitData.forEach(pair => {
-                                        const [title, id, divname, unitname] = pair.trim().split('*');
-                                        html += `<span class="highlight-offices po-ads multiline" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span><br>`;
-                                    });
-                                } else {
-                                    const [title, id, divname, unitname] = formattedData.trim().split('*');
-                                    html += `<span class="highlight-offices po-ads" data-id="${id}" style="cursor: pointer;" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span>`;
-                                }
-                                
-                                return html;
-                            }
-                        },
-                    },
-                    {
-                        'targets': [5],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
-                        'render': function (data, type, row) {
-                            if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant-">-</span>';
-                            } else {
-                                var formattedData = data.replace(/,/g, ' <br>');
-                                let html = '';
-                    
-                                if (formattedData.includes('<br>')) {
-                                    const splitData = formattedData.split('<br>');
-                                    splitData.forEach(pair => {
-                                        const [title, id, divname, unitname] = pair.trim().split('*');
-                                        html += `<span class="highlight-offices po-sdn multiline" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span><br>`;
-                                    });
-                                } else {
-                                    const [title, id, divname, unitname] = formattedData.trim().split('*');
-                                    html += `<span class="highlight-offices po-sdn" data-id="${id}" style="cursor: pointer;" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span>`;
-                                }
-                                
-                    
-                                return html;
-                            }
-                        },
-                    },
-                    {
-                        'targets': [6],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
-                        'render': function (data, type, row) {
-                            if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant-">-</span>';
-                            } else {
-                                var formattedData = data.replace(/,/g, ' <br>');
-                                let html = '';
-                    
-                                if (formattedData.includes('<br>')) {
-                                    const splitData = formattedData.split('<br>');
-                                    splitData.forEach(pair => {
-                                        const [title, id, divname, unitname] = pair.trim().split('*');
-                                        html += `<span class="highlight-offices po-sds multiline" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span><br>`;
-                                    });
-                                } else {
-                                    const [title, id, divname, unitname] = formattedData.trim().split('*');
-                                    html += `<span class="highlight-offices po-sds" data-id="${id}" style="cursor: pointer;" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span>`;
-                                }
-                                
-                    
-                                return html;
-                            }
-                        },
-                    },
-                    {
-                        'targets': [7],  // Apply text highlighting to columns RO, ADN, ADS, SDN, SDS, PDI
-                        'render': function (data, type, row) {
-                            if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant-">-</span>';
-                            } else {
-                                var formattedData = data.replace(/,/g, ' <br>');
-                                let html = '';
-                    
-                                if (formattedData.includes('<br>')) {
-                                    const splitData = formattedData.split('<br>');
-                                    splitData.forEach(pair => {
-                                        const [title, id, divname, unitname] = pair.trim().split('*');
-                                        html += `<span class="highlight-offices po-pdi multiline" style="cursor: pointer;" data-id="${id}" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span><br>`;
-                                    });
-                                } else {
-                                    const [title, id, divname, unitname] = formattedData.trim().split('*');
-                                    html += `<span class="highlight-offices po-pdi" data-id="${id}" style="cursor: pointer;" title="Division: ${divname} &#13;Unit: ${unitname}">&#8226; ${title}</span>`;
-                                }
-                                
-                                return html;
-                            }
-                        },
-                    },
-                    {'width': '5%', 'targets': 0},  // Adjust the percentage for each column
+                    {'targets': [1], 'className': 'bold-column'},
+                    {'width': '0%', 'targets': 0},
                     {'width': '15%', 'targets': 1},
-                    {'width': '30%', 'targets': 2},
-                    {'width': '10%', 'targets': 3},
-                    {'width': '10%', 'targets': 4},
-                    {'width': '10%', 'targets': 5},
-                    {'width': '10%', 'targets': 6},
-                    {'width': '10%', 'targets': 7},
-                    // Add more 'columnDefs' as needed
+                    {
+                        'targets': officeTargets,
+                        'render': renderOfficeCell,
+                    },
                 ],
 
                 'colResize': true,
                 'fixedColumns': {
-                    leftColumns: 7 // Adjust this number to the number of columns you want to freeze
+                    leftColumns: officeList.length + 1  // +1 for Event Date (hidden Date col excluded)
                 }
-                
-                }); // end of the $('#').DataTable()
+
+                }); // end of the $('#eventsDisplayTable').DataTable()
+
+                // Reinitialize tooltips whenever the table redraws
+                table.on('draw', function() {
+                    $('[data-bs-toggle="tooltip"]').tooltip();
+                });
+
+                }); // end of fetch .then(officeList)
 
                 // Define your dynamic column configuration
                 let dynamicColumns = [
-                    
+
                     {'data': 'whole_date_start', 'sortable': true, 'searchable': true, 'visible': false},
                     {'data': 'whole_date_start_searchable', 'sortable': true, 'searchable': true},
-                    {'data': 'ORD', 'sortable': true, 'searchable': true},
-                    {'data': 'OARD', 'sortable': true, 'searchable': true},
                     {'data': 'SDD', 'sortable': true, 'searchable': true},
                     {'data': 'IDD', 'sortable': true, 'searchable': true},
                     {'data': 'CPD', 'sortable': true, 'searchable': true},
                     {'data': 'FAD', 'sortable': true, 'searchable': true},
                     {'data': 'MSSD', 'sortable': true, 'searchable': true},
+                    {'data': 'ICT', 'sortable': true, 'searchable': true},
                     
                     // Add more columns as needed
                 ];
@@ -459,13 +346,12 @@ const appEvents = Vue.createApp({
 
                         {'width': '0%', 'targets': 0},  // Adjust the percentage for each column
                         {'width': '10%', 'targets': 1},
-                        {'width': '10%', 'targets': 2, 'className': 'column-light-green'},
-                        {'width': '10%', 'targets': 3, 'className': 'column-light-yellow'},
-                        {'width': '20%', 'targets': 4, 'className': 'column-light-pink'},
-                        {'width': '15%', 'targets': 5, 'className': 'column-light-orange'},
-                        {'width': '10%', 'targets': 6, 'className': 'column-light-purple'},
-                        {'width': '10%', 'targets': 7, 'className': 'column-light-cyan'},
-                        {'width': '15%', 'targets': 8, 'className': 'column-light-gray'},
+                        {'width': '15%', 'targets': 2, 'className': 'column-light-pink'},
+                        {'width': '15%', 'targets': 3, 'className': 'column-light-orange'},
+                        {'width': '15%', 'targets': 4, 'className': 'column-light-purple'},
+                        {'width': '15%', 'targets': 5, 'className': 'column-light-cyan'},
+                        {'width': '15%', 'targets': 6, 'className': 'column-light-gray'},
+                        {'width': '15%', 'targets': 7, 'className': 'column-light-green'},
 
                         ...dynamicColumns.map((column, index) => {
                             if (index === 1) {
@@ -553,7 +439,7 @@ const appEvents = Vue.createApp({
 
                         'colResize': true, // Enable column resizing
                         'fixedColumns': {
-                            leftColumns: 8 // Adjust this number to the number of columns you want to freeze
+                            leftColumns: 7 // Adjust this number to the number of columns you want to freeze
                         }
                     });
 
@@ -910,10 +796,6 @@ const appEvents = Vue.createApp({
                 ],
                 
             }); // end of the $('#eventsDivDisplayTable').DataTable()
-
-            $('#eventsDisplayTable').DataTable().draw().on('draw', function() {
-                $('[data-bs-toggle="tooltip"]').tooltip(); // Reinitialize tooltips for dynamically added elements
-            });
 
         // Event listeners for PDF and Excel buttons
         $('.buttons-pdf').on('click', function() {

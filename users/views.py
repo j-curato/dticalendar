@@ -249,6 +249,7 @@ def get_event_details_to_edit(request):
 
             'id': event.id,
             'office': event.office,
+            'fk_office_id': event.fk_office_id,
             'division_name': event.division_name,
             'division_id': event.division_id,
             'orgoutcome_id': event.orgoutcome_id,

@@ -17,6 +17,7 @@ class Event(models.Model):
 	calendar = models.ForeignKey(Calendar, on_delete=models.CASCADE)
 	calendar_name = models.CharField(max_length=500, null=True, blank=True)
 	office = models.CharField(max_length=500, null=True, blank=True)
+	fk_office = models.ForeignKey('offices.Office', on_delete=models.SET_NULL, null=True, blank=True, db_column='fk_office_id')
 	division = models.ForeignKey(Division, on_delete=models.CASCADE)
 	division_name = models.CharField(max_length=500, null=True, blank=True)
 	unit_name = models.CharField(max_length=500, null=True, blank=True)

@@ -25,6 +25,7 @@ from django.http import FileResponse
 from datetime import datetime
 from mimetypes import guess_type
 from .models import Event
+from offices.models import Office
 import os
 import json
 # make_random_password is a method from django.contrib.auth.models
@@ -430,6 +431,9 @@ def save_event_ajax_ver2(request):
         event.whole_date_start_searchable = start_date.strftime("%B %d, %Y")
         event.whole_date_end_searchable = request.POST['whole_date_end_searchable']
         event.office = request.POST['office'].upper()
+        fk_office_id = request.POST.get('fk_office_id')
+        if fk_office_id:
+            event.fk_office_id = fk_office_id
         event.org_outcome = request.POST['org_outcome'].upper()
         event.paps = request.POST['paps'].upper()
         event.unit = unit
@@ -558,6 +562,11 @@ def save_event_ajax_ver2(request):
             existing_event.office = request.POST['office'].upper()
             updated_fields['office'] = existing_event.office
 
+        fk_office_id = request.POST.get('fk_office_id')
+        if fk_office_id and str(existing_event.fk_office_id) != str(fk_office_id):
+            existing_event.fk_office_id = fk_office_id
+            updated_fields['fk_office_id'] = fk_office_id
+
         if existing_event.org_outcome != request.POST['org_outcome'].upper():
             existing_event.org_outcome = request.POST['org_outcome'].upper()
             updated_fields['org_outcome'] = existing_event.org_outcome
@@ -621,7 +630,6 @@ def save_event_ajax_ver2(request):
 def get_eventsList(request):
     txturl = 'events'
     events = Event.objects.all()
-    #events = Event.objects.filter(display_status=True)
     return render(request, 'events/event_display.html', {'events': events, 'txturl': txturl})
 
 @csrf_exempt
@@ -678,21 +686,23 @@ def fetch_events_ajax(request):
         order_direction = request.GET.get('order[0][dir]', 'asc')
         sort_dir = 'DESC' if order_direction == 'desc' else 'ASC'
 
-        # Define the columns you want to search on
-        # columns = ['whole_date_start_searchable']
-        columns = ['whole_date_start_searchable', 'RO', 'ADN', 'ADS', 'SDN', 'SDS', 'PDI']
+        # Fetch offices dynamically from tbl_offices
+        offices = list(Office.objects.order_by('id').values_list('office_initials', flat=True))
 
+        # Define searchable columns dynamically
+        columns = ['whole_date_start_searchable'] + offices
+
+        # Build dynamic CASE WHEN pivot for each office
+        case_statements = ',\n            '.join([
+            f"MAX(CASE WHEN office = '{o}' THEN event_titles END) AS \"{o}\""
+            for o in offices
+        ])
 
         query = f"""
         SELECT
             DISTINCT generated_date,
             TO_CHAR(generated_date, 'FMMonth DD, YYYY') AS whole_date_start_searchable,
-            MAX(CASE WHEN office = 'RO' THEN event_titles END) AS RO,
-            MAX(CASE WHEN office = 'ADN' THEN event_titles END) AS ADN,
-            MAX(CASE WHEN office = 'ADS' THEN event_titles END) AS ADS,
-            MAX(CASE WHEN office = 'SDN' THEN event_titles END) AS SDN,
-            MAX(CASE WHEN office = 'SDS' THEN event_titles END) AS SDS,
-            MAX(CASE WHEN office = 'PDI' THEN event_titles END) AS PDI
+            {case_statements}
         FROM (
             SELECT
                 generated_date,
@@ -721,23 +731,18 @@ def fetch_events_ajax(request):
             cursor.execute(query)
             result = cursor.fetchall()
 
-        # Convert the result into a list of dictionaries
+        # Convert the result into a list of dictionaries dynamically
         data = []
         for row in result:
-            data.append({
-                'whole_date_start': row[0].strftime('%Y-%m-%d'),  # Format as needed
+            entry = {
+                'whole_date_start': row[0].strftime('%Y-%m-%d'),
                 'whole_date_start_searchable': row[1],
-                'RO': row[2],
-                'ADN': row[3],
-                'ADS': row[4],
-                'SDN': row[5],
-                'SDS': row[6],
-                'PDI': row[7],
-                # Add more fields as needed
-            })
+            }
+            for i, office in enumerate(offices):
+                entry[office] = row[2 + i]
+            data.append(entry)
 
-        # Apply the search filter to the data
-        # filtered_data = [entry for entry in data if any(search_value.lower() in entry[col].lower() for col in columns)]
+        # Apply the search filter dynamically
         filtered_data = [
             entry for entry in data if any(
                 search_value.lower() in (str(entry[col]).lower() if entry[col] is not None else '') for col in columns
