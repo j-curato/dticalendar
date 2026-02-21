@@ -74,6 +74,9 @@
         <button @click="showUnitModalPanel" class="btn btn-primary"><i class="bi bi-person-square"></i> Unit</button>&nbsp;
         <button @click="showOrgModalPanel" class="btn btn-primary"><i class="bi bi-person-square"></i> Organizational Outcome</button>&nbsp;
         <button @click="showPapsModalPanel" class="btn btn-primary"><i class="bi bi-person-square"></i> PAPs</button>&nbsp;
+        {% if user.is_superuser %}
+        <button @click="showOfficeModalPanel" class="btn btn-success"><i class="bi bi-building"></i> Offices</button>&nbsp;
+        {% endif %}
 
         <pre>{{ divisionListVue }}</pre>
 
@@ -121,17 +124,12 @@
                 <form name="event-form" enctype="multipart/form-data">
 
                   <input type="text" placeholder="Field 1" id="event-id" style="display:none;" required>
-                  <p> <!-- to be created with db table office--> 
-                    <select name="office" v-model="formData.office" class="form-control form-select" aria-label="Default select example" id="editOffice" required>
-                    <option value="0">Select Office</option>
-                    <option value="RO">REGIONAL OFFICE</option>
-                    <option value="ADN">AGUSAN DEL NORTE</option>
-                    <option value="ADS">AGUSAN DEL SUR</option>
-                    <option value="SDN">SURIGAO DEL NORTE</option>
-                    <option value="SDS">SURIGAO DEL SUR</option>
-                    <option value="PDI">PROVINCE OF DINAGAT ISLANDS</option>
-                  </select>
-                 </p>
+                  <p> <!-- dynamic office dropdown from tbl_offices -->
+                    <select name="office" v-model="formData.fk_office_id" class="form-control form-select" aria-label="Default select example" id="editOffice" @change="onOfficeChange" required>
+                      <option value="0">Select Office</option>
+                      <option v-for="val in officeListVue" :value="val.id">{[ val.office_initials ]} - {[ val.office_name ]}</option>
+                    </select>
+                  </p>
                  
                  <p>
                   <select name="division_id" class="form-control form-select" id="division-id" aria-label="Default select example" v-model="formData.division_id" @change="onDivisionChange" required>
@@ -363,6 +361,7 @@
                                 <th>ID</th>
                                 <th>Division Name</th>
                                 <th>Description</th>
+                                <th>Office</th>
                             </tr>
                         </thead>
                         <tfoot>
@@ -370,6 +369,7 @@
                             <th>ID</th>
                             <th>Division Name</th>
                             <th>Description</th>
+                            <th>Office</th>
                           </tr>
                         </tfoot>
                       </table>
@@ -395,6 +395,12 @@
                         <input type="text" placeholder="Field 1" id="div-ID" style="display: none;">
                         <p><input type="text" name="division_name" class="form-control" placeholder="Division name" v-model="divFormData.division_name" id="division-name" required></p>
                         <p><input type="text" name="division_desc" class="form-control" placeholder="Description" v-model="divFormData.division_desc" id="division-desc" required></p>
+                        <p>
+                          <select name="fk_office_id" class="form-control form-select" id="div-office-id" v-model="divFormData.fk_office_id">
+                            <option value="0">Select Office (optional)</option>
+                            <option v-for="val in officeListVue" :value="val.id">{[ val.office_initials ]} - {[ val.office_name ]}</option>
+                          </select>
+                        </p>
                   <div class="modal-footer">
                     <!-- <button type="submit" class="btn btn-primary" id="div-save">Save</button> -->
                     <button class="btn btn-primary" id="div-save" @click="saveDivData($event)">Save</button>
@@ -659,6 +665,87 @@
               </div>
             </div>
             <!-- end PAPs modal -->
+
+            {% if user.is_superuser %}
+            <!-- Office Panel Modal -->
+            <div class="modal fade" id="myOfficeModalPanel" tabindex="-1" aria-labelledby="officeModalPanelLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-slideout modal-xl">
+                <div class="modal-content">
+                  <div class="modal-header" style="background-color: #198754; color: #fff;">
+                    <h5 class="modal-title" id="officeModalPanelLabel"><i class="bi bi-building"></i>&nbsp; Office Management</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <small class="text-muted">Manage DTI offices and their details. Only superusers can access this panel.</small>
+                      <button class="btn btn-success btn-sm" @click="callOfficeFunctions">
+                        <i class="bi bi-plus-circle"></i> Add Office
+                      </button>
+                    </div>
+                    <table id="officedataTable" class="display table table-hover" style="width:100%">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Initials</th>
+                          <th>Office Name</th>
+                          <th class="text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tfoot>
+                        <tr>
+                          <th>ID</th>
+                          <th>Initials</th>
+                          <th>Office Name</th>
+                          <th>Actions</th>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- end Office Panel Modal -->
+
+            <!-- Office Add/Edit Modal -->
+            <div class="modal fade" id="officeModal" tabindex="-1" aria-labelledby="officeModalLabel" aria-hidden="true" data-bs-backdrop="static">
+              <div class="modal-dialog modal-dialog-slideout">
+                <div class="modal-content" style="border: 0.5px solid #e0dcdc;">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="h5-Office">Add Office</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form name="office-form" enctype="multipart/form-data">
+                      {% csrf_token %}
+                      <input type="hidden" id="office-ID">
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Office Initials <span class="text-danger">*</span></label>
+                        <input type="text" name="office_initials" class="form-control" id="id-officeInitials"
+                          placeholder="e.g. RO" v-model="officeFormData.office_initials" required>
+                        <div class="form-text">Short abbreviation for the office (e.g. RO, ADN).</div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Office Name <span class="text-danger">*</span></label>
+                        <input type="text" name="office_name" class="form-control" id="id-officeName"
+                          placeholder="e.g. Regional Office" v-model="officeFormData.office_name" required>
+                        <div class="form-text">Full name of the office.</div>
+                      </div>
+                      <div class="modal-footer px-0">
+                        <button class="btn btn-success" id="office-save" @click="saveOfficeData($event)">
+                          <i class="bi bi-save"></i> Save
+                        </button>
+                        <button class="btn btn-warning text-white" id="office-update" @click="saveOfficeData($event)" style="display:none;">
+                          <i class="bi bi-pencil-square"></i> Update
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- end Office Add/Edit Modal -->
+            {% endif %}
 
     <hr>
 

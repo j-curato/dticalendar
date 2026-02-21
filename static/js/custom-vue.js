@@ -11,6 +11,7 @@ const app = Vue.createApp({
             calendarListVue: [], // Initialize calendarList with an empty array
             ooListVue: [], // Initialize orgOutcomeList with an empty array
             papsListVue: [], // Initialize papsList with an empty array
+            officeListVue: [], // Initialize officeList with an empty array
             provincesListVue: [], // Initialize provincesList with an empty array
             lguListVue: [], // Initialize lguList with an empty array
             barangayListVue: [], // Initialize barangayList with an empty array
@@ -48,6 +49,7 @@ const app = Vue.createApp({
                 participants: '', // Initialize with an empty string
                 file_attachment: null, // Initialize with null
                 office: 0, // Initialize with an empty string
+                fk_office_id: 0, // FK to tbl_offices
                 unit: 0, // Initialize with an empty string
                 org_outcome: 0, // Initialize with an empty string
                 paps: 0, // Initialize with an empty string
@@ -90,7 +92,15 @@ const app = Vue.createApp({
 
                 division_name: '',
                 division_desc: '',
-                div_pid: 0
+                div_pid: 0,
+                fk_office_id: 0
+
+            },
+            officeFormData: {
+
+                office_pid: 0,
+                office_initials: '',
+                office_name: '',
 
             }
         };
@@ -338,6 +348,7 @@ const app = Vue.createApp({
                     const formData = new FormData();
                     formData.append('buttontxt', buttonText);
                     formData.append('office', this.formData.office);
+                    formData.append('fk_office_id', this.formData.fk_office_id);
                     formData.append('division_id', this.formData.division_id);
                     formData.append('unit', this.formData.unit);
                     formData.append('unit_name', $("#editUnit option:selected").text());
@@ -453,6 +464,7 @@ const app = Vue.createApp({
                     formData.append('buttontxt', buttonText);
                     formData.append('pID', this.formData.event_pid);
                     formData.append('office', this.formData.office);
+                    formData.append('fk_office_id', this.formData.fk_office_id);
                     formData.append('division_id', this.formData.division_id);
                     formData.append('unit', this.formData.unit);
                     formData.append('unit_name', $("#editUnit option:selected").text());
@@ -898,6 +910,7 @@ const app = Vue.createApp({
                 divFormData.append('buttonDivTxt', saveDivButton.textContent)
                 divFormData.append('division_name', this.divFormData.division_name);
                 divFormData.append('division_desc', this.divFormData.division_desc);
+                divFormData.append('fk_office_id', this.divFormData.fk_office_id);
                
                 //alert(this.papsFormData.oo_name);
                 // ajax call to save the paps data
@@ -941,6 +954,7 @@ const app = Vue.createApp({
                 divFormData.append('id', this.divFormData.div_pid);
                 divFormData.append('division_name', this.divFormData.division_name);
                 divFormData.append('division_desc', this.divFormData.division_desc);
+                divFormData.append('fk_office_id', this.divFormData.fk_office_id);
                
                 //alert(this.papsFormData.oo_name);
                 // ajax call to save the paps data
@@ -1106,6 +1120,193 @@ const app = Vue.createApp({
             this.fetchOrgOutcomeData();
             $("#myPapsModalPanel").modal('show');
         },
+
+        // ===== OFFICE CRUD METHODS =====
+        showOfficeModalPanel() {
+            const modal = new bootstrap.Modal(document.getElementById('myOfficeModalPanel'));
+            modal.show();
+            if (!$.fn.DataTable.isDataTable('#officedataTable')) {
+                this.initOfficeDataTable();
+            } else {
+                $('#officedataTable').DataTable().ajax.reload();
+            }
+        },
+
+        callOfficeFunctions() {
+            document.getElementById('h5-Office').textContent = 'Add Office';
+            document.getElementById('office-save').style.display = 'inline-block';
+            document.getElementById('office-update').style.display = 'none';
+            this.officeFormData.office_initials = '';
+            this.officeFormData.office_name = '';
+            this.officeFormData.office_pid = 0;
+            const modal = new bootstrap.Modal(document.getElementById('officeModal'));
+            modal.show();
+        },
+
+        saveOfficeData(event) {
+            event.preventDefault();
+            const saveBtn = document.getElementById('office-save');
+
+            if (!this.officeFormData.office_initials.trim() || !this.officeFormData.office_name.trim()) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            const formData = new FormData();
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            if (saveBtn.style.display !== 'none') {
+                formData.append('officeBtnTxt', 'Save');
+                formData.append('office_initials', this.officeFormData.office_initials);
+                formData.append('office_name', this.officeFormData.office_name);
+
+                fetch('/offices/save-office-ajax/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': csrfToken }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.message === 'True') {
+                        this.message = 'Office saved successfully!';
+                        this.showToast();
+                        this.officeFormData.office_initials = '';
+                        this.officeFormData.office_name = '';
+                        this.fetchOfficeData();
+                        if ($.fn.DataTable.isDataTable('#officedataTable')) {
+                            $('#officedataTable').DataTable().ajax.reload();
+                        }
+                        bootstrap.Modal.getInstance(document.getElementById('officeModal')).hide();
+                    }
+                })
+                .catch(err => console.error('Error saving office:', err));
+            } else {
+                formData.append('officeBtnTxt', 'Update');
+                formData.append('id', this.officeFormData.office_pid);
+                formData.append('office_initials', this.officeFormData.office_initials);
+                formData.append('office_name', this.officeFormData.office_name);
+
+                fetch('/offices/save-office-ajax/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': csrfToken }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.message === 'True') {
+                        this.message = 'Office updated successfully!';
+                        this.showToast();
+                        this.fetchOfficeData();
+                        if ($.fn.DataTable.isDataTable('#officedataTable')) {
+                            $('#officedataTable').DataTable().ajax.reload();
+                        }
+                        bootstrap.Modal.getInstance(document.getElementById('officeModal')).hide();
+                    }
+                })
+                .catch(err => console.error('Error updating office:', err));
+            }
+        },
+
+        deleteOfficeRow(officeId) {
+            const formData = new FormData();
+            formData.append('id', officeId);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch('/offices/delete-office-ajax/', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': csrfToken }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.message === 'True') {
+                    this.message = 'Office deleted successfully!';
+                    this.showToast();
+                    this.fetchOfficeData();
+                    if ($.fn.DataTable.isDataTable('#officedataTable')) {
+                        $('#officedataTable').DataTable().ajax.reload();
+                    }
+                }
+            })
+            .catch(err => console.error('Error deleting office:', err));
+        },
+
+        fetchOfficeData() {
+            fetch('/offices/api/get-offices-list/')
+                .then(res => res.json())
+                .then(data => { this.officeListVue = data; })
+                .catch(err => console.error('Error fetching offices:', err));
+        },
+
+        initOfficeDataTable() {
+            const self = this;
+            $('#officedataTable').DataTable({
+                'processing': true,
+                'serverSide': true,
+                'ajax': {
+                    'url': '/offices/get-office-details/',
+                    'type': 'GET',
+                },
+                'dom': 'Bfrtip<"clear">l',
+                'buttons': [
+                    { extend: 'copy', exportOptions: { columns: ':not(:last-child)' } },
+                    { extend: 'csv', exportOptions: { columns: ':not(:last-child)' } },
+                    { extend: 'excel', exportOptions: { columns: ':not(:last-child)' } },
+                    { extend: 'pdf', exportOptions: { columns: ':not(:last-child)' } },
+                    { extend: 'print', exportOptions: { columns: ':not(:last-child)' } },
+                ],
+                'columns': [
+                    { 'data': 'id', 'searchable': false, 'sortable': true, 'width': '5%' },
+                    { 'data': 'office_initials', 'searchable': true, 'sortable': true, 'width': '15%' },
+                    { 'data': 'office_name', 'searchable': true, 'sortable': true },
+                    {
+                        'data': null,
+                        'searchable': false,
+                        'orderable': false,
+                        'width': '20%',
+                        'className': 'text-center',
+                        'render': function(data, type, row) {
+                            return `
+                                <button class="btn btn-sm btn-outline-primary office-edit-btn me-1"
+                                    data-id="${row.id}" data-initials="${row.office_initials}" data-name="${row.office_name}">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger office-delete-btn"
+                                    data-id="${row.id}" data-name="${row.office_name}">
+                                    <i class="bi bi-trash3"></i> Delete
+                                </button>
+                            `;
+                        }
+                    }
+                ],
+                'order': [[0, 'desc']],
+            });
+
+            // Edit button click
+            $('#officedataTable tbody').on('click', '.office-edit-btn', function() {
+                const id = $(this).data('id');
+                const initials = $(this).data('initials');
+                const name = $(this).data('name');
+                self.officeFormData.office_pid = id;
+                self.officeFormData.office_initials = initials;
+                self.officeFormData.office_name = name;
+                document.getElementById('h5-Office').textContent = 'Update Office';
+                document.getElementById('office-save').style.display = 'none';
+                document.getElementById('office-update').style.display = 'inline-block';
+                const modal = new bootstrap.Modal(document.getElementById('officeModal'));
+                modal.show();
+            });
+
+            // Delete button click
+            $('#officedataTable tbody').on('click', '.office-delete-btn', function() {
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                if (confirm(`Are you sure you want to delete the office "${name}"? This action cannot be undone.`)) {
+                    self.deleteOfficeRow(id);
+                }
+            });
+        },
+        // ===== END OFFICE CRUD METHODS =====
         showCalModal() {
             // Show the Bootstrap modal by selecting it with its ID and calling the 'modal' method
             $('#myCalModal').modal('show');
@@ -1331,6 +1532,11 @@ const app = Vue.createApp({
             this.formData.event_location_barangay = 0; 
         },
         // Function to filter datatable events data by office, division and unit
+        onOfficeChange() {
+            const selectedOffice = this.officeListVue.find(o => o.id === this.formData.fk_office_id);
+            this.formData.office = selectedOffice ? selectedOffice.office_initials : '';
+        },
+
         onDivisionChange() {
             //console.log('Selected Division ID:', this.formData.division_id);
             //console.log(this.divisionListVue);
@@ -1919,7 +2125,7 @@ const app = Vue.createApp({
 
                                 self.formData.event_pid = eventpID;
                                 self.formData.event_title = eventTitle;
-                                self.formData.office = eventOffice;
+                                self.formData.office = data.office;
                                 self.formData.division_id = eventDivision;
                                 self.formData.division_name = eventDivName;
                                 self.formData.unit = eventUnit;
@@ -1945,8 +2151,9 @@ const app = Vue.createApp({
                                 self.formData.event_year_end = eventYearEnd;
                                 self.formData.event_time_end = eventTimeEnd;
                                 self.formData.whole_date_end_searchable = eventDateEndSearchable;
+                                self.formData.fk_office_id = data.fk_office_id || 0;
 
-                            
+
                             }
                         }); // end of the $.ajax()
                     }
@@ -1999,9 +2206,10 @@ const app = Vue.createApp({
                     {'data': 'id', 'sortable': true, 'searchable': false},
                     {'data': 'division_name', 'searchable': true, 'sortable': true},
                     {'data': 'division_desc', 'searchable': true, 'sortable': true},
+                    {'data': 'office_initials', 'searchable': true, 'sortable': false},
                 ],
                 'order': [[0, 'desc']], // Order by ID column, descending
-            
+
             }); // end of the $('#divdataTable').DataTable()
             
             // edit data using datatable row click
@@ -2048,6 +2256,7 @@ const app = Vue.createApp({
                      self.divFormData.div_pid = divpID;
                      self.divFormData.division_name = divName;
                      self.divFormData.division_desc = divDesc;
+                     self.divFormData.fk_office_id = data.fk_office_id || 0;
                     // self.formData.division_id = eventDivision;
                     // self.formData.division_name = eventDivName;                
                       
@@ -2431,6 +2640,8 @@ const app = Vue.createApp({
         this.fetchBarangayData();
         // fetch unit data
         this.fetchUnitData();
+        // fetch office data
+        this.fetchOfficeData();
     } // end of the mounted() function
 
 });

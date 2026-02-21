@@ -40,6 +40,10 @@ def save_div_ajax(request):
                 if existing_division.division_desc != request.POST['division_desc'].upper():
                     existing_division.division_desc = request.POST['division_desc'].upper()
 
+                fk_office_id = request.POST.get('fk_office_id')
+                if fk_office_id:
+                    existing_division.fk_office_id = fk_office_id
+
                     # Save the updated division
                 existing_division.save()
 
@@ -51,7 +55,9 @@ def save_div_ajax(request):
             div = Division()
             div.division_name = request.POST['division_name'].upper()
             div.division_desc = request.POST['division_desc'].upper()
-            
+            fk_office_id = request.POST.get('fk_office_id')
+            if fk_office_id:
+                div.fk_office_id = fk_office_id
             # Save the new division
             div.save()
             return JsonResponse({'message': 'True'})
@@ -77,7 +83,7 @@ def get_division_details(request):
         print("order_direction:", order_direction)
 
          # Define the columns you want to search on
-        columns = ['id', 'division_name', 'division_desc']
+        columns = ['id', 'division_name', 'division_desc', 'fk_office__office_initials']
 
         #Create a Q object for filtering based on the search_value in all columns
         search_filter = Q()
@@ -93,17 +99,18 @@ def get_division_details(request):
         total_records = Division.objects.count()
 
         # Apply sorting based on the column index and direction
-       # Apply sorting based on the column index and direction
+        sortable_columns = ['id', 'division_name', 'division_desc']
+        sort_col = columns[order_column_index] if order_column_index < len(sortable_columns) else 'id'
         if order_direction == 'asc':
-            if columns[order_column_index] in ['division_name', 'division_desc']:
-                divisionList = divisionList.order_by(Lower(columns[order_column_index]))
+            if sort_col in ['division_name', 'division_desc']:
+                divisionList = divisionList.order_by(Lower(sort_col))
             else:
-                divisionList = divisionList.order_by(columns[order_column_index])
+                divisionList = divisionList.order_by(sort_col)
         else:
-            if columns[order_column_index] in ['division_name', 'division_desc']:
-                divisionList = divisionList.order_by(Lower(columns[order_column_index])).reverse()
+            if sort_col in ['division_name', 'division_desc']:
+                divisionList = divisionList.order_by(Lower(sort_col)).reverse()
             else:
-                divisionList = divisionList.order_by(f'-{columns[order_column_index]}')
+                divisionList = divisionList.order_by(f'-{sort_col}')
 
         # Count of records after filtering 
         filtered_records = divisionList.count()
@@ -118,6 +125,8 @@ def get_division_details(request):
                 'id': div.id,
                 'division_name': div.division_name,
                 'division_desc': div.division_desc,
+                'fk_office_id': div.fk_office_id,
+                'office_initials': div.fk_office.office_initials if div.fk_office else '-',
         })
 
         # Prepare the JSON response

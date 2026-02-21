@@ -7,27 +7,16 @@
             <tr>
                 <th style="display:none;">Date</th>
                 <th>Event Date</th>
-                <th>RO</th>
-                <th>ADN</th>
-                <th>ADS</th>
-                <th>SDN</th>
-                <th>SDS</th>
-                <th>PDI</th>        
-                <!-- Add more columns as needed -->
+                <!-- Office column headers are injected dynamically by JS from tbl_offices -->
             </tr>
         </thead>
         <tfoot>
-        <tr>
-            <th style="display:none;">Date</th>
-            <th>Event Date</th>
-            <th>RO</th>
-            <th>ADN</th>
-            <th>ADS</th>
-            <th>SDN</th>
-            <th>SDS</th>
-            <th>PDI</th>
-        </tr>
-    </tfoot>
+            <tr>
+                <th style="display:none;">Date</th>
+                <th>Event Date</th>
+                <!-- Office column footers are injected dynamically by JS from tbl_offices -->
+            </tr>
+        </tfoot>
     </table>
 
 {% endblock %}

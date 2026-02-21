@@ -386,9 +386,10 @@
 
         </div>
         
-        <script src="{% static 'js/custom-vue.js' %}"></script>
        {% if txturl == 'events' %}
         <script src="{% static 'js/custom-events-vue.js' %}"></script>
+       {% else %}
+        <script src="{% static 'js/custom-vue.js' %}"></script>
        {% endif %}
         
     </body>

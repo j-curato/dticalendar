@@ -7,3 +7,4 @@ class Division(models.Model):
 	division_desc = models.CharField(max_length=255)
 	created_at = models.DateField(default=date.today)
 	updated_at = models.DateField(default=date.today)
+	fk_office = models.ForeignKey('offices.Office', on_delete=models.SET_NULL, null=True, blank=True, db_column='fk_office_id')
