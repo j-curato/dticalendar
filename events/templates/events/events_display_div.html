@@ -9,27 +9,16 @@
             <tr>
                 <th style="display:none;">Date</th>
                 <th>Event Date</th>
-                <th>SDD</th>
-                <th>IDD</th>
-                <th>CPD</th>
-                <th>FAD</th>
-                <th>MSSD</th>
-                <th>ICT</th>
-                <!-- Add more columns as needed -->
+                <!-- Division column headers are injected dynamically by JS from divisions_division -->
             </tr>
         </thead>
         <tfoot>
-        <tr>
-            <th style="display:none;">Date</th>
-            <th>Event Date</th>
-            <th>SDD</th>
-            <th>IDD</th>
-            <th>CPD</th>
-            <th>FAD</th>
-            <th>MSSD</th>
-            <th>ICT</th>
-        </tr>
-    </tfoot>
+            <tr>
+                <th style="display:none;">Date</th>
+                <th>Event Date</th>
+                <!-- Division column footers are injected dynamically by JS from divisions_division -->
+            </tr>
+        </tfoot>
     </table>
 
 {% endblock %}

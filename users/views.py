@@ -369,7 +369,11 @@ def autocomplete(request):
 
 # function to get the list of divisions
 def get_divisions(request):
-    divisions = Division.objects.all()
+    office = request.GET.get('office', None)
+    if office:
+        divisions = Division.objects.filter(fk_office__office_initials=office).order_by('id')
+    else:
+        divisions = Division.objects.all().order_by('id')
     data = [{'id': division.id, 'division_name': division.division_name} for division in divisions]
     return JsonResponse(data, safe=False)
    

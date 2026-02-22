@@ -254,12 +254,6 @@
                   <p>
                     <select id="dtioffice" name="dtioffice" class="form-control form-select">
                         <option value="0">Select Office</option>
-                        <option value="RO">RO</option>
-                        <option value="ADN">ADN</option>
-                        <option value="ADS">ADS</option>
-                        <option value="SDN">SDN</option>
-                        <option value="SDS">SDS</option>
-                        <option value="PDI">PDI</option>
                     </select>
                    </p>
                   <div class="modal-footer">
@@ -287,12 +281,6 @@
                 <p>
                   <select id="dtiofficediv" name="dtiofficeparam" class="form-control form-select">
                       <option value="0">Select Office</option>
-                      <option value="RO">RO</option>
-                      <option value="ADN">ADN</option>
-                      <option value="ADS">ADS</option>
-                      <option value="SDN">SDN</option>
-                      <option value="SDS">SDS</option>
-                      <option value="PDI">PDI</option>
                   </select>
                 </p>
 
@@ -399,6 +387,23 @@
       $( document ).ready(function() {
         const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
         const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
+
+        // Dynamically populate office dropdowns from tbl_offices
+        fetch('/offices/api/get-offices-list/')
+            .then(function(r) { return r.json(); })
+            .then(function(offices) {
+                ['dtioffice', 'dtiofficediv'].forEach(function(selectId) {
+                    const select = document.getElementById(selectId);
+                    if (select) {
+                        offices.forEach(function(office) {
+                            const option = document.createElement('option');
+                            option.value = office.office_initials;
+                            option.textContent = office.office_initials + ' - ' + office.office_name;
+                            select.appendChild(option);
+                        });
+                    }
+                });
+            });
       });
 
       var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
