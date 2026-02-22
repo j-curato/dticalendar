@@ -22,13 +22,16 @@ from django.contrib import messages
 
 
 from .forms import UserRegisterForm
+from .models import UserProfile
 
 # Create your views here.
 def register(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
-            form.save() # save the user to the database
+            user = form.save()
+            fk_office = form.cleaned_data.get('fk_office')
+            UserProfile.objects.create(user=user, fk_office=fk_office)
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=password)
@@ -374,8 +377,20 @@ def get_divisions(request):
         divisions = Division.objects.filter(fk_office__office_initials=office).order_by('id')
     else:
         divisions = Division.objects.all().order_by('id')
-    data = [{'id': division.id, 'division_name': division.division_name} for division in divisions]
+    data = [{'id': division.id, 'division_name': division.division_name, 'fk_office_id': division.fk_office_id} for division in divisions]
     return JsonResponse(data, safe=False)
+
+
+# API to get the logged-in user's office
+def get_current_user_office(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'fk_office_id': 0})
+    try:
+        profile = request.user.profile
+        fk_office_id = profile.fk_office_id if profile.fk_office_id else 0
+    except UserProfile.DoesNotExist:
+        fk_office_id = 0
+    return JsonResponse({'fk_office_id': fk_office_id})
    
 
 # function to get the list of calendars

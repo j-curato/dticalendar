@@ -8,6 +8,7 @@ const app = Vue.createApp({
             message: '',
             selectedFile: null, // Initialize selectedFile with null
             divisionListVue: [], // Initialize divisionList with an empty array
+            filteredDivisionList: [], // Divisions filtered by the logged-in user's office
             calendarListVue: [], // Initialize calendarList with an empty array
             ooListVue: [], // Initialize orgOutcomeList with an empty array
             papsListVue: [], // Initialize papsList with an empty array
@@ -1234,7 +1235,25 @@ const app = Vue.createApp({
         fetchOfficeData() {
             fetch('/offices/api/get-offices-list/')
                 .then(res => res.json())
-                .then(data => { this.officeListVue = data; })
+                .then(data => {
+                    this.officeListVue = data;
+                    // Pre-select the logged-in user's office
+                    return fetch('/users/api/current-user-office/');
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.fk_office_id && data.fk_office_id !== 0) {
+                        this.formData.fk_office_id = data.fk_office_id;
+                        const selectedOffice = this.officeListVue.find(o => o.id === data.fk_office_id);
+                        this.formData.office = selectedOffice ? selectedOffice.office_initials : '';
+                        // Filter divisions if already loaded
+                        if (this.divisionListVue.length > 0) {
+                            this.filteredDivisionList = this.divisionListVue.filter(
+                                d => d.fk_office_id === data.fk_office_id
+                            );
+                        }
+                    }
+                })
                 .catch(err => console.error('Error fetching offices:', err));
         },
 
@@ -1360,13 +1379,18 @@ const app = Vue.createApp({
         },
         // Function to fetch division data
         fetchDivisionData() {
-            //alert('true');
-            fetch('/users/api/divisions/') // Replace with the actual API endpoint
+            fetch('/users/api/divisions/')
             .then(response => response.json())
             .then(data => {
-                console.log(data);
                 this.divisionListVue = data;
-                console.log(this.divisionListVue);
+                // Apply office filter if an office is already pre-selected
+                if (this.formData.fk_office_id && this.formData.fk_office_id !== 0) {
+                    this.filteredDivisionList = this.divisionListVue.filter(
+                        d => d.fk_office_id === this.formData.fk_office_id
+                    );
+                } else {
+                    this.filteredDivisionList = this.divisionListVue;
+                }
             })
             .catch(error => {
                 console.error('Error fetching division data:', error);
@@ -1535,6 +1559,15 @@ const app = Vue.createApp({
         onOfficeChange() {
             const selectedOffice = this.officeListVue.find(o => o.id === this.formData.fk_office_id);
             this.formData.office = selectedOffice ? selectedOffice.office_initials : '';
+            // Filter divisions to show only those belonging to the selected office
+            if (this.formData.fk_office_id && this.formData.fk_office_id !== 0) {
+                this.filteredDivisionList = this.divisionListVue.filter(
+                    d => d.fk_office_id === this.formData.fk_office_id
+                );
+            } else {
+                this.filteredDivisionList = this.divisionListVue;
+            }
+            this.formData.division_id = 0;
         },
 
         onDivisionChange() {

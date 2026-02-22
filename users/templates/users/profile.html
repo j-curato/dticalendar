@@ -134,7 +134,7 @@
                  <p>
                   <select name="division_id" class="form-control form-select" id="division-id" aria-label="Default select example" v-model="formData.division_id" @change="onDivisionChange" required>
                   <option value="0">Select Division</option>
-                  <option v-for="val in divisionListVue" :value="val.id">{[ val.division_name ]}</option>
+                  <option v-for="val in filteredDivisionList" :value="val.id">{[ val.division_name ]}</option>
                  </select>
                 </p>
 
@@ -476,7 +476,7 @@
                             <option value="{{ val.id }}">{{ val.division_name }}</option>
                             {% endfor %} -->
                             <option value="0">Select Division</option>
-                            <option v-for="val in divisionListVue" :value="val.id">{[ val.division_name ]}</option>
+                            <option v-for="val in filteredDivisionList" :value="val.id">{[ val.division_name ]}</option>
                           </select>
                         </p>
                         <p>

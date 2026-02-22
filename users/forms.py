@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import password_validation
+from offices.models import Office
 
 class UserRegisterForm(UserCreationForm):
     first_name = forms.CharField(
@@ -33,9 +34,17 @@ class UserRegisterForm(UserCreationForm):
         widget=forms.PasswordInput(attrs={'class': 'form-control'}),
         help_text='Enter the same password as before, for verification.',
         )
-    
+    fk_office = forms.ModelChoiceField(
+        queryset=Office.objects.all().order_by('id'),
+        label='Office',
+        widget=forms.Select(attrs={'class': 'form-control form-select'}),
+        help_text='Select the office you belong to.',
+        required=False,
+        empty_label='Select Office',
+    )
+
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2']
+        fields = ['username', 'first_name', 'last_name', 'email', 'fk_office', 'password1', 'password2']
 
 
