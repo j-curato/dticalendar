@@ -232,6 +232,11 @@
 .column-light-gray span {
     background-color: #8c76b7;    /* border-radius: 10px; */
 }
+
+/* Darker backdrop when a second modal is stacked on top of another */
+.modal-backdrop + .modal-backdrop {
+    opacity: 0.7;
+}
     </style>
         
     </head> 
@@ -351,16 +356,15 @@
                 <br>
             
                 <!-- div for the select tag to show filter by function -->
-                <div class="row">
-                    <div class="col-md-4">
-                        <p>
-                            <select id="filterBy" class="form-control form-select" @change="filterEventsDatatbl" style="width:60%">
-                                <option value="0">Filter by</option>
-                                <option value="office">Office</option>
-                                <option value="division">Division</option>
-                                <!-- <option value="unit">Unit</option> -->
-                            </select>
-                        </p>
+                <div class="row align-items-center">
+                    <div class="col-md-4 d-flex align-items-center gap-2">
+                        <select id="filterBy" class="form-control form-select" @change="filterEventsDatatbl" style="width:60%">
+                            <option value="0">Filter by</option>
+                            <option value="office">Office</option>
+                            <option value="division">Division</option>
+                            <!-- <option value="unit">Unit</option> -->
+                        </select>
+                        <span id="active-filter-label" class="badge rounded-pill text-bg-primary" style="display:none; font-size:0.82rem; white-space:nowrap;"></span>
                     </div>
                 </div>
                 <br>
@@ -387,6 +391,21 @@
       $( document ).ready(function() {
         const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
         const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
+
+        // Show active filter label based on URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const filterLabel = document.getElementById('active-filter-label');
+        if (filterLabel) {
+            const officeParam = urlParams.get('dtioffice');
+            const divParam = urlParams.get('dtidivision');
+            if (officeParam && officeParam !== '0') {
+                filterLabel.textContent = 'Office: ' + officeParam;
+                filterLabel.style.display = 'inline';
+            } else if (divParam && divParam !== '0') {
+                filterLabel.textContent = 'Division: ' + divParam;
+                filterLabel.style.display = 'inline';
+            }
+        }
 
         // Dynamically populate office dropdowns from tbl_offices
         fetch('/offices/api/get-offices-list/')
@@ -422,8 +441,24 @@
       $("#confirm-modal-id").text("Please confirm to remove Event ID: " + rowId);
       // Set the ID in the data attribute of the "Confirm" button
       $("#confirm-btn").data("eventId", rowId);
-    
+
     }
+
+    // Stack second modal's backdrop above the first modal.
+    // Use 'shown.bs.modal' (not 'show.bs.modal') so Bootstrap has already
+    // added the new backdrop to the DOM before we target it.
+    $(document).on('shown.bs.modal', '.modal', function() {
+        var openModals = $('.modal.show');
+        if (openModals.length > 1) {
+            var zBase = 1060 + (openModals.length * 30);
+            $(this).css('z-index', zBase + 10);
+            $('.modal-backdrop').last().css('z-index', zBase);
+        }
+    });
+
+    $(document).on('hidden.bs.modal', '.modal', function() {
+        $(this).css('z-index', '');
+    });
 
     </script>
 

@@ -122,7 +122,6 @@ def profile(request):
         msgvar = 1
         
     else:
-        messages.warning(request, 'No event added.')
         msgvar = 0
    
 

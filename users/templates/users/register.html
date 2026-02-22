@@ -1,79 +1,81 @@
-<!DOCTYPE html>
-{% extends 'users/master.html' %}
-{% block title %}
-    Registration Page
-{% endblock %}
+{% extends 'users/auth_base.html' %}
+{% block title %}Register - DTI Caraga{% endblock %}
 
 {% block content %}
+<style>
+    .auth-card { max-width: 500px; }
+</style>
 
-<div class="container" style="width: 50%; margin: 0 auto;">
-    <h2>Register</h2>
+<div class="auth-card">
+
+    <div class="auth-brand">
+        <h2>Create Account</h2>
+        <p>DTI Caraga Calendar of Events Portal</p>
+    </div>
+
+    <hr class="auth-divider">
+
     {% if form.errors %}
-        <div class="alert alert-danger" role="alert">
-            {% for field, errors in form.errors.items %}
-                {% for error in errors %}
-                    <div>{{ error }}</div>
-                {% endfor %}
-            {% endfor %}
-        </div>
+    <div class="alert alert-danger auth-alert">
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}<div>{{ error }}</div>{% endfor %}
+        {% endfor %}
+    </div>
     {% endif %}
+
     <form method="post">
         {% csrf_token %}
-        <div class="form-group">
-            {{ form.username.label_tag }}
-            {{ form.username }}
-        </div>
-        <div class="form-group">
-            {{ form.first_name.label_tag }}
-            {{ form.first_name }}
-        </div>
-        <div class="form-group">
-            {{ form.last_name.label_tag }}
-            {{ form.last_name }}
-        </div>
-        <div class="form-group">
-            {{ form.email.label_tag }}
-            {{ form.email }}
-        </div>
-        <div class="form-group">
-            {{ form.fk_office.label_tag }}
-            {{ form.fk_office }}
-            {% if form.fk_office.help_text %}
-                <small class="form-text text-muted">{{ form.fk_office.help_text }}</small>
-            {% endif %}
-        </div>
-        <div class="form-group">
-            {{ form.password1.label_tag }}
-            {{ form.password1 }}
-        </div>
-        <div class="form-group">
-            {{ form.password2.label_tag }}
-            {{ form.password2 }}
-        </div>
-        <!-- Submit Button -->
-        <button type="submit" class="btn btn-primary">Register</button>
-    </form>
-    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
-</div>
 
-    <!-- <div class="container" style="width: 50%; margin: 0 auto;">
-        <h2>Register</h2>
-        {% if form.errors %}
-            <div class="alert alert-danger" role="alert">
-                {% for field, errors in form.errors.items %}
-                    {% for error in errors %}
-                        <div>{{ error }}</div>
-                    {% endfor %}
-                {% endfor %}
+        <div class="two-col">
+            <div class="auth-field">
+                <label for="id_first_name">First Name</label>
+                <input type="text" name="first_name" id="id_first_name" placeholder="First name" maxlength="30">
             </div>
-        {% endif %}
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            {{ form.errors }}
-            <button type="submit" class="btn btn-primary">Register</button>
-        </form>
-        <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
-    </div> -->
+            <div class="auth-field">
+                <label for="id_last_name">Last Name</label>
+                <input type="text" name="last_name" id="id_last_name" placeholder="Last name" maxlength="30">
+            </div>
+        </div>
 
+        <div class="auth-field">
+            <label for="id_username">Username</label>
+            <input type="text" name="username" id="id_username" placeholder="Choose a username" maxlength="150" required autofocus>
+        </div>
+
+        <div class="auth-field">
+            <label for="id_email">Email Address</label>
+            <input type="email" name="email" id="id_email" placeholder="your@email.com" maxlength="30" required>
+        </div>
+
+        <div class="auth-field">
+            <label for="id_fk_office">Office</label>
+            <select name="fk_office" id="id_fk_office">
+                <option value="">Select Office</option>
+                {% for office in form.fk_office.field.queryset %}
+                <option value="{{ office.pk }}">{{ office }}</option>
+                {% endfor %}
+            </select>
+            <div class="field-hint">Select the office you belong to.</div>
+        </div>
+
+        <div class="auth-section-sep">Security</div>
+
+        <div class="auth-field">
+            <label for="id_password1">Password</label>
+            <input type="password" name="password1" id="id_password1" placeholder="Create a password" required>
+        </div>
+
+        <div class="auth-field">
+            <label for="id_password2">Confirm Password</label>
+            <input type="password" name="password2" id="id_password2" placeholder="Repeat your password" required>
+        </div>
+
+        <button type="submit" class="auth-btn">Create Account</button>
+    </form>
+
+    <div class="auth-footer">
+        Already have an account? <a href="{% url 'login' %}">Login here</a>
+    </div>
+
+</div>
 {% endblock %}
