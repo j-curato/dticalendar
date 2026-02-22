@@ -237,6 +237,44 @@
 .modal-backdrop + .modal-backdrop {
     opacity: 0.7;
 }
+
+/* Searchable dropdown */
+.searchable-select-wrapper {
+    position: relative;
+}
+.searchable-select-input:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+.searchable-dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ced4da;
+    border-top: none;
+    border-radius: 0 0 .375rem .375rem;
+    z-index: 9999;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+}
+.searchable-dropdown-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+.searchable-dropdown-item:hover,
+.searchable-dropdown-item.active {
+    background-color: #0d6efd;
+    color: #fff;
+}
+.searchable-dropdown-empty {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
     </style>
         
     </head> 

@@ -35,7 +35,7 @@ class Event(models.Model):
 	event_location_barangay = models.CharField(max_length=255,blank=True, null=True)
 	province = models.ForeignKey(Province, on_delete=models.CASCADE, default=0)
 	lgu = models.ForeignKey(Lgu, on_delete=models.CASCADE, default=0)
-	barangay = models.ForeignKey(Barangay, on_delete=models.CASCADE, default=0)
+	barangay = models.ForeignKey(Barangay, on_delete=models.SET_NULL, null=True, blank=True)
 	event_day_start = models.IntegerField() 
 	event_month_start = models.IntegerField()
 	event_year_start = models.IntegerField()

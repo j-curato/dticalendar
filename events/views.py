@@ -56,7 +56,7 @@ def save_event_ajax(request):
             pap = get_object_or_404(Pap, pk=pap_id)
             province = get_object_or_404(Province, pk=province_id)
             lgu = get_object_or_404(Lgu, pk=lgu_id)
-            barangay = get_object_or_404(Barangay, pk=barangay_id)
+            barangay = get_object_or_404(Barangay, pk=barangay_id) if barangay_id and str(barangay_id) != '0' else None
 
         start_date = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
         end_date = timezone.datetime.strptime(request.POST['whole_date_end'], "%Y-%m-%dT%H:%M")
@@ -294,7 +294,7 @@ def save_event_ajax_version1(request):
              pap = get_object_or_404(Pap, pk=pap_id)
              province = get_object_or_404(Province, pk=province_id)
              lgu = get_object_or_404(Lgu, pk=lgu_id)
-             barangay = get_object_or_404(Barangay, pk=barangay_id)
+             barangay = get_object_or_404(Barangay, pk=barangay_id) if barangay_id and str(barangay_id) != '0' else None
 
         # set variables to use for multiple records to be saved if the event is recurring
         start_date = timezone.datetime.strptime(request.POST['whole_date_start'], "%Y-%m-%dT%H:%M")
@@ -388,7 +388,7 @@ def save_event_ajax_ver2(request):
              pap = get_object_or_404(Pap, pk=pap_id)
              province = get_object_or_404(Province, pk=province_id)
              lgu = get_object_or_404(Lgu, pk=lgu_id)
-             barangay = get_object_or_404(Barangay, pk=barangay_id)
+             barangay = get_object_or_404(Barangay, pk=barangay_id) if barangay_id and str(barangay_id) != '0' else None
              unit = get_object_or_404(Unit, pk=unit_id)
 
         # set variables to use for multiple records to be saved if the event is recurring

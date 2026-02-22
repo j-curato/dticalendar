@@ -9,6 +9,7 @@ const app = Vue.createApp({
             selectedFile: null, // Initialize selectedFile with null
             divisionListVue: [], // Initialize divisionList with an empty array
             filteredDivisionList: [], // Divisions filtered by the logged-in user's office
+            userOfficeId: 0, // Stores the logged-in user's assigned office ID permanently
             calendarListVue: [], // Initialize calendarList with an empty array
             ooListVue: [], // Initialize orgOutcomeList with an empty array
             papsListVue: [], // Initialize papsList with an empty array
@@ -18,6 +19,12 @@ const app = Vue.createApp({
             barangayListVue: [], // Initialize barangayList with an empty array
             filteredPAPs: [], // Initialize filteredPAPs with an empty array
             filteredLGUs: [], // Initialize filteredLGUs with an empty array
+            provinceSearch: '', // Text typed in the province searchable dropdown
+            showProvinceDropdown: false, // Controls province dropdown visibility
+            lguSearch: '', // Text typed in the LGU searchable dropdown
+            showLguDropdown: false, // Controls LGU dropdown visibility
+            barangaySearch: '', // Text typed in barangay field (search or free text)
+            showBarangayDropdown: false, // Controls barangay dropdown visibility (CARAGA only)
             filteredUnitList: [], // initialized with an empty array
             unitListVue: [], // initialized with an empty array
             filteredBarangays: [], // Initialize filteredBarangays with an empty array
@@ -122,6 +129,27 @@ const app = Vue.createApp({
         this.updateEndDateFields();
 
     },
+    computed: {
+        filteredProvinceList() {
+            if (!this.provinceSearch) return this.provincesListVue;
+            const q = this.provinceSearch.toLowerCase();
+            return this.provincesListVue.filter(p => p.province.toLowerCase().includes(q));
+        },
+        filteredLguList() {
+            if (!this.lguSearch) return this.filteredLGUs;
+            const q = this.lguSearch.toLowerCase();
+            return this.filteredLGUs.filter(l => l.lgu.toLowerCase().includes(q));
+        },
+        isCaraga() {
+            const pid = Number(this.formData.event_location);
+            return pid >= 1 && pid <= 5;
+        },
+        filteredBarangayList() {
+            if (!this.barangaySearch) return this.filteredBarangays;
+            const q = this.barangaySearch.toLowerCase();
+            return this.filteredBarangays.filter(b => b.barangay.toLowerCase().includes(q));
+        },
+    },
     methods: {
 
         confirmRemoveEvent(event) {
@@ -207,20 +235,31 @@ const app = Vue.createApp({
             $("#modal2").modal("show");
         },
 
+        restoreUserOffice() {
+            if (this.userOfficeId && this.userOfficeId !== 0) {
+                this.formData.fk_office_id = this.userOfficeId;
+                const selectedOffice = this.officeListVue.find(o => o.id === this.userOfficeId);
+                this.formData.office = selectedOffice ? selectedOffice.office_initials : '';
+                this.filteredDivisionList = this.divisionListVue.filter(
+                    d => d.fk_office_id === this.userOfficeId
+                );
+            }
+        },
+
         closeModal1() {
             $("#modal2").modal("hide");
             $("#modal1").modal("hide");
             Object.assign(this.formData, this.$options.data().formData);
-            // Alternatively, you can reset the form using the form reference
             this.$refs.eventForm.reset();
+            this.restoreUserOffice();
         },
 
          closeModal2() {
             $("#modal2").modal("hide");
             $("#modal1").modal("hide");
             Object.assign(this.formData, this.$options.data().formData);
-            // Alternatively, you can reset the form using the form reference
             this.$refs.eventForm.reset();
+            this.restoreUserOffice();
         },
 
         previousModal() {
@@ -300,7 +339,7 @@ const app = Vue.createApp({
                 { name: 'Division Name', value: this.formData.division_name },
                 { name: 'Event Location District', value: this.formData.event_location_district },
                 { name: 'Event Location LGU', value: this.formData.event_location_lgu },
-                { name: 'Event Location Barangay', value: this.formData.event_location_barangay },
+                { name: 'Event Location Barangay', value: this.isCaraga ? this.formData.event_location_barangay : this.barangaySearch },
             ];
 
             const emptyFields = requiredFields.filter(field => !field.value);
@@ -341,8 +380,11 @@ const app = Vue.createApp({
                 const eventLocationText = this.provincesListVue.find(item => item.id === this.formData.event_location).province;
                 // get the selected lgu text
                 const lguText = this.lguListVue.find(item => item.id === this.formData.event_location_lgu).lgu;
-                // get the selected barangay text
-                const barangayText = this.barangayListVue.find(item => item.id === this.formData.event_location_barangay).barangay;
+                // get barangay text and ID — CARAGA uses DB lookup, outside CARAGA uses free text
+                const barangayText = this.isCaraga
+                    ? (this.barangayListVue.find(item => item.id === this.formData.event_location_barangay)?.barangay || '')
+                    : this.barangaySearch;
+                const barangayId = this.isCaraga ? this.formData.event_location_barangay : 0;
 
                 buttonText = saveButton.textContent;
                     
@@ -387,7 +429,7 @@ const app = Vue.createApp({
                     formData.append('event_location_lgu', lguText);
                     formData.append('lgu_id', this.formData.event_location_lgu);
                     formData.append('event_location_barangay', barangayText);
-                    formData.append('barangay_id', this.formData.event_location_barangay);
+                    formData.append('barangay_id', barangayId);
                     // assign 10 randomly generated alphanumeric with special characters to the formData.event_code
                     if (buttonText == 'Save'){
                         formData.append('event_code', Math.random().toString(36).slice(2));
@@ -423,7 +465,7 @@ const app = Vue.createApp({
                         // reset the form data all at once using one line of code
                         //Object.assign(this.formData, this.$options.data().formData);
 
-                        $("#editOffice").val(0);
+                        // office is intentionally not reset — it stays locked to the user's assigned office
                         $("#division-id").val(0);
                         $("#division-name-id").val(" ");
                         $("#editUnit").val(0);
@@ -432,7 +474,6 @@ const app = Vue.createApp({
                         $("#event-title-input").val("");
                         $("#editLocProv").val(0);
                         $("#event-location-lgu-id").val(0);
-                        $("#event-location-barangay-id").val(0);
                         $("#editDistrict").val(" ");
                         $("#customSwitch").prop('checked',false);
                         $("#editEventDesc").val(" ");
@@ -457,7 +498,10 @@ const app = Vue.createApp({
                 const papsTextEdit = this.papsListVue.find(item => item.id === Number(this.formData.paps))?.pap;
                 const eventLocationTextEdit = this.provincesListVue.find(item => item.id === Number(this.formData.event_location))?.province;
                 const lguTextEdit = this.lguListVue.find(item => item.id === Number(this.formData.event_location_lgu))?.lgu;
-                const barangayTextEdit = this.barangayListVue.find(item => item.id === Number(this.formData.event_location_barangay))?.barangay;
+                const barangayTextEdit = this.isCaraga
+                    ? (this.barangayListVue.find(item => item.id === Number(this.formData.event_location_barangay))?.barangay || '')
+                    : this.barangaySearch;
+                const barangayIdEdit = this.isCaraga ? this.formData.event_location_barangay : 0;
 
                 buttonText = updateButton.textContent;
                     
@@ -503,7 +547,7 @@ const app = Vue.createApp({
                     formData.append('event_location_lgu', lguTextEdit);
                     formData.append('lgu_id', this.formData.event_location_lgu);
                     formData.append('event_location_barangay', barangayTextEdit);
-                    formData.append('barangay_id', this.formData.event_location_barangay);
+                    formData.append('barangay_id', barangayIdEdit);
                     // assign 10 randomly generated alphanumeric with special characters to the formData.event_code
                     if (buttonText == 'Save'){
                         formData.append('event_code', Math.random().toString(36).slice(2));
@@ -1243,6 +1287,7 @@ const app = Vue.createApp({
                 .then(res => res.json())
                 .then(data => {
                     if (data.fk_office_id && data.fk_office_id !== 0) {
+                        this.userOfficeId = data.fk_office_id; // persist for reuse after resets
                         this.formData.fk_office_id = data.fk_office_id;
                         const selectedOffice = this.officeListVue.find(o => o.id === data.fk_office_id);
                         this.formData.office = selectedOffice ? selectedOffice.office_initials : '';
@@ -1505,6 +1550,33 @@ const app = Vue.createApp({
             this.formData.paps = 0;
         },
         // Function to filter lgu  data
+        selectProvince(val) {
+            this.formData.event_location = val.id;
+            this.provinceSearch = val.province;
+            this.showProvinceDropdown = false;
+            this.updateLGUs();
+        },
+        hideProvinceDropdown() {
+            // Small delay so click on item registers before blur closes the list
+            setTimeout(() => { this.showProvinceDropdown = false; }, 150);
+        },
+        selectLgu(val) {
+            this.formData.event_location_lgu = val.id;
+            this.lguSearch = val.lgu;
+            this.showLguDropdown = false;
+            this.updateDistrict();
+        },
+        hideLguDropdown() {
+            setTimeout(() => { this.showLguDropdown = false; }, 150);
+        },
+        selectBarangay(val) {
+            this.formData.event_location_barangay = val.id;
+            this.barangaySearch = val.barangay;
+            this.showBarangayDropdown = false;
+        },
+        hideBarangayDropdown() {
+            setTimeout(() => { this.showBarangayDropdown = false; }, 150);
+        },
         updateLGUs() {
             // Filter the lguListVue array to only include items that match the selected province
             //this.filteredLGUs = this.lguListVue.filter(item => item.province_id === this.formData.event_location);
@@ -1519,6 +1591,9 @@ const app = Vue.createApp({
             console.log(this.formData.event_location);
             // reset the formData.event_location_lgu to 0
             this.formData.event_location_lgu = 0;
+            // reset lgu search input and dropdown
+            this.lguSearch = '';
+            this.showLguDropdown = false;
             // reset the formData.event_location_district to ''
             this.formData.event_location_district = '';
             this.formData.event_location_barangay = 0;
@@ -1553,7 +1628,9 @@ const app = Vue.createApp({
             this.filteredBarangays.unshift(defaultBarangay);
             }
 
-            this.formData.event_location_barangay = 0; 
+            this.formData.event_location_barangay = 0;
+            this.barangaySearch = '';
+            this.showBarangayDropdown = false;
         },
         // Function to filter datatable events data by office, division and unit
         onOfficeChange() {
@@ -1854,10 +1931,15 @@ const app = Vue.createApp({
         },
 
         resetFormData() {
-            // Reset the form data to initial values
             Object.assign(this.formData, this.$options.data().formData);
-            // Alternatively, you can reset the form using the form reference
             this.$refs.eventForm.reset();
+            this.restoreUserOffice();
+            this.provinceSearch = '';
+            this.showProvinceDropdown = false;
+            this.lguSearch = '';
+            this.showLguDropdown = false;
+            this.barangaySearch = '';
+            this.showBarangayDropdown = false;
          },
 
          resetDivFormData() {
@@ -1906,7 +1988,6 @@ const app = Vue.createApp({
                 $("#event-title-input").val("");
                 $("#editLocProv").val(0);
                 $("#event-location-lgu-id").val(0);
-                $("#event-location-barangay-id").val(0);
                 $("#editDistrict").val("");
                 $("#customSwitch").prop('checked',false);
                 $("#editEventDesc").val("");
@@ -2093,7 +2174,7 @@ const app = Vue.createApp({
                                 $("#event-title-input").val(data.event_title);
                                 $("#editLocProv").val(data.province_id);
                                 $("#event-location-lgu-id").val(data.lgu_id);
-                                $("#event-location-barangay-id").val(data.barangay_id);
+                                // barangay is handled via isCaraga logic below
                                 $("#editDistrict").val(data.event_location_district);
                                 $("#editDateStart").val(formattedStartDate);
                                 $("#editDateEnd").val(formattedEndDate);
@@ -2135,9 +2216,9 @@ const app = Vue.createApp({
                                 const eventUnit = $("#editUnit").val();
                                 const eventOo = $("#editOrgOutcome").val();
                                 const eventpap = $("#editPaps").val();
-                                const eventLocation = $("#editLocProv").val();
-                                const eventLgu = $("#event-location-lgu-id").val();
-                                const eventBrgy = $("#event-location-barangay-id").val();
+                                const eventLocation = Number(data.province_id);
+                                const eventLgu = Number(data.lgu_id);
+                                const eventBrgy = data.barangay_id;
                                 const eventDistrict = $("#editDistrict").val();
                                 const eventDateStart = $("#editDateStart").val();
                                 const eventDateEnd = $("#editDateEnd").val();
@@ -2166,7 +2247,30 @@ const app = Vue.createApp({
                                 self.formData.paps = eventpap;
                                 self.formData.event_location = eventLocation;
                                 self.formData.event_location_lgu = eventLgu;
-                                self.formData.event_location_barangay = eventBrgy;
+
+                                // Populate province search text
+                                const selectedProv = self.provincesListVue.find(p => p.id === eventLocation);
+                                if (selectedProv) self.provinceSearch = selectedProv.province;
+
+                                // Filter LGUs for the selected province, then populate LGU search text
+                                self.filteredLGUs = self.lguListVue.filter(lgu => lgu.province_id === eventLocation);
+                                const defaultLgu = { id: 74, lgu: 'To be determined' };
+                                if (!self.filteredLGUs.some(lgu => lgu.id === defaultLgu.id)) {
+                                    self.filteredLGUs.unshift(defaultLgu);
+                                }
+                                const selectedLgu = self.lguListVue.find(l => l.id === eventLgu);
+                                if (selectedLgu) self.lguSearch = selectedLgu.lgu;
+
+                                // Populate barangay field based on region
+                                const isEventCaraga = eventLocation >= 1 && eventLocation <= 5;
+                                if (isEventCaraga) {
+                                    self.formData.event_location_barangay = Number(data.barangay_id) || 0;
+                                    const selectedBrgy = self.barangayListVue.find(b => b.id === Number(data.barangay_id));
+                                    self.barangaySearch = selectedBrgy ? selectedBrgy.barangay : '';
+                                } else {
+                                    self.formData.event_location_barangay = 0;
+                                    self.barangaySearch = data.event_location_barangay || '';
+                                }
                                 self.formData.event_location_district = eventDistrict;
                                 self.formData.whole_date_start = eventDateStart;
                                 self.formData.whole_date_end = eventDateEnd;
@@ -2675,6 +2779,14 @@ const app = Vue.createApp({
         this.fetchUnitData();
         // fetch office data
         this.fetchOfficeData();
+
+        // Safety net: always restore user's office whenever modal1 is shown
+        const modal1El = document.getElementById('modal1');
+        if (modal1El) {
+            modal1El.addEventListener('show.bs.modal', () => {
+                this.restoreUserOffice();
+            });
+        }
     } // end of the mounted() function
 
 });

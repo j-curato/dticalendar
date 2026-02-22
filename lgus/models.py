@@ -17,9 +17,9 @@ class Lgu(models.Model):
         # define how you serialized the Event Object
         return {
             'id': self.id,
-            'lgu': self.lgu,
-            
+            'lgu': self.lgu_name,
+
         }
-    
+
     def __str__(self):
-        return self.lgu
+        return self.lgu_name
