@@ -36,6 +36,13 @@
             {{ form.email }}
         </div>
         <div class="form-group">
+            {{ form.fk_office.label_tag }}
+            {{ form.fk_office }}
+            {% if form.fk_office.help_text %}
+                <small class="form-text text-muted">{{ form.fk_office.help_text }}</small>
+            {% endif %}
+        </div>
+        <div class="form-group">
             {{ form.password1.label_tag }}
             {{ form.password1 }}
         </div>

@@ -16,6 +16,7 @@ urlpatterns = [
     #path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('api/divisions/', views.get_divisions, name='get_divisions'),
     path('api/calendars/', views.get_calendars, name='get_calendars'),
+    path('api/current-user-office/', views.get_current_user_office, name='get_current_user_office'),
     path('logout/', views.logout_view, name='logout'),
     
 ]
