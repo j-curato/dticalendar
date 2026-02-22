@@ -854,14 +854,24 @@ def fetch_events_by_div_ajax(request):
         length = int(request.GET.get('length', 10))
         search_value = request.GET.get('search[value]', '')
 
-        # Fetch unique division names from the database
+        # Fetch division names filtered by the selected office
+        office = request.GET.get('office', '')
         with connection.cursor() as cursor:
-            cursor.execute("SELECT DISTINCT division_name FROM divisions_division")
+            cursor.execute("""
+                SELECT dd.division_name
+                FROM divisions_division dd
+                INNER JOIN tbl_offices o ON dd.fk_office_id = o.id
+                WHERE o.office_initials = %s
+                ORDER BY dd.id
+            """, [office])
             division_names = [row[0] for row in cursor.fetchall()]
 
+        if not division_names:
+            return JsonResponse({'draw': draw, 'recordsTotal': 0, 'recordsFiltered': 0, 'data': []})
+
         # Generate the dynamic part of the SQL query based on the columns
-        columns_sql = ", ".join([
-            f"MAX(CASE WHEN division_name = '{col}' THEN event_titles END) AS {col}" for col in division_names
+        columns_sql = ",\n            ".join([
+            f"MAX(CASE WHEN division_name = '{col}' THEN event_titles END) AS \"{col}\"" for col in division_names
         ])
 
         query = f"""
@@ -893,7 +903,7 @@ def fetch_events_by_div_ajax(request):
         """
 
         with connection.cursor() as cursor:
-            cursor.execute(query, [request.GET.get('office')])
+            cursor.execute(query, [office])
             result = cursor.fetchall()
 
         # Convert the result into a list of dictionaries with dynamic keys
