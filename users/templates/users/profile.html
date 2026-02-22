@@ -124,11 +124,12 @@
                 <form name="event-form" enctype="multipart/form-data">
 
                   <input type="text" placeholder="Field 1" id="event-id" style="display:none;" required>
-                  <p> <!-- dynamic office dropdown from tbl_offices -->
-                    <select name="office" v-model="formData.fk_office_id" class="form-control form-select" aria-label="Default select example" id="editOffice" @change="onOfficeChange" required>
+                  <p> <!-- office is locked to the logged-in user's assigned office -->
+                    <select name="office" v-model="formData.fk_office_id" class="form-control form-select" id="editOffice" disabled>
                       <option value="0">Select Office</option>
                       <option v-for="val in officeListVue" :value="val.id">{[ val.office_initials ]} - {[ val.office_name ]}</option>
                     </select>
+                    <small class="text-muted">Office is automatically set based on your account.</small>
                   </p>
                  
                  <p>
@@ -215,26 +216,89 @@
                     <textarea name="event_title" class="form-control" id="event-title-input" placeholder="Activity title" @keyup="handleEventTitleText" @change="handleEventTitleText" @click="handleEventTitleText" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></textarea>
                   </p>
                   <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px;">Location details</span>
+                  <!-- Province searchable dropdown -->
                   <p style="padding-top: 7px;">
-                      <select name="event_location" v-model="formData.event_location" @change="updateLGUs" class="form-control form-select" id="editLocProv" required>
-                        <option value="0">Select Province</option>
-                        <!-- use loop to load values from provinceList -->
-                        <option v-for="val in provincesListVue" :value="val.id">{[ val.province ]}</option>
-                      </select>
+                    <div class="searchable-select-wrapper">
+                      <input type="text"
+                             class="form-control searchable-select-input"
+                             v-model="provinceSearch"
+                             placeholder="Search Province..."
+                             @focus="showProvinceDropdown = true"
+                             @blur="hideProvinceDropdown"
+                             autocomplete="off">
+                      <div v-if="showProvinceDropdown && filteredProvinceList.length > 0" class="searchable-dropdown-list">
+                        <div v-for="val in filteredProvinceList"
+                             :key="val.id"
+                             class="searchable-dropdown-item"
+                             :class="{ 'active': formData.event_location === val.id }"
+                             @mousedown="selectProvince(val)">
+                          {[ val.province ]}
+                        </div>
+                      </div>
+                      <div v-if="showProvinceDropdown && filteredProvinceList.length === 0" class="searchable-dropdown-list">
+                        <div class="searchable-dropdown-empty">No results found</div>
+                      </div>
+                    </div>
                   </p>
-                  <!-- <p><input type="text" name="event_location_lgu" class="form-control" v-model="formData.event_location_lgu" placeholder="LGU" required></p> -->
+                  <!-- City/Municipality searchable dropdown -->
                   <p>
-                    <select name="event_location_lgu" v-model="formData.event_location_lgu" class="form-control form-select" id="event-location-lgu-id" @change="updateDistrict" required>
-                      <option value="0">Select City/Municipality</option>
-                      <option v-for="val in filteredLGUs" :value="val.id">{[ val.lgu ]}</option>
-                    </select>
+                    <div class="searchable-select-wrapper">
+                      <input type="text"
+                             class="form-control searchable-select-input"
+                             v-model="lguSearch"
+                             placeholder="Search City/Municipality..."
+                             @focus="showLguDropdown = true"
+                             @blur="hideLguDropdown"
+                             :disabled="formData.event_location === 0"
+                             autocomplete="off">
+                      <div v-if="showLguDropdown && filteredLguList.length > 0" class="searchable-dropdown-list">
+                        <div v-for="val in filteredLguList"
+                             :key="val.id"
+                             class="searchable-dropdown-item"
+                             :class="{ 'active': formData.event_location_lgu === val.id }"
+                             @mousedown="selectLgu(val)">
+                          {[ val.lgu ]}
+                        </div>
+                      </div>
+                      <div v-if="showLguDropdown && filteredLguList.length === 0" class="searchable-dropdown-list">
+                        <div class="searchable-dropdown-empty">No results found</div>
+                      </div>
+                    </div>
                   </p>
+                  <!-- Barangay: searchable dropdown for CARAGA, free text for other regions -->
                   <p>
-                    <select name="event_location_barangay" v-model="formData.event_location_barangay" class="form-control form-select" id="event-location-barangay-id" required>
-                      <option value="0">Select Barangay</option>
-                      <!-- <option value="1312">To be determined</option> -->
-                      <option v-for="val in filteredBarangays" :value="val.id">{[ val.barangay ]}</option>
-                    </select>
+                    <template v-if="isCaraga">
+                      <div class="searchable-select-wrapper">
+                        <input type="text"
+                               class="form-control searchable-select-input"
+                               v-model="barangaySearch"
+                               placeholder="Search Barangay..."
+                               @focus="showBarangayDropdown = true"
+                               @blur="hideBarangayDropdown"
+                               :disabled="formData.event_location_lgu === 0"
+                               autocomplete="off">
+                        <div v-if="showBarangayDropdown && filteredBarangayList.length > 0" class="searchable-dropdown-list">
+                          <div v-for="val in filteredBarangayList"
+                               :key="val.id"
+                               class="searchable-dropdown-item"
+                               :class="{ 'active': formData.event_location_barangay === val.id }"
+                               @mousedown="selectBarangay(val)">
+                            {[ val.barangay ]}
+                          </div>
+                        </div>
+                        <div v-if="showBarangayDropdown && filteredBarangayList.length === 0" class="searchable-dropdown-list">
+                          <div class="searchable-dropdown-empty">No results found</div>
+                        </div>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <input type="text"
+                             class="form-control"
+                             v-model="barangaySearch"
+                             placeholder="Enter Barangay name"
+                             :disabled="formData.event_location_lgu === 0"
+                             autocomplete="off">
+                    </template>
                   </p>
                   <p><input type="text" name="event_location_district" class="form-control" v-model="formData.event_location_district" placeholder="District" id="editDistrict" required></p>
                   <!-- <p><input type="text" name="event_location_barangay" class="form-control" v-model="formData.event_location_barangay" placeholder="Barangay" required></p> -->
