@@ -646,9 +646,9 @@ const app = Vue.createApp({
             const updateOoButton = document.getElementById('oo-update');
             const orgFormData = new FormData();
             
-            if(event.target.textContent === saveOoButton.textContent){
+            if(event.currentTarget.id === 'oo-save'){
 
-                orgFormData.append('oobtntxt', saveOoButton.textContent)
+                orgFormData.append('oobtntxt', 'Save')
                 orgFormData.append('org_outcome', this.orgFormData.org_outcome);
                 orgFormData.append('description', this.orgFormData.description);
 
@@ -686,9 +686,9 @@ const app = Vue.createApp({
                     console.error("Error while saving data:", error);
                 });
 
-            }else if(event.target.textContent === updateOoButton.textContent){
+            }else if(event.currentTarget.id === 'oo-update'){
 
-                orgFormData.append('oobtntxt', updateOoButton.textContent);
+                orgFormData.append('oobtntxt', 'Update');
                 orgFormData.append('id', this.orgFormData.oo_pid);
                 orgFormData.append('org_outcome', this.orgFormData.org_outcome);
                 orgFormData.append('description', this.orgFormData.description);
@@ -743,9 +743,9 @@ const app = Vue.createApp({
             const savePapButton = document.getElementById('pap-save');
             const updatePapButton = document.getElementById('pap-update');
 
-            if(event.target.textContent === savePapButton.textContent){
+            if(event.currentTarget.id === 'pap-save'){
 
-                papsFormData.append('papBtnTxt', savePapButton.textContent);
+                papsFormData.append('papBtnTxt', 'Save');
                 papsFormData.append('pap', this.papsFormData.pap);
                 papsFormData.append('description', this.papsFormData.description);
                 papsFormData.append('org_outcome_id', this.papsFormData.org_outcome_id);
@@ -788,9 +788,9 @@ const app = Vue.createApp({
                     console.error("Error while saving data:", error);
                 });
 
-            }else if(event.target.textContent === updatePapButton.textContent){
+            }else if(event.currentTarget.id === 'pap-update'){
 
-                papsFormData.append('papBtnTxt', updatePapButton.textContent);
+                papsFormData.append('papBtnTxt', 'Update');
                 papsFormData.append('id', this.papsFormData.pap_pid);
                 papsFormData.append('pap', this.papsFormData.pap);
                 papsFormData.append('description', this.papsFormData.description);
@@ -845,9 +845,9 @@ const app = Vue.createApp({
             console.log(event.target.textContent)
             const unitFormData = new FormData();
 
-            if(event.target.textContent === saveUnitButton.textContent){
+            if(event.currentTarget.id === 'unit-save'){
 
-                unitFormData.append('bntUnitText', saveUnitButton.textContent);
+                unitFormData.append('bntUnitText', 'Save');
                 unitFormData.append('unit_name', this.unitFormData.unit_name);
                 unitFormData.append('description', this.unitFormData.description);
                 unitFormData.append('division_id', this.unitFormData.division_id);
@@ -890,9 +890,9 @@ const app = Vue.createApp({
                     console.error("Error while saving data:", error);
                 });
 
-            }else if(event.target.textContent === updateUnitButton.textContent){
+            }else if(event.currentTarget.id === 'unit-update'){
 
-                unitFormData.append('bntUnitText', updateUnitButton.textContent);
+                unitFormData.append('bntUnitText', 'Update');
                 unitFormData.append('id', this.unitFormData.unit_pid);
                 unitFormData.append('unit_name', this.unitFormData.unit_name);
                 unitFormData.append('description', this.unitFormData.description);
@@ -950,9 +950,9 @@ const app = Vue.createApp({
             console.log(event.target.textContent)
             const divFormData = new FormData();
 
-            if(event.target.textContent === saveDivButton.textContent){
+            if(event.currentTarget.id === 'div-save'){
 
-                divFormData.append('buttonDivTxt', saveDivButton.textContent)
+                divFormData.append('buttonDivTxt', 'Save')
                 divFormData.append('division_name', this.divFormData.division_name);
                 divFormData.append('division_desc', this.divFormData.division_desc);
                 divFormData.append('fk_office_id', this.divFormData.fk_office_id);
@@ -993,9 +993,9 @@ const app = Vue.createApp({
                     console.error("Error while saving data:", error);
                 });
 
-            }else if(event.target.textContent === updateDivButton.textContent){
+            }else if(event.currentTarget.id === 'div-update'){
 
-                divFormData.append('buttonDivTxt', updateDivButton.textContent)
+                divFormData.append('buttonDivTxt', 'Update')
                 divFormData.append('id', this.divFormData.div_pid);
                 divFormData.append('division_name', this.divFormData.division_name);
                 divFormData.append('division_desc', this.divFormData.division_desc);
@@ -2344,59 +2344,58 @@ const app = Vue.createApp({
                     {'data': 'division_name', 'searchable': true, 'sortable': true},
                     {'data': 'division_desc', 'searchable': true, 'sortable': true},
                     {'data': 'office_initials', 'searchable': true, 'sortable': false},
+                    {
+                        'data': null,
+                        'searchable': false,
+                        'orderable': false,
+                        'width': '20%',
+                        'className': 'text-center',
+                        'render': function(data, type, row) {
+                            return `
+                                <button class="btn btn-sm btn-outline-primary div-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
+                                <button class="btn btn-sm btn-outline-danger div-delete-btn" data-id="${row.id}" data-name="${row.division_name}"><i class="bi bi-trash3"></i> Delete</button>
+                            `;
+                        }
+                    }
                 ],
                 'order': [[0, 'desc']], // Order by ID column, descending
 
             }); // end of the $('#divdataTable').DataTable()
-            
-            // edit data using datatable row click
-            $('#divdataTable tbody').on('click', 'tr', function () {
 
-                var data = divTable.row(this).data();
-
-                var h5Text = $('#h5-Div').text();
-
-                if (h5Text.includes('Add Division')) {
-                    // If it contains "Update Event", replace it with "Add Event"
-                    $('#h5-Div').text(h5Text.replace('Add Division', 'Update Division'));
-                }
-
-                // show cursor as pointer when hovering over the table row
-                $('#divdataTable tbody tr').css('cursor', 'pointer');
-               
+            // edit data using edit button click
+            $('#divdataTable tbody').on('click', '.div-edit-btn', function () {
+                var data = divTable.row($(this).closest('tr')).data();
                 if (data) {
-                    console.log('Selected Data:', data.id);
-                    console.log(data.division_name);
-                    console.log(data.division_desc);
-                    //query the database for the event details using the event id and display it in the #editEventModal
-            
-                    //console.log(data.event_code);
-                    //populate the editEventModal with the event details
+                    $('#h5-Div').text('Update Division');
                     $("#div-ID").val(data.id);
                     $("#division-name").val(data.division_name);
                     $("#division-desc").val(data.division_desc);
-
-                    if (data) {
-                        $("#div-update").show(); // Show the update button
-                        $("#div-save").hide(); // Hide the save button
-                    } else {
-                        $("#div-update").hide(); // Hide the update button
-                        $("#div-save").show(); // Show the save button
-                    }
-
+                    $("#div-update").show();
+                    $("#div-save").hide();
+                    self.divFormData.div_pid = data.id;
+                    self.divFormData.division_name = data.division_name;
+                    self.divFormData.division_desc = data.division_desc;
+                    self.divFormData.fk_office_id = data.fk_office_id || 0;
                     $('#myDivModal').modal('show');
-                    
-                     const divpID = $("#div-ID").val();
-                     const divName = $("#division-name").val();
-                     const divDesc = $("#division-desc").val();
-                
-                     self.divFormData.div_pid = divpID;
-                     self.divFormData.division_name = divName;
-                     self.divFormData.division_desc = divDesc;
-                     self.divFormData.fk_office_id = data.fk_office_id || 0;
-                    // self.formData.division_id = eventDivision;
-                    // self.formData.division_name = eventDivName;                
-                      
+                }
+            });
+
+            // delete division
+            $('#divdataTable tbody').on('click', '.div-delete-btn', function () {
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                if (confirm(`Are you sure you want to delete the division "${name}"? This action cannot be undone.`)) {
+                    const formData = new FormData();
+                    formData.append('id', id);
+                    fetch('/divisions/delete-div-ajax/', { method: 'POST', body: formData })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.message === 'True') {
+                                self.message = 'Division deleted successfully!';
+                                self.showToast();
+                                $('#divdataTable').DataTable().ajax.reload();
+                            }
+                        });
                 }
             }); // end of the $('#divdataTable tbody')
 
@@ -2447,71 +2446,64 @@ const app = Vue.createApp({
                 {'data': 'description', 'searchable': true, 'sortable': true},
                 {'data': 'division_name', 'searchable': true, 'sortable': true},
                 {'data': 'division_id', 'searchable': true, 'sortable': true},
-            ],
-            columnDefs: [
                 {
-                    targets: [4],
-                    visible: false
+                    'data': null,
+                    'searchable': false,
+                    'orderable': false,
+                    'width': '20%',
+                    'className': 'text-center',
+                    'render': function(data, type, row) {
+                        return `
+                            <button class="btn btn-sm btn-outline-primary unit-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
+                            <button class="btn btn-sm btn-outline-danger unit-delete-btn" data-id="${row.id}" data-name="${row.unit_name}"><i class="bi bi-trash3"></i> Delete</button>
+                        `;
+                    }
                 }
             ],
+            columnDefs: [
+                { targets: [4], visible: false }
+            ],
             'order': [[0, 'desc']], // Order by ID column, descending
-        
+
         }); // end of the $('#unitdataTable').DataTable()
 
-        // edit unit data using datatable row click
-        $('#unitdataTable tbody').on('click', 'tr', function () {
-
-            var data = unitTable.row(this).data();
-
-            var h5Text = $('#h5-Unit').text();
-
-            if (h5Text.includes('Add Unit')) {
-                // If it contains "Update Event", replace it with "Add Event"
-                $('#h5-Unit').text(h5Text.replace('Add Unit', 'Update Unit'));
-            }
-
-            // show cursor as pointer when hovering over the table row
-            $('#unitdataTable tbody tr').css('cursor', 'pointer');
-            
+        // edit unit data using edit button click
+        $('#unitdataTable tbody').on('click', '.unit-edit-btn', function () {
+            var data = unitTable.row($(this).closest('tr')).data();
             if (data) {
-                
-                console.log('Selected Data:', data.id);
-                console.log(data.division_name);
-                console.log(data.division_desc);
-                //query the database for the event details using the event id and display it in the #editEventModal
-        
-                //console.log(data.event_code);
-                //populate the editEventModal with the event details
+                $('#h5-Unit').text('Update Unit');
                 $("#unit-ID").val(data.id);
                 $("#id-unitName").val(data.unit_name);
                 $("#id-unitDesc").val(data.description);
                 $("#div-name-id").val(data.division_name);
                 $("#divList-id").val(data.division_id);
-
-                if (data) {
-                    $("#unit-update").show(); // Show the update button
-                    $("#unit-save").hide(); // Hide the save button
-                } else {
-                    $("#unit-update").hide(); // Hide the update button
-                    $("#unit-save").show(); // Show the save button
-                }
-
+                $("#unit-update").show();
+                $("#unit-save").hide();
+                self.unitFormData.unit_pid = data.id;
+                self.unitFormData.unit_name = data.unit_name;
+                self.unitFormData.description = data.description;
+                self.unitFormData.division_id = data.division_id;
+                self.unitFormData.division_name = data.division_name;
                 $('#myUnitModal').modal('show');
-                
-                    const unitpID = $("#unit-ID").val();
-                    const unitName = $("#id-unitName").val();
-                    const unitDesc = $("#id-unitDesc").val();
-                    const unitDivId = $("#divList-id").val();
-                    const unitDivName = $("#div-name-id").val();
-            
-                    self.unitFormData.unit_pid = unitpID;
-                    self.unitFormData.unit_name = unitName;
-                    self.unitFormData.description = unitDesc;
-                    self.unitFormData.division_id = unitDivId;
-                    self.unitFormData.division_name = unitDivName;
-                // self.formData.division_id = eventDivision;
-                // self.formData.division_name = eventDivName; 
-                    
+            }
+        });
+
+        // delete unit
+        $('#unitdataTable tbody').on('click', '.unit-delete-btn', function () {
+            const id = $(this).data('id');
+            const name = $(this).data('name');
+            if (confirm(`Are you sure you want to delete the unit "${name}"? This action cannot be undone.`)) {
+                const formData = new FormData();
+                formData.append('id', id);
+                fetch('/units/delete-unit-ajax/', { method: 'POST', body: formData })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.message === 'True') {
+                            self.message = 'Unit deleted successfully!';
+                            self.showToast();
+                            $('#unitdataTable').DataTable().ajax.reload();
+                        }
+                    });
             }
         }); // end of the $('#unitdataTable tbody')
 
@@ -2560,59 +2552,59 @@ const app = Vue.createApp({
             'columns': [
                 {'data': 'id', 'sortable': true, 'searchable': false},
                 {'data': 'org_outcome', 'searchable': true, 'sortable': true},
-                {'data': 'description', 'searchable': true, 'sortable': true}
+                {'data': 'description', 'searchable': true, 'sortable': true},
+                {
+                    'data': null,
+                    'searchable': false,
+                    'orderable': false,
+                    'width': '20%',
+                    'className': 'text-center',
+                    'render': function(data, type, row) {
+                        return `
+                            <button class="btn btn-sm btn-outline-primary oo-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
+                            <button class="btn btn-sm btn-outline-danger oo-delete-btn" data-id="${row.id}" data-name="${row.org_outcome}"><i class="bi bi-trash3"></i> Delete</button>
+                        `;
+                    }
+                }
             ],
 
             'order': [[0, 'desc']], // Order by ID column, descending
-        
+
         }); // end of the $('#oodataTable').DataTable()
 
-
-        // edit orgoutcome
-        $('#oodataTable tbody').on('click', 'tr', function () {
-
-            var data = ooTable.row(this).data();
-
-            var h5Text = $('#h5-Oo').text();
-
-            if (h5Text.includes('Add Organizational Outcome')) {
-                // If it contains "Add Organizational Outcome", replace it with "Update Organizational Outcome"
-                $('#h5-Oo').text(h5Text.replace('Add Organizational Outcome', 'Update Organizational Outcome'));
-            }
-            
-            // show cursor as pointer when hovering over the table row
-            $('#oodataTable tbody tr').css('cursor', 'pointer');
-            
+        // edit orgoutcome using edit button click
+        $('#oodataTable tbody').on('click', '.oo-edit-btn', function () {
+            var data = ooTable.row($(this).closest('tr')).data();
             if (data) {
-                
-                console.log('Selected Data:', data.id);
-                console.log(data.org_outcome);
-                console.log(data.description);
-                //query the database for the event details using the event id and display it in the #editEventModal
-    
-                //populate the editEventModal with the event details
+                $('#h5-Oo').text('Update Organizational Outcome');
                 $("#oo-ID").val(data.id);
                 $("#id-orgoutcome").val(data.org_outcome);
                 $("#id-oodesc").val(data.description);
-    
-                if (data) {
-                    $("#oo-update").show(); // Show the update button
-                    $("#oo-save").hide(); // Hide the save button
-                } else {
-                    $("#oo-update").hide(); // Hide the update button
-                    $("#oo-save").show(); // Show the save button
-                }
-
+                $("#oo-update").show();
+                $("#oo-save").hide();
+                self.orgFormData.oo_pid = data.id;
+                self.orgFormData.org_outcome = data.org_outcome;
+                self.orgFormData.description = data.description;
                 $('#orgOutcomeModal').modal('show');
-                
-                const oopID = $("#oo-ID").val();
-                const ooName = $("#id-orgoutcome").val();
-                const ooDesc = $("#id-oodesc").val();
-        
-                self.orgFormData.oo_pid = oopID;
-                self.orgFormData.org_outcome = ooName;
-                self.orgFormData.description = ooDesc;
-                    
+            }
+        });
+
+        // delete orgoutcome
+        $('#oodataTable tbody').on('click', '.oo-delete-btn', function () {
+            const id = $(this).data('id');
+            const name = $(this).data('name');
+            if (confirm(`Are you sure you want to delete the organizational outcome "${name}"? This action cannot be undone.`)) {
+                const formData = new FormData();
+                formData.append('id', id);
+                fetch('/orgoutcomes/delete-oo-ajax/', { method: 'POST', body: formData })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.message === 'True') {
+                            self.message = 'Organizational Outcome deleted successfully!';
+                            self.showToast();
+                            $('#oodataTable').DataTable().ajax.reload();
+                        }
+                    });
             }
         }); // end of the $('#oodataTable tbody')
 
@@ -2663,74 +2655,67 @@ const app = Vue.createApp({
                 {'data': 'pap', 'searchable': true, 'sortable': true},
                 {'data': 'description', 'searchable': true, 'sortable': true},
                 {'data': 'oo_name', 'searchable': true, 'sortable': true},
-                {'data': 'org_outcome_id', 'searchable': true, 'sortable': true}
-            ],
-            columnDefs: [
+                {'data': 'org_outcome_id', 'searchable': true, 'sortable': true},
                 {
-                    targets: [4],
-                    visible: false
+                    'data': null,
+                    'searchable': false,
+                    'orderable': false,
+                    'width': '15%',
+                    'className': 'text-center',
+                    'render': function(data, type, row) {
+                        return `
+                            <button class="btn btn-sm btn-outline-primary pap-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
+                            <button class="btn btn-sm btn-outline-danger pap-delete-btn" data-id="${row.id}" data-name="${row.pap}"><i class="bi bi-trash3"></i> Delete</button>
+                        `;
+                    }
                 }
             ],
+            columnDefs: [
+                { targets: [4], visible: false }
+            ],
             'order': [[0, 'desc']], // Order by ID column, descending
-        
-        }); // end of the $('#oodataTable').DataTable()
 
-        // edit pap data using datatable row click
-        $('#papdataTable tbody').on('click', 'tr', function () {
+        }); // end of the $('#papdataTable').DataTable()
 
-            var data = papTable.row(this).data();
-
-            var h5Text = $('#h5-Paps').text();
-
-            if (h5Text.includes('Add Program and Project')) {
-                // If it contains "Update Event", replace it with "Add Event"
-                $('#h5-Paps').text(h5Text.replace('Add Program and Project', 'Update Program and Project'));
-            }
-
-            // show cursor as pointer when hovering over the table row
-            $('#papdataTable tbody tr').css('cursor', 'pointer');
-            
+        // edit pap data using edit button click
+        $('#papdataTable tbody').on('click', '.pap-edit-btn', function () {
+            var data = papTable.row($(this).closest('tr')).data();
             if (data) {
-                
-                console.log('Selected Data:', data.id);
-                console.log(data.pap);
-                console.log(data.description);
-                //query the database for the event details using the event id and display it in the #editEventModal
-        
-                //console.log(data.event_code);
-                //populate the editEventModal with the event details
+                $('#h5-Paps').text('Update Program and Project');
                 $("#pap-ID").val(data.id);
                 $("#id-pap").val(data.pap);
                 $("#id-papdesc").val(data.description);
                 $("#orgOutcome-id").val(data.org_outcome_id);
                 $("#oo-name-id").val(data.oo_name);
-
-                if (data) {
-                    $("#pap-update").show(); // Show the update button
-                    $("#pap-save").hide(); // Hide the save button
-                } else {
-                    $("#pap-update").hide(); // Hide the update button
-                    $("#pap-save").show(); // Show the save button
-                }
-
+                $("#pap-update").show();
+                $("#pap-save").hide();
+                self.papsFormData.pap_pid = data.id;
+                self.papsFormData.pap = data.pap;
+                self.papsFormData.description = data.description;
+                self.papsFormData.org_outcome_id = data.org_outcome_id;
+                self.papsFormData.oo_name = data.oo_name;
                 $('#papsModal').modal('show');
-                
-                    const pappID = $("#pap-ID").val();
-                    const papName = $("#id-pap").val();
-                    const papDesc = $("#id-papdesc").val();
-                    const papOrgId = $("#orgOutcome-id").val();
-                    const papOrgName = $("#oo-name-id").val();
-            
-                    self.papsFormData.pap_pid = pappID;
-                    self.papsFormData.pap = papName;
-                    self.papsFormData.description = papDesc;
-                    self.papsFormData.org_outcome_id = papOrgId;
-                    self.papsFormData.oo_name = papOrgName;
-                // self.formData.division_id = eventDivision;
-                // self.formData.division_name = eventDivName; 
-                    
             }
         }); // end of the $('#papdataTable tbody')
+
+        // delete pap data using delete button click
+        $('#papdataTable tbody').on('click', '.pap-delete-btn', function () {
+            const id = $(this).data('id');
+            const name = $(this).data('name');
+            if (confirm(`Are you sure you want to delete the PAP "${name}"? This action cannot be undone.`)) {
+                const formData = new FormData();
+                formData.append('id', id);
+                fetch('/paps/delete-pap-ajax/', { method: 'POST', body: formData })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.message === 'True') {
+                            self.message = 'PAP deleted successfully!';
+                            self.showToast();
+                            $('#papdataTable').DataTable().ajax.reload();
+                        }
+                    });
+            }
+        }); // end of the $('#papdataTable tbody') delete
 
     }); // end of the function
 

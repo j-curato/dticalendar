@@ -49,7 +49,19 @@ def save_orgOutcome(request):
             return JsonResponse({'message': 'True'})
 
     return JsonResponse({'message': 'False'})
-    
+
+
+@csrf_exempt
+def delete_oo_ajax(request):
+    if request.method == 'POST':
+        oo_id = request.POST.get('id')
+        oo = OrgOutcome.objects.filter(id=oo_id).first()
+        if oo:
+            oo.delete()
+            return JsonResponse({'message': 'True'})
+        return JsonResponse({'message': 'OrgOutcome not found'})
+    return JsonResponse({'message': 'False'})
+
 # get org outcome list using ajax and return json response and save to data variable
 def get_ooList(request):
     ooList = OrgOutcome.objects.all()

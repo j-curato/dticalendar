@@ -58,7 +58,19 @@ def save_paps_ajax(request):
             return JsonResponse({'message': 'True'})
 
     return JsonResponse({'message': 'False'})
-        
+
+
+@csrf_exempt
+def delete_pap_ajax(request):
+    if request.method == 'POST':
+        pap_id = request.POST.get('id')
+        pap = Pap.objects.filter(id=pap_id).first()
+        if pap:
+            pap.delete()
+            return JsonResponse({'message': 'True'})
+        return JsonResponse({'message': 'PAP not found'})
+    return JsonResponse({'message': 'False'})
+
 # get paps list using ajax and return json response and save to data variable
 def get_papsList(request):
     papsList = Pap.objects.all()

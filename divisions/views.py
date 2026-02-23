@@ -64,6 +64,18 @@ def save_div_ajax(request):
 
     return JsonResponse({'message': 'False'})
 
+
+@csrf_exempt
+def delete_div_ajax(request):
+    if request.method == 'POST':
+        div_id = request.POST.get('id')
+        division = Division.objects.filter(id=div_id).first()
+        if division:
+            division.delete()
+            return JsonResponse({'message': 'True'})
+        return JsonResponse({'message': 'Division not found'})
+    return JsonResponse({'message': 'False'})
+
 # method to display division details using datatable server side processing
 def get_division_details(request):
     try:

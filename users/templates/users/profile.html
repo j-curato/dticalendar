@@ -75,12 +75,12 @@
         <button @click="showOrgModalPanel" class="btn btn-primary"><i class="bi bi-person-square"></i> Organizational Outcome</button>&nbsp;
         <button @click="showPapsModalPanel" class="btn btn-primary"><i class="bi bi-person-square"></i> PAPs</button>&nbsp;
         {% if user.is_superuser %}
-        <button @click="showOfficeModalPanel" class="btn btn-success"><i class="bi bi-building"></i> Offices</button>&nbsp;
+        <button @click="showOfficeModalPanel" class="btn btn-primary"><i class="bi bi-building"></i> Offices</button>&nbsp;
         {% endif %}
 
         <pre>{{ divisionListVue }}</pre>
 
-        <div class="toast align-items-center text-white bg-primary border-0 hide position-fixed top-0 end-0 p-3 mt-2" id="liveToast" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 1060">
+        <div class="toast align-items-center text-white bg-primary border-0 hide position-fixed top-0 end-0 p-3 mt-2" id="liveToast" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 9999">
           <div class="d-flex">
             <div class="toast-body">
               {[ message ]}
@@ -408,112 +408,121 @@
             <div class="modal fade" id="myDivModalPanel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-slideout modal-xl">
                 <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Division Panel</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <br>
-                  <div class="container-fluid">
-                    <div class="row">
-                      <div class="col-md-4"><button class="btn btn-primary" @click="callDivFunctions"><i class="bi bi-person-square"></i>Add</button></div>
-                    </div>
+                  <div class="modal-header" style="background-color: #0d6efd; color: #fff;">
+                    <h5 class="modal-title" id="exampleModalLabel"><i class="bi bi-diagram-3"></i>&nbsp; Division Management</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                      <table id="divdataTable" class="display" style="width:100%">
-                        <thead>
-                            <tr >
-                                <th>ID</th>
-                                <th>Division Name</th>
-                                <th>Description</th>
-                                <th>Office</th>
-                            </tr>
-                        </thead>
-                        <tfoot>
-                          <tr>
-                            <th>ID</th>
-                            <th>Division Name</th>
-                            <th>Description</th>
-                            <th>Office</th>
-                          </tr>
-                        </tfoot>
-                      </table>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <small class="text-muted">Manage divisions and their office assignments.</small>
+                      <button class="btn btn-primary btn-sm" @click="callDivFunctions">
+                        <i class="bi bi-plus-circle"></i> Add Division
+                      </button>
+                    </div>
+                    <table id="divdataTable" class="display table table-hover" style="width:100%">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Division Name</th>
+                          <th>Description</th>
+                          <th>Office</th>
+                          <th class="text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tfoot>
+                        <tr>
+                          <th>ID</th>
+                          <th>Division Name</th>
+                          <th>Description</th>
+                          <th>Office</th>
+                          <th>Actions</th>
+                        </tr>
+                      </tfoot>
+                    </table>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="modal fade" id="myDivModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+            <div class="modal fade" id="myDivModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-slideout">
                 <div class="modal-content" style="border: 0.5px solid #e0dcdc;">
                   <div class="modal-header">
                     <h5 class="modal-title" id="h5-Div">Add Division</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
-                  <br>
-                  <div class="container-fluid">
-                  </div>
                   <div class="modal-body">
-                    <!-- <form @submit.prevent="saveDivData" enctype="multipart/form-data"> -->
                     <form name="division-form" enctype="multipart/form-data">
                       {% csrf_token %}
-                        <input type="text" placeholder="Field 1" id="div-ID" style="display: none;">
-                        <p><input type="text" name="division_name" class="form-control" placeholder="Division name" v-model="divFormData.division_name" id="division-name" required></p>
-                        <p><input type="text" name="division_desc" class="form-control" placeholder="Description" v-model="divFormData.division_desc" id="division-desc" required></p>
-                        <p>
-                          <select name="fk_office_id" class="form-control form-select" id="div-office-id" v-model="divFormData.fk_office_id">
-                            <option value="0">Select Office (optional)</option>
-                            <option v-for="val in officeListVue" :value="val.id">{[ val.office_initials ]} - {[ val.office_name ]}</option>
-                          </select>
-                        </p>
-                  <div class="modal-footer">
-                    <!-- <button type="submit" class="btn btn-primary" id="div-save">Save</button> -->
-                    <button class="btn btn-primary" id="div-save" @click="saveDivData($event)">Save</button>
-                    <button class="btn btn-primary" id="div-update" @click="saveDivData($event)">Update</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  </div>
-                  </form>
+                      <input type="hidden" id="div-ID">
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Division Name <span class="text-danger">*</span></label>
+                        <input type="text" name="division_name" class="form-control" id="division-name" v-model="divFormData.division_name" placeholder="e.g. SME Development Division" required>
+                        <div class="form-text">Full name of the division.</div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+                        <input type="text" name="division_desc" class="form-control" id="division-desc" v-model="divFormData.division_desc" placeholder="Brief description" required>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Office</label>
+                        <select name="fk_office_id" class="form-control form-select" id="div-office-id" v-model="divFormData.fk_office_id">
+                          <option value="0">Select Office (optional)</option>
+                          <option v-for="val in officeListVue" :value="val.id">{[ val.office_initials ]} - {[ val.office_name ]}</option>
+                        </select>
+                        <div class="form-text">Office this division belongs to.</div>
+                      </div>
+                      <div class="modal-footer px-0">
+                        <button class="btn btn-primary" id="div-save" @click="saveDivData($event)">
+                          <i class="bi bi-save"></i> Save
+                        </button>
+                        <button class="btn btn-primary" id="div-update" @click="saveDivData($event)">
+                          <i class="bi bi-pencil-square"></i> Update
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      </div>
+                    </form>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="modal fade" id="myUnitModalPanel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+            <div class="modal fade" id="myUnitModalPanel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-slideout modal-xl">
                 <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Unit Panel</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <br>
-                  <div class="container-fluid">
-                    <div class="row">
-                      <div class="col-md-4">
-                        <!-- <button @click="showUnitModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Add</button>&nbsp; -->
-                        <button class="btn btn-primary" @click="callUnitFunctions"><i class="bi bi-person-square"></i>Add</button>
-                      </div>
-                    </div>
+                  <div class="modal-header" style="background-color: #0d6efd; color: #fff;">
+                    <h5 class="modal-title" id="exampleModalLabel"><i class="bi bi-grid-1x2"></i>&nbsp; Unit Management</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                      <table id="unitdataTable" class="display" style="width:100%">
-                        <thead>
-                            <tr >
-                                <th>ID</th>
-                                <th>Unit Name</th>
-                                <th>Description</th>
-                                <th>Division</th>
-                                <th>Division ID</th>
-                            </tr>
-                        </thead>
-                        <tfoot>
-                          <tr>
-                                <th>ID</th>
-                                <th>Unit Name</th>
-                                <th>Description</th>
-                                <th>Division</th>
-                                <th>Division ID</th>
-                          </tr>
-                        </tfoot>
-                      </table>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <small class="text-muted">Manage units and their division assignments.</small>
+                      <button class="btn btn-primary btn-sm" @click="callUnitFunctions">
+                        <i class="bi bi-plus-circle"></i> Add Unit
+                      </button>
+                    </div>
+                    <table id="unitdataTable" class="display table table-hover" style="width:100%">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Unit Name</th>
+                          <th>Description</th>
+                          <th>Division</th>
+                          <th>Division ID</th>
+                          <th class="text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tfoot>
+                        <tr>
+                          <th>ID</th>
+                          <th>Unit Name</th>
+                          <th>Description</th>
+                          <th>Division</th>
+                          <th>Division ID</th>
+                          <th>Actions</th>
+                        </tr>
+                      </tfoot>
+                    </table>
                   </div>
                 </div>
               </div>
@@ -529,69 +538,73 @@
                   <div class="modal-body">
                     <form name="unit-form" enctype="multipart/form-data">
                       {% csrf_token %}
-                        <input type="text" placeholder="Field 1" id="unit-ID" style="display: none;">
-                        <p><input type="text" name="unit_name" class="form-control" id="id-unitName" placeholder="Unit Name" v-model="unitFormData.unit_name" required></p>
-                        <p><input type="text" name="description" class="form-control" id="id-unitDesc" v-model="unitFormData.description" placeholder="Description" required></p>
-                        <!-- Dropdown using loop for ooList = OrgOutcome.objects.all() -->
-                        <p>
-                          <select name="division_id" class="form-control form-select" id="divList-id" v-model="unitFormData.division_id" aria-label="Default select example" @change="onDivChange" required>
-                            <!-- <option value="0">Select Division</option>
-                            {% for val in divList %}
-                            <option value="{{ val.id }}">{{ val.division_name }}</option>
-                            {% endfor %} -->
-                            <option value="0">Select Division</option>
-                            <option v-for="val in filteredDivisionList" :value="val.id">{[ val.division_name ]}</option>
-                          </select>
-                        </p>
-                        <p>
-                          <input type="text" name="division_name" class="form-control" id="div-name-id" v-model="unitFormData.division_name" style="display: none;">
-                        </p>
-                        <div class="modal-footer">
-                          <!-- <button class="btn btn-primary">Save</button> -->
-                          <button class="btn btn-primary" id="unit-save" @click="saveUnitData($event)">Save</button>
-                          <button class="btn btn-primary" id="unit-update" @click="saveUnitData($event)">Update</button>
+                      <input type="hidden" id="unit-ID">
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Unit Name <span class="text-danger">*</span></label>
+                        <input type="text" name="unit_name" class="form-control" id="id-unitName" v-model="unitFormData.unit_name" placeholder="e.g. Negosyo Center" required>
+                        <div class="form-text">Full name of the unit.</div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+                        <input type="text" name="description" class="form-control" id="id-unitDesc" v-model="unitFormData.description" placeholder="Brief description" required>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Division <span class="text-danger">*</span></label>
+                        <select name="division_id" class="form-control form-select" id="divList-id" v-model="unitFormData.division_id" @change="onDivChange" required>
+                          <option value="0">Select Division</option>
+                          <option v-for="val in filteredDivisionList" :value="val.id">{[ val.division_name ]}</option>
+                        </select>
+                        <div class="form-text">Division this unit belongs to.</div>
+                      </div>
+                      <input type="hidden" name="division_name" id="div-name-id" v-model="unitFormData.division_name">
+                      <div class="modal-footer px-0">
+                        <button class="btn btn-primary" id="unit-save" @click="saveUnitData($event)">
+                          <i class="bi bi-save"></i> Save
+                        </button>
+                        <button class="btn btn-primary" id="unit-update" @click="saveUnitData($event)">
+                          <i class="bi bi-pencil-square"></i> Update
+                        </button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                       </div>
-                     </form>
+                    </form>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Orgoutcome Modal Panel -->
-            <div class="modal fade" id="myOoModalPanel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+            <div class="modal fade" id="myOoModalPanel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-slideout modal-xl">
                 <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Organizational Outcome Panel</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <br>
-                  <div class="container-fluid">
-                    <div class="row">
-                      <div class="col-md-4">
-                        <!-- <button @click="showUnitModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Add</button>&nbsp; -->
-                        <button class="btn btn-primary" @click="callOoFunctions"><i class="bi bi-person-square"></i>Add</button>
-                      </div>
-                    </div>
+                  <div class="modal-header" style="background-color: #0d6efd; color: #fff;">
+                    <h5 class="modal-title" id="exampleModalLabel"><i class="bi bi-bullseye"></i>&nbsp; Organizational Outcome Management</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                      <table id="oodataTable" class="display" style="width:100%">
-                        <thead>
-                            <tr >
-                                <th>ID</th>
-                                <th>Orgoutcome</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tfoot>
-                          <tr>
-                                <th>ID</th>
-                                <th>Orgoutcome</th>
-                                <th>Description</th>
-                          </tr>
-                        </tfoot>
-                      </table>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <small class="text-muted">Manage organizational outcomes linked to programs and projects.</small>
+                      <button class="btn btn-primary btn-sm" @click="callOoFunctions">
+                        <i class="bi bi-plus-circle"></i> Add Org Outcome
+                      </button>
+                    </div>
+                    <table id="oodataTable" class="display table table-hover" style="width:100%">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Org Outcome</th>
+                          <th>Description</th>
+                          <th class="text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tfoot>
+                        <tr>
+                          <th>ID</th>
+                          <th>Org Outcome</th>
+                          <th>Description</th>
+                          <th>Actions</th>
+                        </tr>
+                      </tfoot>
+                    </table>
                   </div>
                 </div>
               </div>
@@ -609,17 +622,26 @@
                   <div class="modal-body">
                     <form name="oo-form" enctype="multipart/form-data">
                       {% csrf_token %}
-                        <input type="text" placeholder="Field 1" id="oo-ID" style="display:none;">
-                        <p><input type="text" name="org_outcome" class="form-control" id="id-orgoutcome" v-model="orgFormData.org_outcome" placeholder="Org Outcome" required></p>
-                        <p><input type="text" name="description" class="form-control" id="id-oodesc" v-model="orgFormData.description" placeholder="Description" required></p>
-
-                        <div class="modal-footer">
-                          <!-- <button class="btn btn-primary">Save</button> -->
-                          <button class="btn btn-primary" id="oo-save" @click="saveOoData($event)">Save</button>
-                          <button class="btn btn-primary" id="oo-update" @click="saveOoData($event)">Update</button>
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                  </form>
+                      <input type="hidden" id="oo-ID">
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Organizational Outcome <span class="text-danger">*</span></label>
+                        <input type="text" name="org_outcome" class="form-control" id="id-orgoutcome" v-model="orgFormData.org_outcome" placeholder="e.g. Increased competitiveness of MSMEs" required>
+                        <div class="form-text">Full description of the organizational outcome.</div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+                        <input type="text" name="description" class="form-control" id="id-oodesc" v-model="orgFormData.description" placeholder="Brief description" required>
+                      </div>
+                      <div class="modal-footer px-0">
+                        <button class="btn btn-primary" id="oo-save" @click="saveOoData($event)">
+                          <i class="bi bi-save"></i> Save
+                        </button>
+                        <button class="btn btn-primary" id="oo-update" @click="saveOoData($event)">
+                          <i class="bi bi-pencil-square"></i> Update
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      </div>
+                    </form>
                   </div>
                 </div>
               </div>
@@ -627,43 +649,42 @@
             <!--end OrgOutcome modal -->
 
              <!-- Paps Modal Panel -->
-             <div class="modal fade" id="myPapsModalPanel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+             <div class="modal fade" id="myPapsModalPanel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-slideout modal-xl">
                 <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="h5-PapsPanel">Program and Project Panel</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <br>
-                  <div class="container-fluid">
-                    <div class="row">
-                      <div class="col-md-4">
-                        <!-- <button @click="showUnitModal" class="btn btn-primary"><i class="bi bi-person-square"></i> Add</button>&nbsp; -->
-                        <button class="btn btn-primary" @click="callPapFunctions"><i class="bi bi-person-square"></i>Add</button>
-                      </div>
-                    </div>
+                  <div class="modal-header" style="background-color: #0d6efd; color: #fff;">
+                    <h5 class="modal-title" id="h5-PapsPanel"><i class="bi bi-journal-text"></i>&nbsp; Programs and Projects Management</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                      <table id="papdataTable" class="display" style="width:100%">
-                        <thead>
-                            <tr >
-                              <th>ID</th>
-                              <th>PAPs</th>
-                              <th>Description</th>
-                              <th>Organizational Outcome</th>
-                              <th>Org ID</th>
-                            </tr>
-                        </thead>
-                        <tfoot>
-                          <tr>
-                            <th>ID</th>
-                            <th>PAPs</th>
-                            <th>Description</th>
-                            <th>Organizational Outcome</th>
-                            <th>Org ID</th>
-                          </tr>
-                        </tfoot>
-                      </table>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <small class="text-muted">Manage programs and projects linked to organizational outcomes.</small>
+                      <button class="btn btn-primary btn-sm" @click="callPapFunctions">
+                        <i class="bi bi-plus-circle"></i> Add PAP
+                      </button>
+                    </div>
+                    <table id="papdataTable" class="display table table-hover" style="width:100%">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>PAPs</th>
+                          <th>Description</th>
+                          <th>Organizational Outcome</th>
+                          <th>Org ID</th>
+                          <th class="text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tfoot>
+                        <tr>
+                          <th>ID</th>
+                          <th>PAPs</th>
+                          <th>Description</th>
+                          <th>Organizational Outcome</th>
+                          <th>Org ID</th>
+                          <th>Actions</th>
+                        </tr>
+                      </tfoot>
+                    </table>
                   </div>
                 </div>
               </div>
@@ -681,30 +702,35 @@
                   <div class="modal-body">
                     <form name="pap-form" enctype="multipart/form-data">
                       {% csrf_token %}
-                      <input type="text" placeholder="Field 1" id="pap-ID" style="display:none;">
-                        <p><input type="text" name="pap" class="form-control" id="id-pap" placeholder="PAPs" v-model="papsFormData.pap" required></p>
-                        <p><input type="text" name="description" class="form-control" id="id-papdesc" v-model="papsFormData.description" placeholder="Description" required></p>
-                        <!-- Dropdown using loop for ooList = OrgOutcome.objects.all() -->
-                        <p>
-                          <select name="org_outcome" class="form-control form-select" id="orgOutcome-id" v-model="papsFormData.org_outcome_id" aria-label="Default select example" @change="onOoChange" required>
-                            <!-- <option value="0">Select Organizational Outcome</option>
-                            {% for val in ooList %}
-                            <option value="{{ val.id }}">{{ val.org_outcome }}</option>
-                            {% endfor %} -->
-                            <option value="0">Select Organizational Outcome</option>
-                            <option v-for="val in ooListVue" :value="val.id">{[ val.org_outcome ]}</option>
-                          </select>
-                        </p>
-                        <p>
-                          <input type="text" name="oo_name" class="form-control" id="oo-name-id" v-model="papsFormData.oo_name" style="display: none;">
-                        </p>
-                        <div class="modal-footer">
-                          <!-- <button class="btn btn-primary">Save</button> -->
-                          <button class="btn btn-primary" id="pap-save" @click="savePapsData($event)">Save</button>
-                          <button class="btn btn-primary" id="pap-update" @click="savePapsData($event)">Update</button>
+                      <input type="hidden" id="pap-ID">
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Program/Project Name <span class="text-danger">*</span></label>
+                        <input type="text" name="pap" class="form-control" id="id-pap" v-model="papsFormData.pap" placeholder="e.g. Negosyo Center Program" required>
+                        <div class="form-text">Full name of the program or project.</div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+                        <input type="text" name="description" class="form-control" id="id-papdesc" v-model="papsFormData.description" placeholder="Brief description" required>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Organizational Outcome <span class="text-danger">*</span></label>
+                        <select name="org_outcome" class="form-control form-select" id="orgOutcome-id" v-model="papsFormData.org_outcome_id" @change="onOoChange" required>
+                          <option value="0">Select Organizational Outcome</option>
+                          <option v-for="val in ooListVue" :value="val.id">{[ val.org_outcome ]}</option>
+                        </select>
+                        <div class="form-text">Organizational outcome this PAP is linked to.</div>
+                      </div>
+                      <input type="hidden" name="oo_name" id="oo-name-id" v-model="papsFormData.oo_name">
+                      <div class="modal-footer px-0">
+                        <button class="btn btn-primary" id="pap-save" @click="savePapsData($event)">
+                          <i class="bi bi-save"></i> Save
+                        </button>
+                        <button class="btn btn-primary" id="pap-update" @click="savePapsData($event)">
+                          <i class="bi bi-pencil-square"></i> Update
+                        </button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                       </div>
-                     </form>
+                    </form>
                   </div>
                 </div>
               </div>
@@ -735,14 +761,14 @@
             <div class="modal fade" id="myOfficeModalPanel" tabindex="-1" aria-labelledby="officeModalPanelLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-slideout modal-xl">
                 <div class="modal-content">
-                  <div class="modal-header" style="background-color: #198754; color: #fff;">
+                  <div class="modal-header" style="background-color: #0d6efd; color: #fff;">
                     <h5 class="modal-title" id="officeModalPanelLabel"><i class="bi bi-building"></i>&nbsp; Office Management</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                       <small class="text-muted">Manage DTI offices and their details. Only superusers can access this panel.</small>
-                      <button class="btn btn-success btn-sm" @click="callOfficeFunctions">
+                      <button class="btn btn-primary btn-sm" @click="callOfficeFunctions">
                         <i class="bi bi-plus-circle"></i> Add Office
                       </button>
                     </div>
@@ -795,10 +821,10 @@
                         <div class="form-text">Full name of the office.</div>
                       </div>
                       <div class="modal-footer px-0">
-                        <button class="btn btn-success" id="office-save" @click="saveOfficeData($event)">
+                        <button class="btn btn-primary" id="office-save" @click="saveOfficeData($event)">
                           <i class="bi bi-save"></i> Save
                         </button>
-                        <button class="btn btn-warning text-white" id="office-update" @click="saveOfficeData($event)" style="display:none;">
+                        <button class="btn btn-primary" id="office-update" @click="saveOfficeData($event)" style="display:none;">
                           <i class="bi bi-pencil-square"></i> Update
                         </button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
