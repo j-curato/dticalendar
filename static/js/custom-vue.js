@@ -1332,16 +1332,20 @@ const app = Vue.createApp({
                         'width': '20%',
                         'className': 'text-center',
                         'render': function(data, type, row) {
-                            return `
-                                <button class="btn btn-sm btn-outline-primary office-edit-btn me-1"
-                                    data-id="${row.id}" data-initials="${row.office_initials}" data-name="${row.office_name}">
-                                    <i class="bi bi-pencil-square"></i> Edit
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger office-delete-btn"
-                                    data-id="${row.id}" data-name="${row.office_name}">
-                                    <i class="bi bi-trash3"></i> Delete
-                                </button>
-                            `;
+                            if (IS_SUPERUSER) {
+                                return `
+                                    <button class="btn btn-sm btn-outline-primary office-edit-btn me-1"
+                                        data-id="${row.id}" data-initials="${row.office_initials}" data-name="${row.office_name}">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger office-delete-btn"
+                                        data-id="${row.id}" data-name="${row.office_name}">
+                                        <i class="bi bi-trash3"></i> Delete
+                                    </button>
+                                `;
+                            } else {
+                                return `<span class="text-muted small"><i class="bi bi-lock-fill"></i> Admin only</span>`;
+                            }
                         }
                     }
                 ],
@@ -2369,10 +2373,14 @@ const app = Vue.createApp({
                         'width': '20%',
                         'className': 'text-center',
                         'render': function(data, type, row) {
-                            return `
-                                <button class="btn btn-sm btn-outline-primary div-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
-                                <button class="btn btn-sm btn-outline-danger div-delete-btn" data-id="${row.id}" data-name="${row.division_name}"><i class="bi bi-trash3"></i> Delete</button>
-                            `;
+                            if (IS_SUPERUSER) {
+                                return `
+                                    <button class="btn btn-sm btn-outline-primary div-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger div-delete-btn" data-id="${row.id}" data-name="${row.division_name}"><i class="bi bi-trash3"></i> Delete</button>
+                                `;
+                            } else {
+                                return `<span class="text-muted small"><i class="bi bi-lock-fill"></i> Admin only</span>`;
+                            }
                         }
                     }
                 ],
@@ -2471,10 +2479,14 @@ const app = Vue.createApp({
                     'width': '20%',
                     'className': 'text-center',
                     'render': function(data, type, row) {
-                        return `
-                            <button class="btn btn-sm btn-outline-primary unit-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
-                            <button class="btn btn-sm btn-outline-danger unit-delete-btn" data-id="${row.id}" data-name="${row.unit_name}"><i class="bi bi-trash3"></i> Delete</button>
-                        `;
+                        if (IS_SUPERUSER) {
+                            return `
+                                <button class="btn btn-sm btn-outline-primary unit-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
+                                <button class="btn btn-sm btn-outline-danger unit-delete-btn" data-id="${row.id}" data-name="${row.unit_name}"><i class="bi bi-trash3"></i> Delete</button>
+                            `;
+                        } else {
+                            return `<span class="text-muted small"><i class="bi bi-lock-fill"></i> Admin only</span>`;
+                        }
                     }
                 }
             ],
@@ -2584,10 +2596,14 @@ const app = Vue.createApp({
                     'width': '20%',
                     'className': 'text-center',
                     'render': function(data, type, row) {
-                        return `
-                            <button class="btn btn-sm btn-outline-primary oo-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
-                            <button class="btn btn-sm btn-outline-danger oo-delete-btn" data-id="${row.id}" data-name="${row.org_outcome}"><i class="bi bi-trash3"></i> Delete</button>
-                        `;
+                        if (IS_SUPERUSER) {
+                            return `
+                                <button class="btn btn-sm btn-outline-primary oo-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
+                                <button class="btn btn-sm btn-outline-danger oo-delete-btn" data-id="${row.id}" data-name="${row.org_outcome}"><i class="bi bi-trash3"></i> Delete</button>
+                            `;
+                        } else {
+                            return `<span class="text-muted small"><i class="bi bi-lock-fill"></i> Admin only</span>`;
+                        }
                     }
                 }
             ],
@@ -2687,10 +2703,14 @@ const app = Vue.createApp({
                     'width': '15%',
                     'className': 'text-center',
                     'render': function(data, type, row) {
-                        return `
-                            <button class="btn btn-sm btn-outline-primary pap-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
-                            <button class="btn btn-sm btn-outline-danger pap-delete-btn" data-id="${row.id}" data-name="${row.pap}"><i class="bi bi-trash3"></i> Delete</button>
-                        `;
+                        if (IS_SUPERUSER) {
+                            return `
+                                <button class="btn btn-sm btn-outline-primary pap-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
+                                <button class="btn btn-sm btn-outline-danger pap-delete-btn" data-id="${row.id}" data-name="${row.pap}"><i class="bi bi-trash3"></i> Delete</button>
+                            `;
+                        } else {
+                            return `<span class="text-muted small"><i class="bi bi-lock-fill"></i> Admin only</span>`;
+                        }
                     }
                 }
             ],
