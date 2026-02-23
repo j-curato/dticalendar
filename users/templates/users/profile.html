@@ -110,242 +110,219 @@
           </div>
       </div>
       
-        <!-- vue.js 2 modal test -->
+        <!-- Event Modal - Step 1: Organization Details -->
         <div class="modal fade" id="modal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1" data-bs-keyboard="false">
-          <div class="modal-dialog modal-dialog-slideout">
+          <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="h5-Event1">Add Event</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="resetFormData"></button>
+              <div class="modal-header" style="background-color: #0d6efd; color: #fff;">
+                <div>
+                  <h5 class="modal-title mb-0" id="h5-Event1"><i class="bi bi-calendar-plus"></i>&nbsp; Add Event</h5>
+                  <small style="opacity: 0.85; font-size: 12px;">Step 1 of 2 &mdash; Organization Details</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" @click="resetFormData"></button>
               </div>
-              <div class="modal-body">
-                <span style="font-size: 12px; font-weight:bold; color:blue;">Step 1/2</span>
-                <address></address>
+              <div class="modal-body px-4 py-3">
                 <form name="event-form" enctype="multipart/form-data">
+                  <input type="text" id="event-id" style="display:none;">
+                  <input type="text" name="division_name" id="division-name-id" v-model="formData.division_name" style="display:none;">
+                  <input type="text" name="calendar_name" id="calendar-name-id" v-model="formData.calendar_name" style="display:none;">
 
-                  <input type="text" placeholder="Field 1" id="event-id" style="display:none;" required>
-                  <p> <!-- office is locked to the logged-in user's assigned office -->
-                    <select name="office" v-model="formData.fk_office_id" class="form-control form-select" id="editOffice" disabled>
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Office</label>
+                    <select name="office" v-model="formData.fk_office_id" class="form-select" id="editOffice" disabled>
                       <option value="0">Select Office</option>
                       <option v-for="val in officeListVue" :value="val.id">{[ val.office_initials ]} - {[ val.office_name ]}</option>
                     </select>
-                    <small class="text-muted">Office is automatically set based on your account.</small>
-                  </p>
-                 
-                 <p>
-                  <select name="division_id" class="form-control form-select" id="division-id" aria-label="Default select example" v-model="formData.division_id" @change="onDivisionChange" required>
-                  <option value="0">Select Division</option>
-                  <option v-for="val in filteredDivisionList" :value="val.id">{[ val.division_name ]}</option>
-                 </select>
-                </p>
+                    <div class="form-text">Automatically set based on your account.</div>
+                  </div>
 
-                 <p>
-                  <!-- <input type="text" name="division_name" id="division-name-id" v-model="formData.division_name" class="form-control" placeholder="Division Name" required> -->
-                  <input type="text" name="division_name" id="division-name-id" v-model="formData.division_name" class="form-control" placeholder="Division Name" style="display:none;" required>
-                 </p>
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold">Division <span class="text-danger">*</span></label>
+                      <select name="division_id" class="form-select" id="division-id" v-model="formData.division_id" @change="onDivisionChange" required>
+                        <option value="0">Select Division</option>
+                        <option v-for="val in filteredDivisionList" :value="val.id">{[ val.division_name ]}</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold">Unit <span class="text-danger">*</span></label>
+                      <select name="unit" v-model="formData.unit" class="form-select" id="editUnit" required>
+                        <option value="0">Select Unit</option>
+                        <option v-for="val in filteredUnitList" :value="val.id">{[ val.unitList ]}</option>
+                      </select>
+                    </div>
+                  </div>
 
-                  <!-- <p> 
-                    <select name="unit" v-model="formData.unit" class="form-control form-select" aria-label="Default select example" id="editUnit" required>
-                      <option value="0">Select Unit</option>
-                      <option value="NC" >Negosyo Center</option>
-                      <option value="EDU">Enterprise Development Unit</option>
-                      <option value="TPU">Trade Promotion Unit</option>
-                      <option value="CARP">Comprehensive Agrarian Reform Program</option>
-                      <option value="PLANNING">Planning Unit</option>
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Organizational Outcome <span class="text-danger">*</span></label>
+                    <select name="org_outcome" v-model="formData.org_outcome" @change="updatePAPs" class="form-select" id="editOrgOutcome" required>
+                      <option value="0">Select Organizational Outcome</option>
+                      <option v-for="val in ooListVue" :value="val.id">{[ val.org_outcome ]}</option>
                     </select>
-                  </p> -->
-            
-                  <p>
-                    <select name="unit" v-model="formData.unit" class="form-control form-select" id="editUnit" required>
-                      <option value="0">Select Unit</option>
-                      <option v-for="val in filteredUnitList" :value="val.id">{[ val.unitList ]}</option>
+                  </div>
+
+                  <div class="mb-1">
+                    <label class="form-label fw-semibold">Programs, Activities and Projects (PAPs) <span class="text-danger">*</span></label>
+                    <select name="paps" v-model="formData.paps" class="form-select" id="editPaps" required>
+                      <option value="0">Select PAPs</option>
+                      <option v-for="val in filteredPAPs" :value="val.id">{[ val.pap ]}</option>
                     </select>
-                  </p>
-
-                  <p> <!-- to be created with db table Org_outcome-->
-                   <select name="org_outcome" v-model="formData.org_outcome" @change="updatePAPs" class="form-control form-select" aria-label="Default select example" id="editOrgOutcome" required>
-                    <option value="0">Select Organizational Outcome</option>
-                    <option v-for="val in ooListVue" :value="val.id">{[ val.org_outcome ]}</option>
-                   </select>
-                 </p>
-
-                 <p> <!-- to be created with db table PAPs-->
-                  <select name="paps" v-model="formData.paps" class="form-control form-select" aria-label="Default select example" id="editPaps" required>
-                    <option value="0">Select PAPs</option>
-                    <option v-for="val in filteredPAPs" :value="val.id">{[ val.pap ]}</option>
-                  </select>
-                 </p>
-
-                 <!-- <p>
-                  <select name="calendar_id" v-model="formData.calendar_id" class="form-control form-select" id="calendar-id" aria-label="Default select example" @change="onCalendarChange" required>
-                    <option value="0">Select Calendar</option>
-                    <option v-for="val in calendarListVue" :value="val.id">{[ val.calendar_name ]}</option>
-                  </select>
-                </p> -->
-
-                <p>
-                  <!-- <input type="text" name="calendar_name" v-model="formData.calendar_name" class="form-control" id="calendar-name-id" placeholder="Calendar Name" required> -->
-                  <input type="text" name="calendar_name" id="calendar-name-id" v-model="formData.calendar_name" class="form-control" placeholder="Calendar Name" style="display:none;" required>
-                </p>
-                  
+                  </div>
                 </form>
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @click="nextModal">Next</button>
+                <button type="button" class="btn btn-primary" @click="nextModal">
+                  Next &nbsp;<i class="bi bi-arrow-right"></i>
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetFormData">Cancel</button>
               </div>
             </div>
-          </div>  
+          </div>
         </div>
-      
+
+        <!-- Event Modal - Step 2: Activity Details -->
         <div class="modal fade" id="modal2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-          <div class="modal-dialog modal-dialog-slideout">
+          <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="h5-Event2">Add Event</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="resetFormData"></button>
+              <div class="modal-header" style="background-color: #0d6efd; color: #fff;">
+                <div>
+                  <h5 class="modal-title mb-0" id="h5-Event2"><i class="bi bi-calendar-event"></i>&nbsp; Add Event</h5>
+                  <small style="opacity: 0.85; font-size: 12px;">Step 2 of 2 &mdash; Activity Details</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" @click="resetFormData"></button>
               </div>
-              <div class="modal-body">
-                <span style="font-size: 12px; font-weight:bold; color:blue;">Step 2/2</span>
-                <address></address>
+              <div class="modal-body px-4 py-3">
                 <form name="event-form" enctype="multipart/form-data">
-                  <!-- <input v-model="formData.calendar_desc" type="text" placeholder="Field 2" required> -->
-                  <p><input type="text" name="user_id" class="form-control" placeholder="Event title" v-model="formData.user_id" style="display: none;"></p>
-                  <p>
-                    <!-- <input type="text" name="event_title" class="form-control" id="event-title-input" placeholder="Event title" @keyup="handleEventTitleText" @change="handleEventTitleText" @click="handleEventTitleText" data-autocomplete-source="{% url 'suggest_event_titles' %}" required> -->
-                    <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px; margin: 5px 0;">Activity Title</span>
-                    <textarea name="event_title" class="form-control" id="event-title-input" placeholder="Activity title" @keyup="handleEventTitleText" @change="handleEventTitleText" @click="handleEventTitleText" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></textarea>
-                  </p>
-                  <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px;">Location details</span>
-                  <!-- Province searchable dropdown -->
-                  <p style="padding-top: 7px;">
-                    <div class="searchable-select-wrapper">
-                      <input type="text"
-                             class="form-control searchable-select-input"
-                             v-model="provinceSearch"
-                             placeholder="Search Province..."
-                             @focus="showProvinceDropdown = true"
-                             @blur="hideProvinceDropdown"
-                             autocomplete="off">
-                      <div v-if="showProvinceDropdown && filteredProvinceList.length > 0" class="searchable-dropdown-list">
-                        <div v-for="val in filteredProvinceList"
-                             :key="val.id"
-                             class="searchable-dropdown-item"
-                             :class="{ 'active': formData.event_location === val.id }"
-                             @mousedown="selectProvince(val)">
-                          {[ val.province ]}
-                        </div>
-                      </div>
-                      <div v-if="showProvinceDropdown && filteredProvinceList.length === 0" class="searchable-dropdown-list">
-                        <div class="searchable-dropdown-empty">No results found</div>
-                      </div>
-                    </div>
-                  </p>
-                  <!-- City/Municipality searchable dropdown -->
-                  <p>
-                    <div class="searchable-select-wrapper">
-                      <input type="text"
-                             class="form-control searchable-select-input"
-                             v-model="lguSearch"
-                             placeholder="Search City/Municipality..."
-                             @focus="showLguDropdown = true"
-                             @blur="hideLguDropdown"
-                             :disabled="formData.event_location === 0"
-                             autocomplete="off">
-                      <div v-if="showLguDropdown && filteredLguList.length > 0" class="searchable-dropdown-list">
-                        <div v-for="val in filteredLguList"
-                             :key="val.id"
-                             class="searchable-dropdown-item"
-                             :class="{ 'active': formData.event_location_lgu === val.id }"
-                             @mousedown="selectLgu(val)">
-                          {[ val.lgu ]}
-                        </div>
-                      </div>
-                      <div v-if="showLguDropdown && filteredLguList.length === 0" class="searchable-dropdown-list">
-                        <div class="searchable-dropdown-empty">No results found</div>
-                      </div>
-                    </div>
-                  </p>
-                  <!-- Barangay: searchable dropdown for CARAGA, free text for other regions -->
-                  <p>
-                    <template v-if="isCaraga">
-                      <div class="searchable-select-wrapper">
-                        <input type="text"
-                               class="form-control searchable-select-input"
-                               v-model="barangaySearch"
-                               placeholder="Search Barangay..."
-                               @focus="showBarangayDropdown = true"
-                               @blur="hideBarangayDropdown"
-                               :disabled="formData.event_location_lgu === 0"
-                               autocomplete="off">
-                        <div v-if="showBarangayDropdown && filteredBarangayList.length > 0" class="searchable-dropdown-list">
-                          <div v-for="val in filteredBarangayList"
-                               :key="val.id"
-                               class="searchable-dropdown-item"
-                               :class="{ 'active': formData.event_location_barangay === val.id }"
-                               @mousedown="selectBarangay(val)">
-                            {[ val.barangay ]}
+                  <!-- Hidden fields -->
+                  <input type="text" name="user_id" v-model="formData.user_id" style="display:none;">
+                  <input type="text" name="event_day_start" v-model="formData.event_day_start" id="editDayStart" style="display:none;">
+                  <input type="text" name="event_month_start" v-model="formData.event_month_start" id="editMonthStart" style="display:none;">
+                  <input type="text" name="event_year_start" v-model="formData.event_year_start" id="editYearStart" style="display:none;">
+                  <input type="text" name="event_time_start" v-model="formData.event_time_start" id="editTimeStart" style="display:none;">
+                  <input type="text" name="whole_date_start_searchable" v-model="formData.whole_date_start_searchable" id="editDStartSearchable" style="display:none;">
+                  <input type="text" name="event_day_end" v-model="formData.event_day_end" id="editDayEnd" style="display:none;">
+                  <input type="text" name="event_month_end" v-model="formData.event_month_end" id="editMonthEnd" style="display:none;">
+                  <input type="text" name="event_year_end" v-model="formData.event_year_end" id="editYearEnd" style="display:none;">
+                  <input type="text" name="event_time_end" v-model="formData.event_time_end" id="editTimeEnd" style="display:none;">
+                  <input type="text" name="whole_date_end_searchable" v-model="formData.whole_date_end_searchable" id="editDEndSearchable" style="display:none;">
+
+                  <!-- Activity Title -->
+                  <div class="mb-4">
+                    <label class="form-label fw-semibold">Activity Title <span class="text-danger">*</span></label>
+                    <textarea name="event_title" class="form-control" id="event-title-input" rows="2" placeholder="Enter activity title..." @keyup="handleEventTitleText" @change="handleEventTitleText" @click="handleEventTitleText" data-autocomplete-source="{% url 'suggest_event_titles' %}" required></textarea>
+                  </div>
+
+                  <!-- Location Section -->
+                  <div class="mb-4">
+                    <p class="fw-semibold text-muted mb-3" style="font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 1px solid #dee2e6; padding-bottom: 6px;">
+                      <i class="bi bi-geo-alt-fill text-primary"></i>&nbsp; Location
+                    </p>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">Province <span class="text-danger">*</span></label>
+                        <div class="searchable-select-wrapper">
+                          <input type="text" class="form-control searchable-select-input" v-model="provinceSearch" placeholder="Search Province..." @focus="showProvinceDropdown = true" @blur="hideProvinceDropdown" autocomplete="off">
+                          <div v-if="showProvinceDropdown && filteredProvinceList.length > 0" class="searchable-dropdown-list">
+                            <div v-for="val in filteredProvinceList" :key="val.id" class="searchable-dropdown-item" :class="{ 'active': formData.event_location === val.id }" @mousedown="selectProvince(val)">{[ val.province ]}</div>
+                          </div>
+                          <div v-if="showProvinceDropdown && filteredProvinceList.length === 0" class="searchable-dropdown-list">
+                            <div class="searchable-dropdown-empty">No results found</div>
                           </div>
                         </div>
-                        <div v-if="showBarangayDropdown && filteredBarangayList.length === 0" class="searchable-dropdown-list">
-                          <div class="searchable-dropdown-empty">No results found</div>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">City / Municipality <span class="text-danger">*</span></label>
+                        <div class="searchable-select-wrapper">
+                          <input type="text" class="form-control searchable-select-input" v-model="lguSearch" placeholder="Search City/Municipality..." @focus="showLguDropdown = true" @blur="hideLguDropdown" :disabled="formData.event_location === 0" autocomplete="off">
+                          <div v-if="showLguDropdown && filteredLguList.length > 0" class="searchable-dropdown-list">
+                            <div v-for="val in filteredLguList" :key="val.id" class="searchable-dropdown-item" :class="{ 'active': formData.event_location_lgu === val.id }" @mousedown="selectLgu(val)">{[ val.lgu ]}</div>
+                          </div>
+                          <div v-if="showLguDropdown && filteredLguList.length === 0" class="searchable-dropdown-list">
+                            <div class="searchable-dropdown-empty">No results found</div>
+                          </div>
                         </div>
                       </div>
-                    </template>
-                    <template v-else>
-                      <input type="text"
-                             class="form-control"
-                             v-model="barangaySearch"
-                             placeholder="Enter Barangay name"
-                             :disabled="formData.event_location_lgu === 0"
-                             autocomplete="off">
-                    </template>
-                  </p>
-                  <p><input type="text" name="event_location_district" class="form-control" v-model="formData.event_location_district" placeholder="District" id="editDistrict" required></p>
-                  <!-- <p><input type="text" name="event_location_barangay" class="form-control" v-model="formData.event_location_barangay" placeholder="Barangay" required></p> -->
-                  <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px;">Time details</span>
-                  <p style="padding-top: 7px; display: flex; justify-content: space-between;">
-                    <input type="datetime-local" name="whole_date_start" class="form-control" placeholder="Event Start" style="width: 48%" v-model="formData.whole_date_start" @change="updateStartDateFields" @input="updateStartDateFields" id="editDateStart" required>
-                    <input type="datetime-local" name="whole_date_end" class="form-control" placeholder="Event End" style="width: 48%" v-model="formData.whole_date_end" @change="updateEndDateFields" @input="updateEndDateFields" id="editDateEnd" required>
-                  </p>
-                  <p><input type="text" name="event_day_start" class="form-control" placeholder="Day Start"  v-model="formData.event_day_start" id="editDayStart" style="display:none;"></p>
-                  <p><input type="text" name="event_month_start" class="form-control" placeholder="Month Start"  v-model="formData.event_month_start" id="editMonthStart" style="display:none;"></p>
-                  <p><input type="text" name="event_year_start" class="form-control" placeholder="Year Start"  v-model="formData.event_year_start" id="editYearStart" style="display:none;"></p>
-                  <p><input type="text" name="event_time_start" class="form-control" placeholder="Time Start"  v-model="formData.event_time_start" id="editTimeStart" style="display:none;"></p>
-                   <p><input type="text" name="whole_date_start_searchable" class="form-control" v-model="formData.whole_date_start_searchable" id="editDStartSearchable" style="display:none;"></p>
-                  <!-- <p><input type="time" name="" class="form-control" placeholder="Time start" required></p> -->
-                  </p>
-                 
-                    <label class="form-check form-switch">
-                      <input name="event_all_day" v-model="formData.event_all_day" class="form-check-input" type="checkbox" id="customSwitch" @change="handleDateTimeChange">
-                      <span class="form-check-label" for="customSwitch">All day</span>
-                      &nbsp; &nbsp; <span class="form-check-label" style="font-size: 12px;"><a href="#" @click="checkEventDate($event)">Check date for conflicts</a></span>
-                    </label>
-                    
-                 
-                  <!-- <p><input type="time" name="" class="form-control" placeholder="Time end" required></p> -->
-                  <p><input type="text" name="event_day_end" class="form-control" v-model="formData.event_day_end" placeholder="Day End" id="editDayEnd" style="display:none;"></p>
-                  <p><input type="text" name="event_month_end" class="form-control" v-model="formData.event_month_end" placeholder="Month End" id="editMonthEnd" style="display:none;"></p>
-                  <p><input type="text" name="event_year_end" class="form-control" v-model="formData.event_year_end" placeholder="Year end" id="editYearEnd" style="display:none;"></p>
-                  <p><input type="text" name="event_time_end" class="form-control" v-model="formData.event_time_end" placeholder="Time end" id="editTimeEnd" style="display:none;"></p>
-                  <p><input type="text" name="whole_date_end_searchable" class="form-control" v-model="formData.whole_date_end_searchable" id="editDEndSearchable" style="display:none;"></p>
-                  <p><textarea name="event_desc" class="form-control" v-model="formData.event_desc" placeholder="Add a description" id="editEventDesc" required></textarea></p>
-                  <p><textarea name="participants" class="form-control" v-model="formData.participants" placeholder="Participants" id="editParticipants" required></textarea></p>
-                  <!-- <p><input type="file" name="file_attachment" v-model="formData.file_attachment" class="form-control"></p> -->
-                  <span class="badge rounded-pill text-bg-primary" style="font-family: Roboto,sans-serif; color:black; font-size: 11px;">Optional</span>
-                  <br>
-                  <span style="font-size:12px">File Attachment: <a href="#"><span id="fileAttachmentName"></span></a></span>
-                  <p style="padding-top: 7px;"><input type="file" name="file_attachment" class="form-control" id="editFileAttachment" @change="handleFileChange"></p>
-                
-                  <div class="modal-footer">
-                    <button class="btn btn-primary" id="saveButton" @click="saveEventData($event)">Save</button>
-                    <button class="btn btn-primary" id="updateButton" @click="saveEventData($event);">Update</button>
-                    <button type="button" @click="previousModal" class="btn btn-secondary" data-bs-target="#exampleModalToggle" data-bs-toggle="modal" data-bs-dismiss="modal">Back</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeButton" @click="resetFormData">Close</button>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">Barangay</label>
+                        <template v-if="isCaraga">
+                          <div class="searchable-select-wrapper">
+                            <input type="text" class="form-control searchable-select-input" v-model="barangaySearch" placeholder="Search Barangay..." @focus="showBarangayDropdown = true" @blur="hideBarangayDropdown" :disabled="formData.event_location_lgu === 0" autocomplete="off">
+                            <div v-if="showBarangayDropdown && filteredBarangayList.length > 0" class="searchable-dropdown-list">
+                              <div v-for="val in filteredBarangayList" :key="val.id" class="searchable-dropdown-item" :class="{ 'active': formData.event_location_barangay === val.id }" @mousedown="selectBarangay(val)">{[ val.barangay ]}</div>
+                            </div>
+                            <div v-if="showBarangayDropdown && filteredBarangayList.length === 0" class="searchable-dropdown-list">
+                              <div class="searchable-dropdown-empty">No results found</div>
+                            </div>
+                          </div>
+                        </template>
+                        <template v-else>
+                          <input type="text" class="form-control" v-model="barangaySearch" placeholder="Enter Barangay name" :disabled="formData.event_location_lgu === 0" autocomplete="off">
+                        </template>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">District</label>
+                        <input type="text" name="event_location_district" class="form-control" v-model="formData.event_location_district" placeholder="e.g. 1st District" id="editDistrict">
+                      </div>
+                    </div>
                   </div>
-                  
+
+                  <!-- Schedule Section -->
+                  <div class="mb-4">
+                    <p class="fw-semibold text-muted mb-3" style="font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 1px solid #dee2e6; padding-bottom: 6px;">
+                      <i class="bi bi-clock-fill text-primary"></i>&nbsp; Schedule
+                    </p>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">Start Date & Time <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="whole_date_start" class="form-control" v-model="formData.whole_date_start" @change="updateStartDateFields" @input="updateStartDateFields" id="editDateStart" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold">End Date & Time <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="whole_date_end" class="form-control" v-model="formData.whole_date_end" @change="updateEndDateFields" @input="updateEndDateFields" id="editDateEnd" required>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mt-2">
+                      <label class="form-check form-switch mb-0">
+                        <input name="event_all_day" v-model="formData.event_all_day" class="form-check-input" type="checkbox" id="customSwitch" @change="handleDateTimeChange">
+                        <span class="form-check-label">All day</span>
+                      </label>
+                      <a href="#" class="text-decoration-none small" @click="checkEventDate($event)">
+                        <i class="bi bi-search"></i> Check date for conflicts
+                      </a>
+                    </div>
+                  </div>
+
+                  <!-- Details Section -->
+                  <div class="mb-4">
+                    <p class="fw-semibold text-muted mb-3" style="font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 1px solid #dee2e6; padding-bottom: 6px;">
+                      <i class="bi bi-card-text text-primary"></i>&nbsp; Details
+                    </p>
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+                      <textarea name="event_desc" class="form-control" v-model="formData.event_desc" rows="3" placeholder="Add a description..." id="editEventDesc" required></textarea>
+                    </div>
+                    <div class="mb-1">
+                      <label class="form-label fw-semibold">Participants <span class="text-danger">*</span></label>
+                      <textarea name="participants" class="form-control" v-model="formData.participants" rows="2" placeholder="List participants..." id="editParticipants" required></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Attachment Section -->
+                  <div class="mb-2">
+                    <p class="fw-semibold text-muted mb-3" style="font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 1px solid #dee2e6; padding-bottom: 6px;">
+                      <i class="bi bi-paperclip text-primary"></i>&nbsp; Attachment <span class="text-muted fw-normal text-lowercase">(optional)</span>
+                    </p>
+                    <small class="text-muted d-block mb-1">Current: <a href="#"><span id="fileAttachmentName"></span></a></small>
+                    <input type="file" name="file_attachment" class="form-control" id="editFileAttachment" @change="handleFileChange">
+                  </div>
                 </form>
               </div>
-              
+              <div class="modal-footer">
+                <button class="btn btn-primary" id="saveButton" @click="saveEventData($event)"><i class="bi bi-save"></i>&nbsp; Save</button>
+                <button class="btn btn-primary" id="updateButton" @click="saveEventData($event);"><i class="bi bi-pencil-square"></i>&nbsp; Update</button>
+                <button type="button" @click="previousModal" class="btn btn-secondary" data-bs-target="#exampleModalToggle" data-bs-toggle="modal" data-bs-dismiss="modal"><i class="bi bi-arrow-left"></i>&nbsp; Back</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeButton" @click="resetFormData">Cancel</button>
+              </div>
             </div>
           </div>
         </div>
@@ -456,6 +433,14 @@
                       {% csrf_token %}
                       <input type="hidden" id="div-ID">
                       <div class="mb-3">
+                        <label class="form-label fw-semibold">Office <span class="text-danger">*</span></label>
+                        <select name="fk_office_id" class="form-control form-select" id="div-office-id" v-model="divFormData.fk_office_id" required>
+                          <option value="0">Select Office</option>
+                          <option v-for="val in officeListVue" :value="val.id">{[ val.office_initials ]} - {[ val.office_name ]}</option>
+                        </select>
+                        <div class="form-text">Office this division belongs to.</div>
+                      </div>
+                      <div class="mb-3">
                         <label class="form-label fw-semibold">Division Name <span class="text-danger">*</span></label>
                         <input type="text" name="division_name" class="form-control" id="division-name" v-model="divFormData.division_name" placeholder="e.g. SME Development Division" required>
                         <div class="form-text">Full name of the division.</div>
@@ -463,14 +448,6 @@
                       <div class="mb-3">
                         <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
                         <input type="text" name="division_desc" class="form-control" id="division-desc" v-model="divFormData.division_desc" placeholder="Brief description" required>
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label fw-semibold">Office</label>
-                        <select name="fk_office_id" class="form-control form-select" id="div-office-id" v-model="divFormData.fk_office_id">
-                          <option value="0">Select Office (optional)</option>
-                          <option v-for="val in officeListVue" :value="val.id">{[ val.office_initials ]} - {[ val.office_name ]}</option>
-                        </select>
-                        <div class="form-text">Office this division belongs to.</div>
                       </div>
                       <div class="modal-footer px-0">
                         <button class="btn btn-primary" id="div-save" @click="saveDivData($event)">
@@ -540,6 +517,22 @@
                       {% csrf_token %}
                       <input type="hidden" id="unit-ID">
                       <div class="mb-3">
+                        <label class="form-label fw-semibold">Office <span class="text-danger">*</span></label>
+                        <select name="fk_office_id" class="form-control form-select" id="unit-office-id" v-model="unitFormData.fk_office_id" @change="onUnitOfficeChange" required>
+                          <option value="0">Select Office</option>
+                          <option v-for="val in officeListVue" :value="val.id">{[ val.office_initials ]} - {[ val.office_name ]}</option>
+                        </select>
+                        <div class="form-text">Office this unit belongs to.</div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Division <span class="text-danger">*</span></label>
+                        <select name="division_id" class="form-control form-select" id="divList-id" v-model="unitFormData.division_id" @change="onDivChange" required>
+                          <option value="0">Select Division</option>
+                          <option v-for="val in unitFilteredDivisionList" :value="val.id">{[ val.division_name ]}</option>
+                        </select>
+                        <div class="form-text">Division this unit belongs to.</div>
+                      </div>
+                      <div class="mb-3">
                         <label class="form-label fw-semibold">Unit Name <span class="text-danger">*</span></label>
                         <input type="text" name="unit_name" class="form-control" id="id-unitName" v-model="unitFormData.unit_name" placeholder="e.g. Negosyo Center" required>
                         <div class="form-text">Full name of the unit.</div>
@@ -547,14 +540,6 @@
                       <div class="mb-3">
                         <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
                         <input type="text" name="description" class="form-control" id="id-unitDesc" v-model="unitFormData.description" placeholder="Brief description" required>
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label fw-semibold">Division <span class="text-danger">*</span></label>
-                        <select name="division_id" class="form-control form-select" id="divList-id" v-model="unitFormData.division_id" @change="onDivChange" required>
-                          <option value="0">Select Division</option>
-                          <option v-for="val in filteredDivisionList" :value="val.id">{[ val.division_name ]}</option>
-                        </select>
-                        <div class="form-text">Division this unit belongs to.</div>
                       </div>
                       <input type="hidden" name="division_name" id="div-name-id" v-model="unitFormData.division_name">
                       <div class="modal-footer px-0">
