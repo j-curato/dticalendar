@@ -74,6 +74,18 @@ def save_unit_ajax(request):
             return JsonResponse({'message': 'True'})
 
     return JsonResponse({'message': 'False'})
+
+
+@csrf_exempt
+def delete_unit_ajax(request):
+    if request.method == 'POST':
+        unit_id = request.POST.get('id')
+        unit = Unit.objects.filter(id=unit_id).first()
+        if unit:
+            unit.delete()
+            return JsonResponse({'message': 'True'})
+        return JsonResponse({'message': 'Unit not found'})
+    return JsonResponse({'message': 'False'})
         
 
 def get_unitList(request):
