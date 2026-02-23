@@ -9,6 +9,7 @@ const app = Vue.createApp({
             selectedFile: null, // Initialize selectedFile with null
             divisionListVue: [], // Initialize divisionList with an empty array
             filteredDivisionList: [], // Divisions filtered by the logged-in user's office
+            unitFilteredDivisionList: [], // Divisions filtered by selected office in Unit modal
             userOfficeId: 0, // Stores the logged-in user's assigned office ID permanently
             calendarListVue: [], // Initialize calendarList with an empty array
             ooListVue: [], // Initialize orgOutcomeList with an empty array
@@ -93,7 +94,8 @@ const app = Vue.createApp({
                 unit_name: '',
                 description: '',
                 division_id: 0,
-                division_name: ''
+                division_name: '',
+                fk_office_id: 0
 
             },
             divFormData:{
@@ -386,7 +388,7 @@ const app = Vue.createApp({
                     : this.barangaySearch;
                 const barangayId = this.isCaraga ? this.formData.event_location_barangay : 0;
 
-                buttonText = saveButton.textContent;
+                buttonText = 'Save';
                     
                     const formData = new FormData();
                     formData.append('buttontxt', buttonText);
@@ -503,7 +505,7 @@ const app = Vue.createApp({
                     : this.barangaySearch;
                 const barangayIdEdit = this.isCaraga ? this.formData.event_location_barangay : 0;
 
-                buttonText = updateButton.textContent;
+                buttonText = 'Update';
                     
                     const formData = new FormData();
                     formData.append('buttontxt', buttonText);
@@ -1436,6 +1438,8 @@ const app = Vue.createApp({
                 } else {
                     this.filteredDivisionList = this.divisionListVue;
                 }
+                // Initialize unit modal division list with all divisions
+                this.unitFilteredDivisionList = this.divisionListVue;
             })
             .catch(error => {
                 console.error('Error fetching division data:', error);
@@ -1817,6 +1821,20 @@ const app = Vue.createApp({
                 var divText = $("#divList-id option:selected").text();
                 this.unitFormData.division_name = divText;
 
+            },
+
+            onUnitOfficeChange(){
+                // Filter divisions by the selected office in the Unit modal
+                if (this.unitFormData.fk_office_id && this.unitFormData.fk_office_id !== 0) {
+                    this.unitFilteredDivisionList = this.divisionListVue.filter(
+                        d => d.fk_office_id === this.unitFormData.fk_office_id
+                    );
+                } else {
+                    this.unitFilteredDivisionList = this.divisionListVue;
+                }
+                // Reset division selection when office changes
+                this.unitFormData.division_id = 0;
+                this.unitFormData.division_name = '';
             },
 
         // Function to fetch events data based on formData.whole_date_start and formData.whole_date_end
@@ -2484,6 +2502,12 @@ const app = Vue.createApp({
                 self.unitFormData.description = data.description;
                 self.unitFormData.division_id = data.division_id;
                 self.unitFormData.division_name = data.division_name;
+                // Derive office from division and filter division list
+                const div = self.divisionListVue.find(d => d.id === data.division_id);
+                self.unitFormData.fk_office_id = div ? div.fk_office_id : 0;
+                self.unitFilteredDivisionList = self.unitFormData.fk_office_id
+                    ? self.divisionListVue.filter(d => d.fk_office_id === self.unitFormData.fk_office_id)
+                    : self.divisionListVue;
                 $('#myUnitModal').modal('show');
             }
         });
