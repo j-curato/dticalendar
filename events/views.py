@@ -685,6 +685,7 @@ def fetch_events_ajax(request):
         search_value = request.GET.get('search[value]', '')
         order_direction = request.GET.get('order[0][dir]', 'asc')
         sort_dir = 'DESC' if order_direction == 'desc' else 'ASC'
+        year = int(request.GET.get('year', timezone.now().year))
 
         # Fetch offices dynamically from tbl_offices
         offices = list(Office.objects.order_by('id').values_list('office_initials', flat=True))
@@ -721,6 +722,7 @@ def fetch_events_ajax(request):
                 FROM events_event
                 WHERE display_status = true
             ) AS date_series
+            WHERE EXTRACT(YEAR FROM generated_date) = {year}
             GROUP BY generated_date, office
         ) AS subquery
         GROUP BY generated_date
@@ -853,6 +855,7 @@ def fetch_events_by_div_ajax(request):
         start = int(request.GET.get('start', 0))
         length = int(request.GET.get('length', 10))
         search_value = request.GET.get('search[value]', '')
+        year = int(request.GET.get('year', timezone.now().year))
 
         # Fetch division names filtered by the selected office
         office = request.GET.get('office', '')
@@ -897,6 +900,7 @@ def fetch_events_by_div_ajax(request):
                     WHERE office = %s
                       AND display_status = true
                 ) AS date_series
+                WHERE EXTRACT(YEAR FROM generated_date) = {year}
                 GROUP BY generated_date, division_name
             ) AS subquery
             GROUP BY generated_date

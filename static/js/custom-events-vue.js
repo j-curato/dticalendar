@@ -77,9 +77,12 @@ const appEvents = Vue.createApp({
                         },
                 'processing': true,
                 'serverSide': true,
-                'ajax': { 
-                    'url': '/events/fetch-events-ajax/',  // Replace with your API endpoint
-                    'type': 'GET', 
+                'ajax': {
+                    'url': '/events/fetch-events-ajax/',
+                    'type': 'GET',
+                    'data': function(d) {
+                        d.year = $('#filterYear').val() || new Date().getFullYear();
+                    }
                 },
                 'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
                 'buttons': [
@@ -268,7 +271,7 @@ const appEvents = Vue.createApp({
                                 'type': 'GET',
                                 'data': function (d) {
                                     d.office = $("#office-txt").val();
-                                    console.log(d);
+                                    d.year = $('#filterYear').val() || new Date().getFullYear();
                                 }
                             },
                             'dom': 'Bfrtip<"clear">l',
@@ -530,6 +533,16 @@ const appEvents = Vue.createApp({
             }else{
                 //redirect to the events page
                 window.location.href = "/events/get_eventsList/";
+            }
+        },
+
+        filterByYear() {
+            // Reload whichever DataTable is currently visible
+            if ($.fn.DataTable.isDataTable('#eventsDisplayTable')) {
+                $('#eventsDisplayTable').DataTable().ajax.reload();
+            }
+            if ($.fn.DataTable.isDataTable('#eventsDivDisplayTable')) {
+                $('#eventsDivDisplayTable').DataTable().ajax.reload();
             }
         },
 

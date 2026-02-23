@@ -14,10 +14,9 @@ def get_offices_list(request):
 
 
 @login_required
+@login_required
 def get_office_details(request):
-    """Server-side DataTable for offices - superusers only."""
-    if not request.user.is_superuser:
-        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    """Server-side DataTable for offices - all logged-in users can view."""
     try:
         draw = int(request.GET.get('draw', 1))
         start = int(request.GET.get('start', 0))
