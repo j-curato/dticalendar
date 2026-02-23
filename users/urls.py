@@ -18,5 +18,10 @@ urlpatterns = [
     path('api/calendars/', views.get_calendars, name='get_calendars'),
     path('api/current-user-office/', views.get_current_user_office, name='get_current_user_office'),
     path('logout/', views.logout_view, name='logout'),
-    
+
+    # Forgot password URLs
+    path('password-reset/', auth_views.PasswordResetView.as_view(template_name='registration/password_reset_form.html'), name='password_reset'),
+    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='registration/password_reset_done.html'), name='password_reset_done'),
+    path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='registration/password_reset_confirm.html'), name='password_reset_confirm'),
+    path('password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),
 ]
