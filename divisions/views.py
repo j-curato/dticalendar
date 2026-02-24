@@ -6,6 +6,22 @@ from django.template import loader
 from .models import Division
 from django.db.models import Q
 from django.db.models.functions import Lower
+from django.contrib.auth.decorators import login_required
+
+
+def _can_manage(user, office_id=None):
+    """True if user is superuser OR (office_admin AND office matches or shared resource)."""
+    if user.is_superuser:
+        return True
+    try:
+        if user.profile.is_office_admin:
+            if office_id is None:
+                return True  # shared resources (OO, PAPs)
+            return str(user.profile.fk_office_id) == str(office_id)
+    except Exception:
+        return False
+    return False
+
 
 # Create your views here.
 def save_division(request):
@@ -17,13 +33,14 @@ def save_division(request):
         return HttpResponse('Division saved successfully')
     else:
         return HttpResponse('Invalid method')
-    
+
 # get org outcome list using ajax and return json response and save to data variable
 def get_divList(request):
     divList = Division.objects.all()
     data = [{'id': div.id, 'div_name': div.division_name} for div in divList]
     return JsonResponse(data, safe=False)
 
+@login_required
 @csrf_exempt
 def save_div_ajax(request):
     if request.method == 'POST':
@@ -33,6 +50,8 @@ def save_div_ajax(request):
             existing_division = Division.objects.filter(id=divPrimaryID).first()
 
             if existing_division:
+                if not _can_manage(request.user, existing_division.fk_office_id):
+                    return JsonResponse({'message': 'Unauthorized'}, status=403)
 
                 if existing_division.division_name != request.POST['division_name'].upper():
                     existing_division.division_name = request.POST['division_name'].upper()
@@ -50,12 +69,15 @@ def save_div_ajax(request):
                 return JsonResponse({'message': 'True'})
             else:
                 return JsonResponse({'message': 'Division not found'})
-                
+
         elif request.POST['buttonDivTxt'] == 'Save':
+            fk_office_id = request.POST.get('fk_office_id')
+            if not _can_manage(request.user, fk_office_id):
+                return JsonResponse({'message': 'Unauthorized'}, status=403)
+
             div = Division()
             div.division_name = request.POST['division_name'].upper()
             div.division_desc = request.POST['division_desc'].upper()
-            fk_office_id = request.POST.get('fk_office_id')
             if fk_office_id:
                 div.fk_office_id = fk_office_id
             # Save the new division
@@ -65,12 +87,15 @@ def save_div_ajax(request):
     return JsonResponse({'message': 'False'})
 
 
+@login_required
 @csrf_exempt
 def delete_div_ajax(request):
     if request.method == 'POST':
         div_id = request.POST.get('id')
         division = Division.objects.filter(id=div_id).first()
         if division:
+            if not _can_manage(request.user, division.fk_office_id):
+                return JsonResponse({'message': 'Unauthorized'}, status=403)
             division.delete()
             return JsonResponse({'message': 'True'})
         return JsonResponse({'message': 'Division not found'})
@@ -99,12 +124,12 @@ def get_division_details(request):
 
         #Create a Q object for filtering based on the search_value in all columns
         search_filter = Q()
-        for col in columns: 
+        for col in columns:
             search_filter |= Q(**{f'{col}__icontains': search_value})
 
         # Filter the events based on the search_value
         divisionList = Division.objects.filter(search_filter)
-        
+
         #events = Event.objects.filter(search_filter)
 
         # Get the total count of events (before filtering)
@@ -124,9 +149,9 @@ def get_division_details(request):
             else:
                 divisionList = divisionList.order_by(f'-{sort_col}')
 
-        # Count of records after filtering 
+        # Count of records after filtering
         filtered_records = divisionList.count()
-        
+
         # Slice the events based on DataTables pagination
         divisionList = divisionList[start:start + length]
 

@@ -11,6 +11,7 @@ class UserProfile(models.Model):
         blank=True,
         db_column='fk_office_id'
     )
+    is_office_admin = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'users_userprofile'

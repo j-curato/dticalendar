@@ -18,6 +18,9 @@ urlpatterns = [
     path('api/calendars/', views.get_calendars, name='get_calendars'),
     path('api/current-user-office/', views.get_current_user_office, name='get_current_user_office'),
     path('logout/', views.logout_view, name='logout'),
+    path('manage/', views.manage_users, name='manage-users'),
+    path('api/get-users/', views.get_users_ajax, name='get-users-ajax'),
+    path('api/update-user/', views.update_user_ajax, name='update-user-ajax'),
 
     # Forgot password URLs
     path('password-reset/', auth_views.PasswordResetView.as_view(template_name='registration/password_reset_form.html'), name='password_reset'),

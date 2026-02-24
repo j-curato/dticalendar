@@ -4,23 +4,30 @@ from django.template import loader
 from .models import OrgOutcome
 from django.db.models import Q
 from django.db.models.functions import Lower
+from django.contrib.auth.decorators import login_required
+
+
+def _is_authorized(user):
+    """True if user is superuser or office admin."""
+    if user.is_superuser:
+        return True
+    try:
+        return user.profile.is_office_admin
+    except Exception:
+        return False
+
 
 # Create your views here.
 # Save org outcome using ajax
+@login_required
 @csrf_exempt
 def save_orgOutcome(request):
-    # if request.method == 'POST':
-    #     org_outcome = OrgOutcome()
-    #     org_outcome.org_outcome = request.POST['org_outcome'].upper()
-    #     org_outcome.description = request.POST['description'].upper()
-    #     org_outcome.save()
-    #     return JsonResponse({'message': 'True'})
-    # else:
-    #     return JsonResponse({'message': 'False'})
-
     if request.method == 'POST':
+        if not _is_authorized(request.user):
+            return JsonResponse({'message': 'Unauthorized'}, status=403)
+
         if request.POST['oobtntxt'] == 'Update':
-            # Fetch existing division based on id
+            # Fetch existing org outcome based on id
             ooPrimaryID = request.POST['id']
             existing_oo = OrgOutcome.objects.filter(id=ooPrimaryID).first()
 
@@ -32,28 +39,38 @@ def save_orgOutcome(request):
                 if existing_oo.description != request.POST['description'].upper():
                     existing_oo.description = request.POST['description'].upper()
 
-                    # Save the updated division
+                    # Save the updated org outcome
                 existing_oo.save()
 
                 return JsonResponse({'message': 'True'})
             else:
-                return JsonResponse({'message': 'Division not found'})
-                
+                return JsonResponse({'message': 'Org Outcome not found'})
+
         elif request.POST['oobtntxt'] == 'Save':
+            name = request.POST['org_outcome'].strip()
+            # Duplicate detection (case-insensitive)
+            if OrgOutcome.objects.filter(org_outcome__iexact=name).exists():
+                existing = OrgOutcome.objects.filter(org_outcome__iexact=name).first()
+                return JsonResponse({'message': 'Duplicate', 'existing_name': existing.org_outcome}, status=400)
+
             oo = OrgOutcome()
-            oo.org_outcome = request.POST['org_outcome'].upper()
+            oo.org_outcome = name.upper()
             oo.description = request.POST['description'].upper()
-            
-            # Save the new division
+
+            # Save the new org outcome
             oo.save()
             return JsonResponse({'message': 'True'})
 
     return JsonResponse({'message': 'False'})
 
 
+@login_required
 @csrf_exempt
 def delete_oo_ajax(request):
     if request.method == 'POST':
+        if not _is_authorized(request.user):
+            return JsonResponse({'message': 'Unauthorized'}, status=403)
+
         oo_id = request.POST.get('id')
         oo = OrgOutcome.objects.filter(id=oo_id).first()
         if oo:
@@ -71,18 +88,13 @@ def get_ooList(request):
 # get oo details and return json response to be displayed using server-side datatables
 def get_oo_details(request):
     try:
-        # Filter the events based on DataTables parameters
-        # This includes pagination and filtering based on search
-        # term, if provided by DataTables.
         draw = int(request.GET.get('draw', 1))
         start = int(request.GET.get('start', 0))
         length = int(request.GET.get('length', 10))
         search_value = request.GET.get('search[value]', '')
-        # Declare variables to be used for datatables sorting
         order_column_index = int(request.GET.get('order[0][column]', 0))
         order_direction = request.GET.get('order[0][dir]', 'asc')
 
-        # Print the values for debugging
         print("order_column_index:", order_column_index)
         print("order_direction:", order_direction)
 
@@ -91,19 +103,16 @@ def get_oo_details(request):
 
         #Create a Q object for filtering based on the search_value in all columns
         search_filter = Q()
-        for col in columns: 
+        for col in columns:
             search_filter |= Q(**{f'{col}__icontains': search_value})
 
-        # Filter the events based on the search_value
+        # Filter based on the search_value
         ooList = OrgOutcome.objects.filter(search_filter)
-        
-        #events = Event.objects.filter(search_filter)
 
-        # Get the total count of events (before filtering)
+        # Get the total count (before filtering)
         total_records = OrgOutcome.objects.count()
 
-        # Apply sorting based on the column index and direction
-       # Apply sorting based on the column index and direction
+        # Apply sorting
         if order_direction == 'asc':
             if columns[order_column_index] in ['org_outcome', 'description']:
                 ooList = ooList.order_by(Lower(columns[order_column_index]))
@@ -115,10 +124,10 @@ def get_oo_details(request):
             else:
                 ooList = ooList.order_by(f'-{columns[order_column_index]}')
 
-        # Count of records after filtering 
+        # Count of records after filtering
         filtered_records = ooList.count()
-        
-        # Slice the events based on DataTables pagination
+
+        # Slice based on DataTables pagination
         ooList = ooList[start:start + length]
 
         # Format the data for DataTables
@@ -130,7 +139,6 @@ def get_oo_details(request):
                 'description': oo.description,
         })
 
-        # Prepare the JSON response
         response_data = {
             'draw': draw,
             'recordsTotal': total_records,
