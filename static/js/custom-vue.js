@@ -192,6 +192,10 @@ const app = Vue.createApp({
         callDivFunctions(){
             this.showDivModal();
             this.resetDivFormData();
+            if (IS_OFFICE_ADMIN && !IS_SUPERUSER) {
+                this.divFormData.fk_office_id = USER_OFFICE_ID;
+                $('#div-office-id').prop('disabled', true);
+            }
         },
 
         callUnitFunctions(){
@@ -201,6 +205,11 @@ const app = Vue.createApp({
             this.showUnitModal();
 
             this.resetUnitFormData();
+            if (IS_OFFICE_ADMIN && !IS_SUPERUSER) {
+                this.unitFormData.fk_office_id = USER_OFFICE_ID;
+                this.unitFilteredDivisionList = this.divisionListVue.filter(d => d.fk_office_id === USER_OFFICE_ID);
+                $('#unit-office-id').prop('disabled', true);
+            }
         },
 
         fetchDivisionList() {
@@ -665,26 +674,28 @@ const app = Vue.createApp({
                     }
                     return response.json(); // Assuming the server returns JSON data
                 })
-                .then(data => {
-                    // if message is true, then show the toast notification
-                    if (data.message) {
-                    // call the showToast() method and change the toast message to "Org Outcome saved successfully!"
-                    this.message = "Org Outcome saved successfully!";
-                    // call the showToast() method to show the toast notification
-                    this.showToast();
-                    console.log("Data saved successfully:", data);
-                    // reset the form data
-                    $('#oodataTable').DataTable().ajax.reload();
-                    this.orgFormData.org_outcome = '';
-                    this.orgFormData.description = '';
-                } // end of if (data.message)
-                else {
-                    // Handle a failed response
-                    console.log("Data save failed:", data);
-                }
-                }) // end of the first .then()
+                .then(response => {
+                    if (response.status === 400) {
+                        return response.json().then(data => {
+                            if (data.message === 'Duplicate') {
+                                alert('This entry already exists: "' + data.existing_name + '". Please use a different name.');
+                            }
+                        });
+                    }
+                    return response.json().then(data => {
+                        if (data.message === 'True') {
+                            this.message = "Org Outcome saved successfully!";
+                            this.showToast();
+                            console.log("Data saved successfully:", data);
+                            $('#oodataTable').DataTable().ajax.reload();
+                            this.orgFormData.org_outcome = '';
+                            this.orgFormData.description = '';
+                        } else {
+                            console.log("Data save failed:", data);
+                        }
+                    });
+                })
                 .catch(error => {
-                    // Handle errors
                     console.error("Error while saving data:", error);
                 });
 
@@ -764,29 +775,30 @@ const app = Vue.createApp({
                     }
                     return response.json(); // Assuming the server returns JSON data
                 })
-                .then(data => {
-                    // if message is true, then show the toast notification
-                    if (data.message) {
-                    // call the showToast() method and change the toast message to "PAPs saved successfully!"
-                    this.message = "PAP details added";
-                    // call the showToast() method to show the toast notification
-                    this.showToast();
-                    console.log("Data saved successfully:", data.message);
-                    // reset the form data
-                    this.papsFormData.pap = '';
-                    this.papsFormData.description = '';
-                    this.papsFormData.org_outcome_id = 0;
-                    this.papsFormData.oo_name = '';
-                    $('#papdataTable').DataTable().ajax.reload();
-                } // end of if (data.message)
-                else {
-                    // Handle a failed response
-                    console.log("Data save failed:", data.message);
-                }
-                }
-                ) // end of the first .then()
+                .then(response => {
+                    if (response.status === 400) {
+                        return response.json().then(data => {
+                            if (data.message === 'Duplicate') {
+                                alert('This entry already exists: "' + data.existing_name + '". Please use a different name.');
+                            }
+                        });
+                    }
+                    return response.json().then(data => {
+                        if (data.message === 'True') {
+                            this.message = "PAP details added";
+                            this.showToast();
+                            console.log("Data saved successfully:", data.message);
+                            this.papsFormData.pap = '';
+                            this.papsFormData.description = '';
+                            this.papsFormData.org_outcome_id = 0;
+                            this.papsFormData.oo_name = '';
+                            $('#papdataTable').DataTable().ajax.reload();
+                        } else {
+                            console.log("Data save failed:", data.message);
+                        }
+                    });
+                })
                 .catch(error => {
-                    // Handle errors
                     console.error("Error while saving data:", error);
                 });
 
@@ -1332,20 +1344,19 @@ const app = Vue.createApp({
                         'width': '20%',
                         'className': 'text-center',
                         'render': function(data, type, row) {
-                            if (IS_SUPERUSER) {
-                                return `
-                                    <button class="btn btn-sm btn-outline-primary office-edit-btn me-1"
-                                        data-id="${row.id}" data-initials="${row.office_initials}" data-name="${row.office_name}">
-                                        <i class="bi bi-pencil-square"></i> Edit
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger office-delete-btn"
-                                        data-id="${row.id}" data-name="${row.office_name}">
-                                        <i class="bi bi-trash3"></i> Delete
-                                    </button>
-                                `;
-                            } else {
-                                return `<span class="text-muted small"><i class="bi bi-lock-fill"></i> Admin only</span>`;
-                            }
+                            let editBtn = (IS_SUPERUSER || (IS_OFFICE_ADMIN && row.id == USER_OFFICE_ID))
+                                ? `<button class="btn btn-sm btn-outline-primary office-edit-btn me-1"
+                                    data-id="${row.id}" data-initials="${row.office_initials}" data-name="${row.office_name}">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                   </button>`
+                                : `<span class="text-muted small"><i class="bi bi-lock-fill"></i> Admin only</span>`;
+                            let deleteBtn = IS_SUPERUSER
+                                ? `<button class="btn btn-sm btn-outline-danger office-delete-btn"
+                                    data-id="${row.id}" data-name="${row.office_name}">
+                                    <i class="bi bi-trash3"></i> Delete
+                                   </button>`
+                                : '';
+                            return editBtn + ' ' + deleteBtn;
                         }
                     }
                 ],
@@ -1442,8 +1453,14 @@ const app = Vue.createApp({
                 } else {
                     this.filteredDivisionList = this.divisionListVue;
                 }
-                // Initialize unit modal division list with all divisions
-                this.unitFilteredDivisionList = this.divisionListVue;
+                // Initialize unit modal division list: filter by office if one is pre-selected, else show all
+                if (this.unitFormData.fk_office_id && this.unitFormData.fk_office_id !== 0) {
+                    this.unitFilteredDivisionList = this.divisionListVue.filter(
+                        d => d.fk_office_id === this.unitFormData.fk_office_id
+                    );
+                } else {
+                    this.unitFilteredDivisionList = this.divisionListVue;
+                }
             })
             .catch(error => {
                 console.error('Error fetching division data:', error);
@@ -1968,12 +1985,14 @@ const app = Vue.createApp({
             // Reset the division form data to initial values
             Object.assign(this.divFormData, this.$options.data().divFormData);
             $("#div-ID").val("");
+            $('#div-office-id').prop('disabled', false);
          },
 
          resetUnitFormData(){
             // Reset the unit form data to initial values
             Object.assign(this.unitFormData, this.$options.data().unitFormData);
             $("#unit-ID").val('');
+            $('#unit-office-id').prop('disabled', false);
          },
 
          resetOoFormData(){
@@ -1995,6 +2014,9 @@ const app = Vue.createApp({
         const self = this;
     
         $(function() {
+
+            // Guard: only run profile-page code if the main profile elements exist
+            if (!document.getElementById('closeButton')) return;
 
             document.getElementById('closeButton').addEventListener('click', function () {
 
@@ -2373,7 +2395,7 @@ const app = Vue.createApp({
                         'width': '20%',
                         'className': 'text-center',
                         'render': function(data, type, row) {
-                            if (IS_SUPERUSER) {
+                            if (IS_SUPERUSER || (IS_OFFICE_ADMIN && row.fk_office_id == USER_OFFICE_ID)) {
                                 return `
                                     <button class="btn btn-sm btn-outline-primary div-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
                                     <button class="btn btn-sm btn-outline-danger div-delete-btn" data-id="${row.id}" data-name="${row.division_name}"><i class="bi bi-trash3"></i> Delete</button>
@@ -2402,6 +2424,9 @@ const app = Vue.createApp({
                     self.divFormData.division_name = data.division_name;
                     self.divFormData.division_desc = data.division_desc;
                     self.divFormData.fk_office_id = data.fk_office_id || 0;
+                    if (IS_OFFICE_ADMIN && !IS_SUPERUSER) {
+                        $('#div-office-id').prop('disabled', true);
+                    }
                     $('#myDivModal').modal('show');
                 }
             });
@@ -2471,6 +2496,7 @@ const app = Vue.createApp({
                 {'data': 'unit_name', 'searchable': true, 'sortable': true},
                 {'data': 'description', 'searchable': true, 'sortable': true},
                 {'data': 'division_name', 'searchable': true, 'sortable': true},
+                {'data': 'office_initials', 'searchable': false, 'sortable': false},
                 {'data': 'division_id', 'searchable': true, 'sortable': true},
                 {
                     'data': null,
@@ -2479,7 +2505,7 @@ const app = Vue.createApp({
                     'width': '20%',
                     'className': 'text-center',
                     'render': function(data, type, row) {
-                        if (IS_SUPERUSER) {
+                        if (IS_SUPERUSER || (IS_OFFICE_ADMIN && row.fk_office_id == USER_OFFICE_ID)) {
                             return `
                                 <button class="btn btn-sm btn-outline-primary unit-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
                                 <button class="btn btn-sm btn-outline-danger unit-delete-btn" data-id="${row.id}" data-name="${row.unit_name}"><i class="bi bi-trash3"></i> Delete</button>
@@ -2491,7 +2517,7 @@ const app = Vue.createApp({
                 }
             ],
             columnDefs: [
-                { targets: [4], visible: false }
+                { targets: [5], visible: false }
             ],
             'order': [[0, 'desc']], // Order by ID column, descending
 
@@ -2520,6 +2546,9 @@ const app = Vue.createApp({
                 self.unitFilteredDivisionList = self.unitFormData.fk_office_id
                     ? self.divisionListVue.filter(d => d.fk_office_id === self.unitFormData.fk_office_id)
                     : self.divisionListVue;
+                if (IS_OFFICE_ADMIN && !IS_SUPERUSER) {
+                    $('#unit-office-id').prop('disabled', true);
+                }
                 $('#myUnitModal').modal('show');
             }
         });
@@ -2596,7 +2625,7 @@ const app = Vue.createApp({
                     'width': '20%',
                     'className': 'text-center',
                     'render': function(data, type, row) {
-                        if (IS_SUPERUSER) {
+                        if (IS_SUPERUSER || IS_OFFICE_ADMIN) {
                             return `
                                 <button class="btn btn-sm btn-outline-primary oo-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
                                 <button class="btn btn-sm btn-outline-danger oo-delete-btn" data-id="${row.id}" data-name="${row.org_outcome}"><i class="bi bi-trash3"></i> Delete</button>
@@ -2703,7 +2732,7 @@ const app = Vue.createApp({
                     'width': '15%',
                     'className': 'text-center',
                     'render': function(data, type, row) {
-                        if (IS_SUPERUSER) {
+                        if (IS_SUPERUSER || IS_OFFICE_ADMIN) {
                             return `
                                 <button class="btn btn-sm btn-outline-primary pap-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
                                 <button class="btn btn-sm btn-outline-danger pap-delete-btn" data-id="${row.id}" data-name="${row.pap}"><i class="bi bi-trash3"></i> Delete</button>
@@ -2764,7 +2793,7 @@ const app = Vue.createApp({
     }); // end of the function
 
         //Datatables serverside for displaying events in different field sequence
-        tableEvents = $('#eventsDisplayTable').DataTable({
+        if ($('#eventsDisplayTable').length) tableEvents = $('#eventsDisplayTable').DataTable({
             'processing': true,
             'serverSide': true,
             'ajax': { 

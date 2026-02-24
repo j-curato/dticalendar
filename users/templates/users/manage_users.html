@@ -1,0 +1,209 @@
+{% extends 'users/master.html' %}
+
+{% block title %}
+    User Management
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0"><i class="bi bi-people-fill"></i> User Management</h5>
+    <a href="{% url 'profile' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left"></i> Back to Profile
+    </a>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <table id="userdataTable" class="display table table-hover" style="width:100%">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Office</th>
+            <th>Role</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Office</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color: #0d6efd; color: #fff;">
+        <h5 class="modal-title" id="editUserModalLabel"><i class="bi bi-person-gear"></i> Edit User Role</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% csrf_token %}
+        <input type="hidden" id="editUserId">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Username</label>
+          <input type="text" class="form-control" id="editUserUsername" disabled>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Office Assignment</label>
+          <select class="form-select" id="editUserOffice">
+            <option value="0">-- No Office --</option>
+          </select>
+          <div class="form-text">The office this user belongs to.</div>
+        </div>
+        <div class="mb-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="editUserIsOfficeAdmin">
+            <label class="form-check-label fw-semibold" for="editUserIsOfficeAdmin">
+              Office Admin
+            </label>
+          </div>
+          <div class="form-text">Office admins can add/edit/delete data within their assigned office.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="saveUserBtn" onclick="saveUserData()">
+          <i class="bi bi-save"></i> Save
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var userDataTable;
+
+$(function() {
+    // Initialize user management DataTable
+    userDataTable = $('#userdataTable').DataTable({
+        'processing': true,
+        'serverSide': true,
+        'ajax': {
+            'url': '/users/api/get-users/',
+            'type': 'GET',
+        },
+        'dom': 'Bfrtip<"clear">l',
+        'buttons': [
+            { extend: 'copy', exportOptions: { columns: ':not(:last-child)' } },
+            { extend: 'csv', exportOptions: { columns: ':not(:last-child)' } },
+            { extend: 'excel', exportOptions: { columns: ':not(:last-child)' } },
+            { extend: 'pdf', exportOptions: { columns: ':not(:last-child)' } },
+            { extend: 'print', exportOptions: { columns: ':not(:last-child)' } },
+        ],
+        'columns': [
+            { 'data': 'id', 'searchable': false, 'sortable': true, 'width': '5%' },
+            { 'data': 'username', 'searchable': true, 'sortable': true },
+            { 'data': 'email', 'searchable': true, 'sortable': true },
+            { 'data': 'office_initials', 'searchable': false, 'sortable': false, 'width': '10%' },
+            {
+                'data': null,
+                'searchable': false,
+                'orderable': false,
+                'width': '15%',
+                'render': function(data, type, row) {
+                    if (row.is_superuser) {
+                        return '<span class="badge bg-danger">Superuser</span>';
+                    } else if (row.is_office_admin) {
+                        return '<span class="badge bg-primary">Office Admin</span>';
+                    } else {
+                        return '<span class="badge bg-secondary">Regular User</span>';
+                    }
+                }
+            },
+            {
+                'data': null,
+                'searchable': false,
+                'orderable': false,
+                'width': '10%',
+                'className': 'text-center',
+                'render': function(data, type, row) {
+                    return `<button class="btn btn-sm btn-outline-primary user-edit-btn"
+                        data-id="${row.id}"
+                        data-username="${row.username}"
+                        data-office-id="${row.fk_office_id}"
+                        data-is-admin="${row.is_office_admin}">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </button>`;
+                }
+            }
+        ],
+        'order': [[0, 'asc']],
+    });
+
+    // Populate office dropdown in edit modal
+    fetch('/offices/api/get-offices-list/')
+        .then(r => r.json())
+        .then(offices => {
+            const select = document.getElementById('editUserOffice');
+            offices.forEach(o => {
+                const opt = document.createElement('option');
+                opt.value = o.id;
+                opt.textContent = o.office_initials + ' - ' + o.office_name;
+                select.appendChild(opt);
+            });
+        });
+
+    // Edit button click handler
+    $('#userdataTable tbody').on('click', '.user-edit-btn', function() {
+        const id = $(this).data('id');
+        const username = $(this).data('username');
+        const officeId = $(this).data('office-id');
+        const isAdmin = $(this).data('is-admin');
+
+        document.getElementById('editUserId').value = id;
+        document.getElementById('editUserUsername').value = username;
+        document.getElementById('editUserOffice').value = officeId || 0;
+        document.getElementById('editUserIsOfficeAdmin').checked = (isAdmin === true || isAdmin === 'True');
+
+        const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        modal.show();
+    });
+});
+
+function saveUserData() {
+    const userId = document.getElementById('editUserId').value;
+    const officeId = document.getElementById('editUserOffice').value;
+    const isOfficeAdmin = document.getElementById('editUserIsOfficeAdmin').checked;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('fk_office_id', officeId);
+    formData.append('is_office_admin', isOfficeAdmin ? 'true' : 'false');
+
+    fetch('/users/api/update-user/', {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-CSRFToken': csrfToken }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.message === 'True') {
+            bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+            userDataTable.ajax.reload();
+        } else {
+            alert('Failed to update user: ' + data.message);
+        }
+    })
+    .catch(err => {
+        console.error('Error updating user:', err);
+        alert('An error occurred while saving.');
+    });
+}
+</script>
+
+{% endblock %}

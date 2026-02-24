@@ -6,6 +6,18 @@ from django.db.models.functions import Lower
 from .models import Office
 
 
+def _can_manage_office(user, office_id=None):
+    """True if superuser, or office_admin updating their own office."""
+    if user.is_superuser:
+        return True
+    try:
+        if user.profile.is_office_admin and office_id is not None:
+            return str(user.profile.fk_office_id) == str(office_id)
+    except Exception:
+        return False
+    return False
+
+
 def get_offices_list(request):
     """Return all offices as JSON for dropdowns."""
     offices = Office.objects.all().order_by('office_initials')
@@ -63,29 +75,31 @@ def get_office_details(request):
 @login_required
 @csrf_exempt
 def save_office_ajax(request):
-    """Save or update an office - superusers only."""
-    if not request.user.is_superuser:
-        return JsonResponse({'message': 'Unauthorized'}, status=403)
-
+    """Save or update an office."""
     if request.method == 'POST':
         btn_txt = request.POST.get('officeBtnTxt', '')
 
-        if btn_txt == 'Update':
-            office_id = request.POST.get('id')
-            office = Office.objects.filter(id=office_id).first()
-            if office:
-                office.office_initials = request.POST.get('office_initials', '').upper()
-                office.office_name = request.POST.get('office_name', '').upper()
-                office.save()
-                return JsonResponse({'message': 'True'})
-            return JsonResponse({'message': 'Office not found'})
-
-        elif btn_txt == 'Save':
+        if btn_txt == 'Save':
+            # Only superusers can create new offices
+            if not request.user.is_superuser:
+                return JsonResponse({'message': 'Unauthorized'}, status=403)
             office = Office()
             office.office_initials = request.POST.get('office_initials', '').upper()
             office.office_name = request.POST.get('office_name', '').upper()
             office.save()
             return JsonResponse({'message': 'True'})
+
+        elif btn_txt == 'Update':
+            office_id = request.POST.get('id')
+            office = Office.objects.filter(id=office_id).first()
+            if office:
+                if not _can_manage_office(request.user, office.id):
+                    return JsonResponse({'message': 'Unauthorized'}, status=403)
+                office.office_initials = request.POST.get('office_initials', '').upper()
+                office.office_name = request.POST.get('office_name', '').upper()
+                office.save()
+                return JsonResponse({'message': 'True'})
+            return JsonResponse({'message': 'Office not found'})
 
     return JsonResponse({'message': 'False'})
 

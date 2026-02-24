@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpRequest
 from django.db.models.functions import Lower
 from events.models import Event
@@ -13,6 +14,8 @@ from calendars.models import Calendar
 from divisions.models import Division
 from orgoutcomes.models import OrgOutcome
 from provinces.models import Province
+from offices.models import Office
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.db.models import OuterRef, Subquery
 from django.db.models import F, Min
@@ -403,6 +406,116 @@ def logout_view(request):
     logout(request)
     # Redirect to a page after logout (e.g., home page)
     return redirect('/users/login/')  # Replace 'home' with the name of your desired redirect URL
+
+
+# ===== USER MANAGEMENT VIEWS (superuser only) =====
+
+def manage_users(request):
+    """Render the user management page — superuser only."""
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if not request.user.is_superuser:
+        return redirect('profile')
+    txturl = 'profile'
+    return render(request, 'users/manage_users.html', {'txturl': txturl})
+
+
+def get_users_ajax(request):
+    """Server-side DataTable for user management — superuser only."""
+    if not request.user.is_superuser:
+        return JsonResponse({'message': 'Unauthorized'}, status=403)
+
+    try:
+        draw = int(request.GET.get('draw', 1))
+        start = int(request.GET.get('start', 0))
+        length = int(request.GET.get('length', 10))
+        search_value = request.GET.get('search[value]', '')
+        order_column_index = int(request.GET.get('order[0][column]', 0))
+        order_direction = request.GET.get('order[0][dir]', 'asc')
+
+        columns = ['id', 'username', 'email']
+
+        search_filter = Q()
+        for col in columns:
+            search_filter |= Q(**{f'{col}__icontains': search_value})
+
+        users = User.objects.filter(search_filter)
+        total_records = User.objects.count()
+
+        sort_col = columns[order_column_index] if order_column_index < len(columns) else 'id'
+        if order_direction == 'asc':
+            users = users.order_by(sort_col)
+        else:
+            users = users.order_by(f'-{sort_col}')
+
+        filtered_records = users.count()
+        users = users[start:start + length]
+
+        data = []
+        for u in users:
+            try:
+                profile = u.profile
+                office_initials = profile.fk_office.office_initials if profile.fk_office else '-'
+                fk_office_id = profile.fk_office_id or 0
+                is_office_admin = profile.is_office_admin
+            except UserProfile.DoesNotExist:
+                office_initials = '-'
+                fk_office_id = 0
+                is_office_admin = False
+            data.append({
+                'id': u.id,
+                'username': u.username,
+                'email': u.email,
+                'office_initials': office_initials,
+                'fk_office_id': fk_office_id,
+                'is_office_admin': is_office_admin,
+                'is_superuser': u.is_superuser,
+            })
+
+        return JsonResponse({
+            'draw': draw,
+            'recordsTotal': total_records,
+            'recordsFiltered': filtered_records,
+            'data': data,
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def update_user_ajax(request):
+    """Update a user's office and office_admin status — superuser only."""
+    if not request.user.is_superuser:
+        return JsonResponse({'message': 'Unauthorized'}, status=403)
+
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        fk_office_id = request.POST.get('fk_office_id')
+        is_office_admin_str = request.POST.get('is_office_admin', 'false')
+        is_office_admin = is_office_admin_str.lower() in ('true', '1', 'on', 'yes')
+
+        try:
+            target_user = User.objects.get(pk=user_id)
+            profile, created = UserProfile.objects.get_or_create(user=target_user)
+
+            if fk_office_id and str(fk_office_id) != '0':
+                try:
+                    office = Office.objects.get(pk=fk_office_id)
+                    profile.fk_office = office
+                except Office.DoesNotExist:
+                    profile.fk_office = None
+            else:
+                profile.fk_office = None
+
+            profile.is_office_admin = is_office_admin
+            profile.save()
+            return JsonResponse({'message': 'True'})
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'User not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'message': str(e)}, status=500)
+
+    return JsonResponse({'message': 'False'})
 
 
 
