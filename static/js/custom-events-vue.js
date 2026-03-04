@@ -15,9 +15,29 @@ const appEvents = Vue.createApp({
         var tblEventsUnit; //declare the table variable globally
         const self = this; // Preserve reference to Vue component
 
-        $('#eventsDisplayTable, #eventsDivDisplayTable').on('click', '.regional-office', function() {
+        $('#eventsDisplayTable, #eventsDivDisplayTable').on('click', '.regional-office', function(e) {
+            if ($(e.target).hasClass('event-pill-toggle')) return; // ignore toggle clicks
             const id = $(this).attr('data-id');
             self.fetchEventDetails(id);
+        });
+
+        // Show more / show less toggle for event pills
+        $('#eventsDisplayTable, #eventsDivDisplayTable').on('click', '.event-pill-toggle', function(e) {
+            e.stopPropagation();
+            const pill = $(this).closest('.event-pill');
+            const meta = pill.find('.event-pill-meta');
+            const label = pill.find('.pill-label');
+            const fullTitle = pill.data('full-title');
+            if (meta.is(':visible')) {
+                meta.hide();
+                const short = fullTitle.length > 35 ? fullTitle.substring(0, 35) + '…' : fullTitle;
+                label.text('● ' + short);
+                $(this).text('show more');
+            } else {
+                meta.show();
+                label.text('● ' + fullTitle);
+                $(this).text('show less');
+            }
         });
 
         // initialize the datatable
@@ -52,20 +72,29 @@ const appEvents = Vue.createApp({
                     // Unified render function for all office columns
                     function renderOfficeCell(data, type, row) {
                         if (data === null || data === undefined) {
-                            return '<span class="highlight-vacant-">-</span>';
+                            return '<span style="color:#aaa">—</span>';
                         }
-                        var formattedData = data.replace(/,/g, '<br>');
+                        const MAX_CHARS = 35;
+                        const parts = data.split('|||').filter(function(p) { return p.trim() !== ''; });
                         let html = '';
-                        const parts = formattedData.includes('<br>') ? formattedData.split('<br>') : [formattedData];
-                        parts.forEach(function(pair) {
-                            const segs = pair.trim().split('*');
+                        parts.forEach(function(part) {
+                            const segs = part.trim().split('*');
                             const title = segs[0] || '';
                             const id = segs[1] || '';
                             const divname = segs[2] || '';
                             const unitname = segs[3] || '';
                             const timeStart = segs[4] || '';
                             const timeEnd = segs[5] || '';
-                            html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Division: ${divname}&#13;Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title}</span><br>`;
+                            const shortTitle = title.length > MAX_CHARS ? title.substring(0, MAX_CHARS) + '…' : title;
+                            const safeTitle = title.replace(/"/g, '&quot;');
+                            html += `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}">`;
+                            html += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle"> show more</a>`;
+                            html += `<div class="event-pill-meta">`;
+                            if (divname) html += `<small>Div: ${divname}</small><br>`;
+                            if (unitname) html += `<small>Unit: ${unitname}</small><br>`;
+                            if (timeStart) html += `<small>Time: ${timeStart}${timeEnd ? ' – ' + timeEnd : ''}</small>`;
+                            html += `</div>`;
+                            html += `</span>`;
                         });
                         return html;
                     }
@@ -187,10 +216,10 @@ const appEvents = Vue.createApp({
                 ],
                 'columns': dtColumns,
                 'order': [[1, 'asc']], // Sort by visible Event Date column (column 1)
+                'autoWidth': true,
                 'columnDefs': [
                     {'targets': [1], 'className': 'bold-column'},
                     {'width': '0%', 'targets': 0},
-                    {'width': '15%', 'targets': 1},
                     {
                         'targets': officeTargets,
                         'render': renderOfficeCell,
@@ -198,15 +227,13 @@ const appEvents = Vue.createApp({
                 ],
 
                 'colResize': true,
-                'fixedColumns': {
-                    leftColumns: officeList.length + 1  // +1 for Event Date (hidden Date col excluded)
-                }
 
                 }); // end of the $('#eventsDisplayTable').DataTable()
 
-                // Reinitialize tooltips whenever the table redraws
+                // Reinitialize tooltips and adjust column widths whenever the table redraws
                 table.on('draw', function() {
                     $('[data-bs-toggle="tooltip"]').tooltip();
+                    table.columns.adjust();
                 });
 
                 }); // end of fetch .then(officeList)
@@ -241,20 +268,28 @@ const appEvents = Vue.createApp({
                         // Unified render function for all division columns
                         function renderDivCell(data, type, row) {
                             if (data === null || data === undefined) {
-                                return '<span class="highlight-vacant">-</span>';
+                                return '<span style="color:#aaa">—</span>';
                             }
-                            var formattedData = data.replace(/,/g, '<br>');
+                            const MAX_CHARS = 35;
+                            const parts = data.split('|||').filter(function(p) { return p.trim() !== ''; });
                             let html = '';
-                            const parts = formattedData.includes('<br>') ? formattedData.split('<br>') : [formattedData];
-                            parts.forEach(function(pair) {
-                                const segs = pair.trim().split('*');
+                            parts.forEach(function(part) {
+                                const segs = part.trim().split('*');
                                 const title = segs[0] || '';
                                 const id = segs[1] || '';
                                 const divname = segs[2] || '';
                                 const unitname = segs[3] || '';
                                 const timeStart = segs[4] || '';
                                 const timeEnd = segs[5] || '';
-                                html += `<span class="multiline highlight-offices regional-office" style="cursor: pointer;" data-id="${id}" title="Unit: ${unitname}&#13;Time: ${timeStart} - ${timeEnd}">• ${title} @ ${timeStart} - ${timeEnd}</span><br>`;
+                                const shortTitle = title.length > MAX_CHARS ? title.substring(0, MAX_CHARS) + '…' : title;
+                                const safeTitle = title.replace(/"/g, '&quot;');
+                                html += `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}">`;
+                                html += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle"> show more</a>`;
+                                html += `<div class="event-pill-meta">`;
+                                if (unitname) html += `<small>Unit: ${unitname}</small><br>`;
+                                if (timeStart) html += `<small>Time: ${timeStart}${timeEnd ? ' – ' + timeEnd : ''}</small>`;
+                                html += `</div>`;
+                                html += `</span>`;
                             });
                             return html;
                         }
@@ -342,24 +377,22 @@ const appEvents = Vue.createApp({
                             ],
                             'columns': dtDivColumns,
                             'order': [[0, 'asc']],
+                            'autoWidth': true,
                             'columnDefs': [
                                 {'targets': [1], 'className': 'bold-column'},
                                 {'width': '0%', 'targets': 0},
-                                {'width': '15%', 'targets': 1},
                                 {
                                     'targets': divTargets,
                                     'render': renderDivCell,
                                 },
                             ],
                             'colResize': true,
-                            'fixedColumns': {
-                                leftColumns: divisionList.length + 1
-                            }
                         }); // end of $('#eventsDivDisplayTable').DataTable()
 
-                        // Reinitialize tooltips whenever the table redraws
+                        // Reinitialize tooltips and adjust column widths whenever the table redraws
                         tblEventsDiv.on('draw', function() {
                             $('[data-bs-toggle="tooltip"]').tooltip();
+                            tblEventsDiv.columns.adjust();
                         });
 
                     }); // end of fetch .then(divisionList)

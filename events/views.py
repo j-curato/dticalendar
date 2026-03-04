@@ -708,7 +708,7 @@ def fetch_events_ajax(request):
             SELECT
                 generated_date,
                 office,
-                STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), ', ') AS event_titles
+                STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), '|||') AS event_titles
             FROM (
                 SELECT
                     generate_series(whole_date_start::date, whole_date_end::date, '1 day'::interval)::date AS generated_date,
@@ -886,7 +886,7 @@ def fetch_events_by_div_ajax(request):
                 SELECT
                     generated_date,
                     division_name,
-                    STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), ', ') AS event_titles
+                    STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), '|||') AS event_titles
                 FROM (
                     SELECT
                         generate_series(whole_date_start::date, whole_date_end::date, '1 day'::interval)::date AS generated_date,
@@ -983,7 +983,7 @@ def fetch_events_by_div_ajax_02272024(request):
                 SELECT
                     generated_date,
                     division_name,
-                    STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), ', ') AS event_titles
+                    STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), '|||') AS event_titles
                 FROM (
                     SELECT
                         generate_series(whole_date_start::date, whole_date_end::date, '1 day'::interval)::date AS generated_date,
@@ -1085,7 +1085,7 @@ def fetch_events_by_div_ajax_ver2(request):
                 SELECT
                     generated_date,
                     division_name,
-                    STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), ', ') AS event_titles
+                    STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), '|||') AS event_titles
                 FROM (
                     SELECT
                         generate_series(whole_date_start::date, whole_date_end::date, '1 day'::interval)::date AS generated_date,
