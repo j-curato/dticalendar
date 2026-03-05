@@ -103,13 +103,45 @@
         .po-pdi
         {
           background-color: rgba(62, 104, 230, 0.741);
-          /* border-radius: 10px; */
         }
-      
-        .multiline {
-            white-space: pre-line;  /* Preserve newlines and spaces */
-            margin-bottom: 8px;     /* Add space between lines */
-            padding: 4px;
+
+        .event-pill {
+            display: block;
+            font-size: 11px;
+            font-family: Verdana, sans-serif;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            word-break: break-word;
+        }
+        .event-pill:hover {
+            opacity: 0.9;
+        }
+        .pill-label {
+            display: inline;
+        }
+        .event-pill-meta {
+            display: none;
+            padding-top: 4px;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.7;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            margin-top: 3px;
+        }
+        .event-pill-toggle {
+            display: inline;
+            font-size: 10px;
+            font-family: Verdana, sans-serif;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .event-pill-toggle:hover {
+            color: #fff;
+            text-decoration: underline;
         }
 
         /* Custom tooltip styles */
