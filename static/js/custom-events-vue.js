@@ -154,7 +154,6 @@ const appEvents = Vue.createApp({
                     }
 
             table = $('#eventsDisplayTable').DataTable({
-                'dom': 'Rlfrtip',
                         'colReorder': {
                             'allowReorder': true
                         },
@@ -167,105 +166,23 @@ const appEvents = Vue.createApp({
                         d.year = $('#filterYear').val() || new Date().getFullYear();
                     }
                 },
-                'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
+                'dom': 'Bfrtip<"clear">l',
                 'buttons': [
                     {
-                        extend: 'copy',
-                        exportOptions: {
-                            columns: ':not(:first)' // Excludes the first visible column
+                        text: '⬇ Excel',
+                        className: 'btn btn-sm btn-success',
+                        action: function() {
+                            const yr = $('#filterYear').val() || new Date().getFullYear();
+                            window.open('/events/export-excel/?year=' + yr, '_blank');
                         }
                     },
                     {
-                        extend: 'csv',
-                        exportOptions: {
-                            columns: ':not(:first)' // Excludes the first visible column
+                        text: '⬇ PDF',
+                        className: 'btn btn-sm btn-danger',
+                        action: function() {
+                            const yr = $('#filterYear').val() || new Date().getFullYear();
+                            window.open('/events/export-pdf/?year=' + yr, '_blank');
                         }
-                    },
-                    {
-                        extend: 'excel',
-                        exportOptions: {
-                            columns: ':not(:first)' // Excludes the first visible column
-                        },   
-                        customize: function (xlsx) {
-                            // Modify the content before exporting to PDF
-                            const sheet = xlsx.xl.worksheets['sheet1.xml'];
-                            // Ensure that the text containing bullet points is formatted properly and move to the next line after each bullet point
-                            ['B', 'C', 'D', 'E', 'F', 'G'].forEach(function(columnLetter) {
-                                $('row c[r^="' + columnLetter + '"]', sheet).each(function () {
-                                    if ($(this).text().includes('•')) {
-                                        // apply wrap text style
-                                        $(this).attr('s', '55');
-                                        // Insert line breaks after each bullet point
-                                        $(this).html($(this).html().replace(/• /g, '\n• ')); // Insert line breaks after each bullet point
-                                    }
-                                });
-                            });
-                            
-                        }
-                    },
-                    {
-                        extend: 'pdf',
-                        exportOptions: {
-                            columns: ':not(:first)' // Excludes the first visible column
-                        },
-                        customize: function (doc) {
-
-                            // Modify the content before exporting to PDF
-                            doc.content[1].table.body.forEach(row => {
-                                row.forEach(cell => {
-                                    // Set border property for each cell
-                                    cell['style'] = 'tableCell'; // Apply the table cell style
-                                });
-                            });
-                            // Apply the table border style
-                            doc.content[1].layout = {
-                                hLineWidth: function () { return 1; },
-                                vLineWidth: function () { return 1; },
-                                hLineColor: function () { return '#b3b3b3'; },
-                                vLineColor: function () { return '#b3b3b3'; },
-                            };
-
-                            // increase header width
-                            doc.content[1].table.widths = ['*', '*', '*', '*', '*', '*', '*'];
-
-                            // apply header background color
-                            doc.content[1].table.body[0].forEach(cell => {
-                                cell['fillColor'] = '#e6e6e6'; // Apply the header background color
-                            });
-
-                            // Increase the width of the exported PDF
-                            doc.pageOrientation = 'landscape'; // Change orientation to landscape
-                            doc.pageSize = 'A4'; // Set page size to A3
-                    
-                            // Modify the content before exporting to PDF
-                            doc.content[1].table.body.forEach(row => {
-                                row.forEach((cell, index) => {
-                                    // Ensure that the text containing bullet points is formatted properly
-                                    if (typeof cell.text === 'string' && cell.text.includes('•')) {
-                                        cell.text = cell.text.replace(/• /g, '\n• '); // Insert line breaks after each bullet point
-                                    }
-                                });
-                            });
-                        }
-                    },
-                    {
-                        extend: 'print',
-                        exportOptions: {
-                            columns: ':not(:first)' // Excludes the first visible column
-                        },
-                        customize: function (win) {
-                            const table = $(win.document.body).find('table tbody');
-                    
-                            table.find('tr').each(function () {
-                                const cells = $(this).find('td');
-                    
-                                cells.each(function () {
-                                    const newText = $(this).text().replace(/•/g, '\n•');
-                                    $(this).text(newText);
-                                });
-                            });
-                        } 
-                        
                     },
                 ],
                 'columns': dtColumns,
@@ -362,7 +279,6 @@ const appEvents = Vue.createApp({
                         }
 
                         tblEventsDiv = $('#eventsDivDisplayTable').DataTable({
-                            'dom': 'Rlfrtip',
                             'colReorder': {
                                 'allowReorder': true
                             },
@@ -379,66 +295,21 @@ const appEvents = Vue.createApp({
                             'dom': 'Bfrtip<"clear">l',
                             'buttons': [
                                 {
-                                    extend: 'copy',
-                                    exportOptions: { columns: ':not(:first)' }
-                                },
-                                {
-                                    extend: 'csv',
-                                    exportOptions: { columns: ':not(:first)' }
-                                },
-                                {
-                                    extend: 'excel',
-                                    exportOptions: { columns: ':not(:first)' },
-                                    customize: function (xlsx) {
-                                        const sheet = xlsx.xl.worksheets['sheet1.xml'];
-                                        const exportLetters = Array.from({length: divisionList.length + 1}, function(_, i) { return String.fromCharCode(66 + i); });
-                                        exportLetters.forEach(function(columnLetter) {
-                                            $('row c[r^="' + columnLetter + '"]', sheet).each(function () {
-                                                if ($(this).text().includes('•')) {
-                                                    $(this).attr('s', '55');
-                                                    $(this).html($(this).html().replace(/• /g, '\n• '));
-                                                }
-                                            });
-                                        });
+                                    text: '⬇ Excel',
+                                    className: 'btn btn-sm btn-success',
+                                    action: function() {
+                                        const yr = $('#filterYear').val() || new Date().getFullYear();
+                                        const office = $('#office-txt').val() || '';
+                                        window.open('/events/export-excel/?year=' + yr + '&office=' + office, '_blank');
                                     }
                                 },
                                 {
-                                    extend: 'pdf',
-                                    exportOptions: { columns: ':not(:first)' },
-                                    customize: function (doc) {
-                                        doc.content[1].table.body.forEach(row => {
-                                            row.forEach(cell => { cell['style'] = 'tableCell'; });
-                                        });
-                                        doc.content[1].layout = {
-                                            hLineWidth: function () { return 1; },
-                                            vLineWidth: function () { return 1; },
-                                            hLineColor: function () { return '#b3b3b3'; },
-                                            vLineColor: function () { return '#b3b3b3'; },
-                                        };
-                                        const widths = Array.from({length: divisionList.length + 1}, function() { return '*'; });
-                                        doc.content[1].table.widths = widths;
-                                        doc.content[1].table.body[0].forEach(cell => { cell['fillColor'] = '#e6e6e6'; });
-                                        doc.pageOrientation = 'landscape';
-                                        doc.pageSize = 'A4';
-                                        doc.content[1].table.body.forEach(row => {
-                                            row.forEach((cell) => {
-                                                if (typeof cell.text === 'string' && cell.text.includes('•')) {
-                                                    cell.text = cell.text.replace(/• /g, '\n• ');
-                                                }
-                                            });
-                                        });
-                                    }
-                                },
-                                {
-                                    extend: 'print',
-                                    exportOptions: { columns: ':not(:first)' },
-                                    customize: function (win) {
-                                        const table = $(win.document.body).find('table tbody');
-                                        table.find('tr').each(function () {
-                                            $(this).find('td').each(function () {
-                                                $(this).text($(this).text().replace(/•/g, '\n•'));
-                                            });
-                                        });
+                                    text: '⬇ PDF',
+                                    className: 'btn btn-sm btn-danger',
+                                    action: function() {
+                                        const yr = $('#filterYear').val() || new Date().getFullYear();
+                                        const office = $('#office-txt').val() || '';
+                                        window.open('/events/export-pdf/?year=' + yr + '&office=' + office, '_blank');
                                     }
                                 },
                             ],
@@ -637,12 +508,17 @@ const appEvents = Vue.createApp({
         },
 
         filterByYear() {
-            // Reload whichever DataTable is currently visible
+            const yr = $('#filterYear').val() || new Date().getFullYear();
             if ($.fn.DataTable.isDataTable('#eventsDisplayTable')) {
                 $('#eventsDisplayTable').DataTable().ajax.reload();
+                $('#btn-export-excel').attr('href', `/events/export-excel/?year=${yr}`);
+                $('#btn-export-pdf').attr('href', `/events/export-pdf/?year=${yr}`);
             }
             if ($.fn.DataTable.isDataTable('#eventsDivDisplayTable')) {
                 $('#eventsDivDisplayTable').DataTable().ajax.reload();
+                const office = $('#office-txt').val() || '';
+                $('#btn-export-excel-div').attr('href', `/events/export-excel/?year=${yr}&office=${office}`);
+                $('#btn-export-pdf-div').attr('href', `/events/export-pdf/?year=${yr}&office=${office}`);
             }
         },
 

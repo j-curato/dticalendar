@@ -17,4 +17,6 @@ urlpatterns = [
     path('download/<int:id>/', views.download_file, name='download_file'),
     path('tooltips/', views.tooltips, name='tooltips'),
     path('mark-event-false/', views.mark_event_false, name='mark-event-false/'),
+    path('export-excel/', views.export_events_excel, name='export-events-excel'),
+    path('export-pdf/', views.export_events_pdf, name='export-events-pdf'),
 ]

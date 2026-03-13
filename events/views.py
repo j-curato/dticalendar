@@ -26,8 +26,18 @@ from datetime import datetime
 from mimetypes import guess_type
 from .models import Event
 from offices.models import Office
+from django.contrib.auth.decorators import login_required
 import os
 import json
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib import colors
+from reportlab.lib.units import cm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
 # make_random_password is a method from django.contrib.auth.models
 
 # @api_view(['GET'])
@@ -1263,6 +1273,363 @@ def mark_event_false(request):
         # # Debugging: Print the event ID to verify
         # print("Event ID:", eventPID)
         # return JsonResponse({'message': eventPID})
+
+
+# ---------------------------------------------------------------------------
+# Server-side Excel / PDF export helpers
+# ---------------------------------------------------------------------------
+
+def _parse_event_cell(cell_data):
+    """Parse '|||' separated events from a cell into list of dicts."""
+    if not cell_data:
+        return []
+    events = []
+    for part in cell_data.split('|||'):
+        part = part.strip()
+        if not part:
+            continue
+        segs = part.split('*')
+        events.append({
+            'title': segs[0] if len(segs) > 0 else '',
+            'division': segs[2] if len(segs) > 2 else '',
+            'unit': segs[3] if len(segs) > 3 else '',
+            'time_start': segs[4] if len(segs) > 4 else '',
+            'time_end': segs[5] if len(segs) > 5 else '',
+        })
+    return events
+
+
+def _format_cell_text(cell_data):
+    """Convert raw cell data to clean plain text for export."""
+    events = _parse_event_cell(cell_data)
+    if not events:
+        return ''
+    lines = []
+    for ev in events:
+        line = f"\u2022 {ev['title']}"
+        meta = []
+        if ev['division']:
+            meta.append(ev['division'])
+        if ev['unit']:
+            meta.append(ev['unit'])
+        if ev['time_start']:
+            t = ev['time_start']
+            if ev['time_end']:
+                t += f" \u2013 {ev['time_end']}"
+            meta.append(t)
+        if meta:
+            line += f"\n  ({' | '.join(meta)})"
+        lines.append(line)
+    return '\n'.join(lines)
+
+
+def _get_office_export_data(year):
+    """Return (columns, data) for office-level export."""
+    offices = list(Office.objects.order_by('id').values_list('office_initials', flat=True))
+    case_statements = ',\n            '.join([
+        f"MAX(CASE WHEN office = '{o}' THEN event_titles END) AS \"{o}\""
+        for o in offices
+    ])
+    query = f"""
+        SELECT
+            DISTINCT generated_date,
+            TO_CHAR(generated_date, 'FMMonth DD, YYYY') AS whole_date_start_searchable,
+            {case_statements}
+        FROM (
+            SELECT
+                generated_date,
+                office,
+                STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), '|||') AS event_titles
+            FROM (
+                SELECT
+                    generate_series(whole_date_start::date, whole_date_end::date, '1 day'::interval)::date AS generated_date,
+                    office,
+                    event_title,
+                    id,
+                    division_name,
+                    unit_name,
+                    event_time_start,
+                    event_time_end
+                FROM events_event
+                WHERE display_status = true
+            ) AS date_series
+            WHERE EXTRACT(YEAR FROM generated_date) = {year}
+            GROUP BY generated_date, office
+        ) AS subquery
+        GROUP BY generated_date
+        ORDER BY generated_date ASC;
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+    data = []
+    for row in rows:
+        entry = {
+            'whole_date_start_searchable': row[1],
+        }
+        for i, office in enumerate(offices):
+            entry[office] = row[2 + i]
+        data.append(entry)
+    return offices, data
+
+
+def _get_div_export_data(year, office):
+    """Return (columns, data) for division-level export."""
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT dd.division_name
+            FROM divisions_division dd
+            INNER JOIN tbl_offices o ON dd.fk_office_id = o.id
+            WHERE o.office_initials = %s
+            ORDER BY dd.id
+        """, [office])
+        division_names = [row[0] for row in cursor.fetchall()]
+
+    if not division_names:
+        return [], []
+
+    columns_sql = ',\n            '.join([
+        f"MAX(CASE WHEN division_name = '{col}' THEN event_titles END) AS \"{col}\""
+        for col in division_names
+    ])
+    query = f"""
+        SELECT
+            generated_date,
+            TO_CHAR(generated_date, 'FMMonth DD, YYYY') AS whole_date_start_searchable,
+            {columns_sql}
+        FROM (
+            SELECT
+                generated_date,
+                division_name,
+                STRING_AGG(CONCAT(event_title, '*', id, '*', division_name, '*', unit_name, '*', event_time_start, '*', event_time_end), '|||') AS event_titles
+            FROM (
+                SELECT
+                    generate_series(whole_date_start::date, whole_date_end::date, '1 day'::interval)::date AS generated_date,
+                    division_name,
+                    event_title,
+                    id,
+                    unit_name,
+                    event_time_start,
+                    event_time_end
+                FROM events_event
+                WHERE office = %s AND display_status = true
+            ) AS date_series
+            WHERE EXTRACT(YEAR FROM generated_date) = {year}
+            GROUP BY generated_date, division_name
+        ) AS subquery
+        GROUP BY generated_date
+        ORDER BY generated_date ASC;
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query, [office])
+        rows = cursor.fetchall()
+    data = []
+    for row in rows:
+        entry = {'whole_date_start_searchable': row[1]}
+        for i, div in enumerate(division_names):
+            entry[div] = row[2 + i]
+        data.append(entry)
+    return division_names, data
+
+
+# ---------------------------------------------------------------------------
+# Excel export view
+# ---------------------------------------------------------------------------
+
+@login_required
+def export_events_excel(request):
+    year = int(request.GET.get('year', timezone.now().year))
+    office = request.GET.get('office', '').strip()
+
+    if office:
+        columns, data = _get_div_export_data(year, office)
+        title = f"DTI CARAGA CALENDAR OF EVENTS BY DIVISION \u2013 {office.upper()} \u2013 {year}"
+        filename = f"dti_events_{office}_{year}.xlsx"
+    else:
+        columns, data = _get_office_export_data(year)
+        title = f"DTI CARAGA CALENDAR OF EVENTS \u2013 {year}"
+        filename = f"dti_events_{year}.xlsx"
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = f"Events {year}"
+
+    # Styles
+    header_fill = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
+    title_fill = PatternFill(start_color="EEF2FF", end_color="EEF2FF", fill_type="solid")
+    alt_fill = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+    header_font = Font(name='Calibri', color="F1F5F9", bold=True, size=10)
+    title_font = Font(name='Calibri', bold=True, size=13, color="1E293B")
+    date_font = Font(name='Calibri', bold=True, size=9, color="1E293B")
+    cell_font = Font(name='Calibri', size=9, color="334155")
+    thin = Side(style='thin', color='94A3B8')
+    thin_border = Border(left=thin, right=thin, top=thin, bottom=thin)
+    total_cols = len(columns) + 1  # +1 for date column
+
+    # Row 1 — Title
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=total_cols)
+    title_cell = ws.cell(row=1, column=1, value=title)
+    title_cell.font = title_font
+    title_cell.fill = title_fill
+    title_cell.alignment = Alignment(horizontal='center', vertical='center')
+    title_cell.border = thin_border
+    ws.row_dimensions[1].height = 28
+
+    # Row 2 — Header
+    ws.cell(row=2, column=1, value='DATE').fill = header_fill
+    ws.cell(row=2, column=1).font = header_font
+    ws.cell(row=2, column=1).alignment = Alignment(horizontal='center', vertical='center')
+    ws.cell(row=2, column=1).border = thin_border
+    ws.row_dimensions[2].height = 22
+
+    for col_idx, col_name in enumerate(columns, start=2):
+        cell = ws.cell(row=2, column=col_idx, value=col_name.upper())
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        cell.border = thin_border
+
+    # Data rows
+    for row_idx, entry in enumerate(data, start=3):
+        fill = alt_fill if row_idx % 2 == 0 else None
+
+        date_cell = ws.cell(row=row_idx, column=1, value=entry['whole_date_start_searchable'])
+        date_cell.font = date_font
+        date_cell.alignment = Alignment(horizontal='center', vertical='top')
+        date_cell.border = thin_border
+        if fill:
+            date_cell.fill = fill
+
+        for col_idx, col_name in enumerate(columns, start=2):
+            text = _format_cell_text(entry.get(col_name))
+            cell = ws.cell(row=row_idx, column=col_idx, value=text if text else None)
+            cell.font = cell_font
+            cell.alignment = Alignment(vertical='top', wrap_text=True)
+            cell.border = thin_border
+            if fill:
+                cell.fill = fill
+
+    # Column widths
+    ws.column_dimensions['A'].width = 22
+    for col_idx in range(2, total_cols + 1):
+        ws.column_dimensions[get_column_letter(col_idx)].width = 32
+
+    # Freeze panes — freeze header rows
+    ws.freeze_panes = 'A3'
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    wb.save(response)
+    return response
+
+
+# ---------------------------------------------------------------------------
+# PDF export view
+# ---------------------------------------------------------------------------
+
+@login_required
+def export_events_pdf(request):
+    year = int(request.GET.get('year', timezone.now().year))
+    office = request.GET.get('office', '').strip()
+
+    if office:
+        columns, data = _get_div_export_data(year, office)
+        title = f"DTI CARAGA CALENDAR OF EVENTS BY DIVISION \u2013 {office.upper()} \u2013 {year}"
+        filename = f"dti_events_{office}_{year}.pdf"
+    else:
+        columns, data = _get_office_export_data(year)
+        title = f"DTI CARAGA CALENDAR OF EVENTS \u2013 {year}"
+        filename = f"dti_events_{year}.pdf"
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    doc = SimpleDocTemplate(
+        response,
+        pagesize=landscape(A4),
+        leftMargin=1.2 * cm, rightMargin=1.2 * cm,
+        topMargin=1.5 * cm, bottomMargin=1.5 * cm,
+    )
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'ExportTitle', parent=styles['Normal'],
+        fontSize=13, fontName='Helvetica-Bold',
+        alignment=TA_CENTER, spaceAfter=10,
+        textColor=colors.HexColor('#1E293B'),
+    )
+    header_style = ParagraphStyle(
+        'ColHeader', parent=styles['Normal'],
+        fontSize=8, fontName='Helvetica-Bold',
+        textColor=colors.white, alignment=TA_CENTER,
+    )
+    date_style = ParagraphStyle(
+        'DateCell', parent=styles['Normal'],
+        fontSize=8, fontName='Helvetica-Bold',
+        textColor=colors.HexColor('#1E293B'), alignment=TA_CENTER,
+    )
+    cell_style = ParagraphStyle(
+        'EventCell', parent=styles['Normal'],
+        fontSize=7, fontName='Helvetica',
+        textColor=colors.HexColor('#334155'), leading=10,
+    )
+
+    header_color = colors.HexColor('#1E293B')
+    alt_color = colors.HexColor('#F8FAFC')
+    border_color = colors.HexColor('#94A3B8')
+
+    # Build table data
+    table_data = [
+        [Paragraph('DATE', header_style)] +
+        [Paragraph(col.upper(), header_style) for col in columns]
+    ]
+    for entry in data:
+        row = [Paragraph(entry['whole_date_start_searchable'], date_style)]
+        for col_name in columns:
+            text = _format_cell_text(entry.get(col_name))
+            safe_text = text.replace('\n', '<br/>').replace('\u2022', '&#8226;') if text else ''
+            row.append(Paragraph(safe_text, cell_style))
+        table_data.append(row)
+
+    # Column widths — date col fixed, rest split evenly
+    page_width = landscape(A4)[0] - 2.4 * cm
+    date_col_w = 3.8 * cm
+    other_col_w = (page_width - date_col_w) / len(columns) if columns else page_width
+    col_widths = [date_col_w] + [other_col_w] * len(columns)
+
+    tbl = Table(table_data, colWidths=col_widths, repeatRows=1)
+    tbl.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), header_color),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('GRID', (0, 0), (-1, -1), 0.5, border_color),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, alt_color]),
+        ('LEFTPADDING', (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+
+    def add_page_number(canvas, doc):
+        canvas.saveState()
+        canvas.setFont('Helvetica', 7)
+        canvas.setFillColor(colors.HexColor('#94A3B8'))
+        canvas.drawRightString(
+            landscape(A4)[0] - 1.2 * cm,
+            0.8 * cm,
+            f"Page {doc.page}"
+        )
+        canvas.restoreState()
+
+    doc.build(
+        [Paragraph(title, title_style), Spacer(1, 0.4 * cm), tbl],
+        onFirstPage=add_page_number,
+        onLaterPages=add_page_number,
+    )
+    return response
     
 
 
