@@ -40,6 +40,20 @@ const appEvents = Vue.createApp({
             }
         });
 
+        // +N more / show less toggle for overflow pills
+        $('#eventsDisplayTable, #eventsDivDisplayTable').on('click', '.pills-show-more', function(e) {
+            e.stopPropagation();
+            const overflow = $(this).prev('.pills-overflow');
+            if (overflow.is(':visible')) {
+                overflow.hide();
+                const count = overflow.find('.event-pill').length;
+                $(this).text('+' + count + ' more');
+            } else {
+                overflow.show();
+                $(this).text('show less');
+            }
+        });
+
         // initialize the datatable
         $(function() {
 
@@ -75,9 +89,11 @@ const appEvents = Vue.createApp({
                             return '<span style="color:#aaa">—</span>';
                         }
                         const MAX_CHARS = 35;
+                        const MAX_VISIBLE = 2;
                         const parts = data.split('|||').filter(function(p) { return p.trim() !== ''; });
-                        let html = '';
-                        parts.forEach(function(part) {
+                        let visibleHtml = '';
+                        let hiddenHtml = '';
+                        parts.forEach(function(part, idx) {
                             const segs = part.trim().split('*');
                             const title = segs[0] || '';
                             const id = segs[1] || '';
@@ -87,15 +103,25 @@ const appEvents = Vue.createApp({
                             const timeEnd = segs[5] || '';
                             const shortTitle = title.length > MAX_CHARS ? title.substring(0, MAX_CHARS) + '…' : title;
                             const safeTitle = title.replace(/"/g, '&quot;');
-                            html += `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}">`;
-                            html += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle"> show more</a>`;
-                            html += `<div class="event-pill-meta">`;
-                            if (divname) html += `<small>Div: ${divname}</small><br>`;
-                            if (unitname) html += `<small>Unit: ${unitname}</small><br>`;
-                            if (timeStart) html += `<small>Time: ${timeStart}${timeEnd ? ' – ' + timeEnd : ''}</small>`;
-                            html += `</div>`;
-                            html += `</span>`;
+                            let pillHtml = `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}">`;
+                            pillHtml += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle"> show more</a>`;
+                            pillHtml += `<div class="event-pill-meta">`;
+                            if (divname) pillHtml += `<small>Div: ${divname}</small><br>`;
+                            if (unitname) pillHtml += `<small>Unit: ${unitname}</small><br>`;
+                            if (timeStart) pillHtml += `<small>Time: ${timeStart}${timeEnd ? ' – ' + timeEnd : ''}</small>`;
+                            pillHtml += `</div></span>`;
+                            if (idx < MAX_VISIBLE) {
+                                visibleHtml += pillHtml;
+                            } else {
+                                hiddenHtml += pillHtml;
+                            }
                         });
+                        let html = visibleHtml;
+                        if (hiddenHtml) {
+                            const remaining = parts.length - MAX_VISIBLE;
+                            html += `<div class="pills-overflow" style="display:none">${hiddenHtml}</div>`;
+                            html += `<a href="javascript:void(0)" class="pills-show-more">+${remaining} more</a>`;
+                        }
                         return html;
                     }
 
@@ -271,9 +297,11 @@ const appEvents = Vue.createApp({
                                 return '<span style="color:#aaa">—</span>';
                             }
                             const MAX_CHARS = 35;
+                            const MAX_VISIBLE = 2;
                             const parts = data.split('|||').filter(function(p) { return p.trim() !== ''; });
-                            let html = '';
-                            parts.forEach(function(part) {
+                            let visibleHtml = '';
+                            let hiddenHtml = '';
+                            parts.forEach(function(part, idx) {
                                 const segs = part.trim().split('*');
                                 const title = segs[0] || '';
                                 const id = segs[1] || '';
@@ -283,14 +311,24 @@ const appEvents = Vue.createApp({
                                 const timeEnd = segs[5] || '';
                                 const shortTitle = title.length > MAX_CHARS ? title.substring(0, MAX_CHARS) + '…' : title;
                                 const safeTitle = title.replace(/"/g, '&quot;');
-                                html += `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}">`;
-                                html += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle"> show more</a>`;
-                                html += `<div class="event-pill-meta">`;
-                                if (unitname) html += `<small>Unit: ${unitname}</small><br>`;
-                                if (timeStart) html += `<small>Time: ${timeStart}${timeEnd ? ' – ' + timeEnd : ''}</small>`;
-                                html += `</div>`;
-                                html += `</span>`;
+                                let pillHtml = `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}">`;
+                                pillHtml += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle"> show more</a>`;
+                                pillHtml += `<div class="event-pill-meta">`;
+                                if (unitname) pillHtml += `<small>Unit: ${unitname}</small><br>`;
+                                if (timeStart) pillHtml += `<small>Time: ${timeStart}${timeEnd ? ' – ' + timeEnd : ''}</small>`;
+                                pillHtml += `</div></span>`;
+                                if (idx < MAX_VISIBLE) {
+                                    visibleHtml += pillHtml;
+                                } else {
+                                    hiddenHtml += pillHtml;
+                                }
                             });
+                            let html = visibleHtml;
+                            if (hiddenHtml) {
+                                const remaining = parts.length - MAX_VISIBLE;
+                                html += `<div class="pills-overflow" style="display:none">${hiddenHtml}</div>`;
+                                html += `<a href="javascript:void(0)" class="pills-show-more">+${remaining} more</a>`;
+                            }
                             return html;
                         }
 
