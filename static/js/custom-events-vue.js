@@ -57,18 +57,23 @@ const appEvents = Vue.createApp({
         // initialize the datatable
         $(function() {
 
-            // Division color palette — modern, eye-friendly
+            // Division color palette — pastel bg + dark text pairs (15 to avoid collisions)
             const PILL_COLORS = [
-                '#3b5fe2', // Indigo
-                '#0d9488', // Teal
-                '#7c3aed', // Violet
-                '#db2777', // Rose
-                '#b45309', // Amber
-                '#059669', // Emerald
-                '#0284c7', // Sky
-                '#c2410c', // Orange
-                '#475569', // Slate
-                '#a21caf', // Fuchsia
+                { bg: '#e0e7ff', text: '#3730a3', border: '#a5b4fc' }, // Indigo
+                { bg: '#ccfbf1', text: '#0f766e', border: '#5eead4' }, // Teal
+                { bg: '#ede9fe', text: '#5b21b6', border: '#c4b5fd' }, // Violet
+                { bg: '#fce7f3', text: '#9d174d', border: '#f9a8d4' }, // Rose
+                { bg: '#fef3c7', text: '#92400e', border: '#fcd34d' }, // Amber
+                { bg: '#d1fae5', text: '#065f46', border: '#6ee7b7' }, // Emerald
+                { bg: '#e0f2fe', text: '#0369a1', border: '#7dd3fc' }, // Sky
+                { bg: '#ffedd5', text: '#9a3412', border: '#fdba74' }, // Orange
+                { bg: '#f1f5f9', text: '#334155', border: '#94a3b8' }, // Slate
+                { bg: '#fae8ff', text: '#86198f', border: '#e879f9' }, // Fuchsia
+                { bg: '#cffafe', text: '#155e75', border: '#67e8f9' }, // Cyan
+                { bg: '#f7fee7', text: '#3f6212', border: '#bef264' }, // Lime
+                { bg: '#ffe4e6', text: '#9f1239', border: '#fda4af' }, // Crimson
+                { bg: '#dbeafe', text: '#1e40af', border: '#93c5fd' }, // Blue
+                { bg: '#fef9c3', text: '#713f12', border: '#fde047' }, // Yellow
             ];
             function getDivisionColor(divname) {
                 if (!divname) return PILL_COLORS[0];
@@ -126,7 +131,7 @@ const appEvents = Vue.createApp({
                             const shortTitle = title.length > MAX_CHARS ? title.substring(0, MAX_CHARS) + '…' : title;
                             const safeTitle = title.replace(/"/g, '&quot;');
                             const pillColor = getDivisionColor(divname);
-                            let pillHtml = `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}" style="background-color:${pillColor}">`;
+                            let pillHtml = `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}" style="background-color:${pillColor.bg};color:${pillColor.text};border-left-color:${pillColor.border}">`;
                             pillHtml += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle">▾ details</a>`;
                             pillHtml += `<div class="event-pill-meta">`;
                             if (divname) pillHtml += `<small>📁 ${divname}</small><br>`;
@@ -335,7 +340,7 @@ const appEvents = Vue.createApp({
                                 const shortTitle = title.length > MAX_CHARS ? title.substring(0, MAX_CHARS) + '…' : title;
                                 const safeTitle = title.replace(/"/g, '&quot;');
                                 const pillColor = getDivisionColor(divname);
-                                let pillHtml = `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}" style="background-color:${pillColor}">`;
+                                let pillHtml = `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}" style="background-color:${pillColor.bg};color:${pillColor.text};border-left-color:${pillColor.border}">`;
                                 pillHtml += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle">▾ details</a>`;
                                 pillHtml += `<div class="event-pill-meta">`;
                                 if (unitname) pillHtml += `<small>🔹 ${unitname}</small><br>`;
