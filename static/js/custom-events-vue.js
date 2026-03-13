@@ -21,7 +21,7 @@ const appEvents = Vue.createApp({
             self.fetchEventDetails(id);
         });
 
-        // Show more / show less toggle for event pills
+        // Expand/collapse details toggle for event pills
         $('#eventsDisplayTable, #eventsDivDisplayTable').on('click', '.event-pill-toggle', function(e) {
             e.stopPropagation();
             const pill = $(this).closest('.event-pill');
@@ -32,16 +32,52 @@ const appEvents = Vue.createApp({
                 meta.hide();
                 const short = fullTitle.length > 35 ? fullTitle.substring(0, 35) + '…' : fullTitle;
                 label.text('● ' + short);
-                $(this).text('show more');
+                $(this).html('▾ details');
             } else {
                 meta.show();
                 label.text('● ' + fullTitle);
+                $(this).html('▴ hide');
+            }
+        });
+
+        // +N more / show less toggle for overflow pills
+        $('#eventsDisplayTable, #eventsDivDisplayTable').on('click', '.pills-show-more', function(e) {
+            e.stopPropagation();
+            const overflow = $(this).prev('.pills-overflow');
+            if (overflow.is(':visible')) {
+                overflow.hide();
+                const count = overflow.find('.event-pill').length;
+                $(this).text('+' + count + ' more');
+            } else {
+                overflow.show();
                 $(this).text('show less');
             }
         });
 
         // initialize the datatable
         $(function() {
+
+            // Division color palette — modern, eye-friendly
+            const PILL_COLORS = [
+                '#3b5fe2', // Indigo
+                '#0d9488', // Teal
+                '#7c3aed', // Violet
+                '#db2777', // Rose
+                '#b45309', // Amber
+                '#059669', // Emerald
+                '#0284c7', // Sky
+                '#c2410c', // Orange
+                '#475569', // Slate
+                '#a21caf', // Fuchsia
+            ];
+            function getDivisionColor(divname) {
+                if (!divname) return PILL_COLORS[0];
+                let hash = 0;
+                for (let i = 0; i < divname.length; i++) {
+                    hash = divname.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                return PILL_COLORS[Math.abs(hash) % PILL_COLORS.length];
+            }
 
             // Fetch offices from tbl_offices dynamically, then init DataTable
             if ($('#eventsDisplayTable').length)
@@ -75,9 +111,11 @@ const appEvents = Vue.createApp({
                             return '<span style="color:#aaa">—</span>';
                         }
                         const MAX_CHARS = 35;
+                        const MAX_VISIBLE = 2;
                         const parts = data.split('|||').filter(function(p) { return p.trim() !== ''; });
-                        let html = '';
-                        parts.forEach(function(part) {
+                        let visibleHtml = '';
+                        let hiddenHtml = '';
+                        parts.forEach(function(part, idx) {
                             const segs = part.trim().split('*');
                             const title = segs[0] || '';
                             const id = segs[1] || '';
@@ -87,15 +125,26 @@ const appEvents = Vue.createApp({
                             const timeEnd = segs[5] || '';
                             const shortTitle = title.length > MAX_CHARS ? title.substring(0, MAX_CHARS) + '…' : title;
                             const safeTitle = title.replace(/"/g, '&quot;');
-                            html += `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}">`;
-                            html += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle"> show more</a>`;
-                            html += `<div class="event-pill-meta">`;
-                            if (divname) html += `<small>Div: ${divname}</small><br>`;
-                            if (unitname) html += `<small>Unit: ${unitname}</small><br>`;
-                            if (timeStart) html += `<small>Time: ${timeStart}${timeEnd ? ' – ' + timeEnd : ''}</small>`;
-                            html += `</div>`;
-                            html += `</span>`;
+                            const pillColor = getDivisionColor(divname);
+                            let pillHtml = `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}" style="background-color:${pillColor}">`;
+                            pillHtml += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle">▾ details</a>`;
+                            pillHtml += `<div class="event-pill-meta">`;
+                            if (divname) pillHtml += `<small>📁 ${divname}</small><br>`;
+                            if (unitname) pillHtml += `<small>🔹 ${unitname}</small><br>`;
+                            if (timeStart) pillHtml += `<small>🕐 ${timeStart}${timeEnd ? ' – ' + timeEnd : ''}</small>`;
+                            pillHtml += `</div></span>`;
+                            if (idx < MAX_VISIBLE) {
+                                visibleHtml += pillHtml;
+                            } else {
+                                hiddenHtml += pillHtml;
+                            }
                         });
+                        let html = visibleHtml;
+                        if (hiddenHtml) {
+                            const remaining = parts.length - MAX_VISIBLE;
+                            html += `<div class="pills-overflow" style="display:none">${hiddenHtml}</div>`;
+                            html += `<a href="javascript:void(0)" class="pills-show-more">+${remaining} more</a>`;
+                        }
                         return html;
                     }
 
@@ -271,9 +320,11 @@ const appEvents = Vue.createApp({
                                 return '<span style="color:#aaa">—</span>';
                             }
                             const MAX_CHARS = 35;
+                            const MAX_VISIBLE = 2;
                             const parts = data.split('|||').filter(function(p) { return p.trim() !== ''; });
-                            let html = '';
-                            parts.forEach(function(part) {
+                            let visibleHtml = '';
+                            let hiddenHtml = '';
+                            parts.forEach(function(part, idx) {
                                 const segs = part.trim().split('*');
                                 const title = segs[0] || '';
                                 const id = segs[1] || '';
@@ -283,14 +334,25 @@ const appEvents = Vue.createApp({
                                 const timeEnd = segs[5] || '';
                                 const shortTitle = title.length > MAX_CHARS ? title.substring(0, MAX_CHARS) + '…' : title;
                                 const safeTitle = title.replace(/"/g, '&quot;');
-                                html += `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}">`;
-                                html += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle"> show more</a>`;
-                                html += `<div class="event-pill-meta">`;
-                                if (unitname) html += `<small>Unit: ${unitname}</small><br>`;
-                                if (timeStart) html += `<small>Time: ${timeStart}${timeEnd ? ' – ' + timeEnd : ''}</small>`;
-                                html += `</div>`;
-                                html += `</span>`;
+                                const pillColor = getDivisionColor(divname);
+                                let pillHtml = `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}" style="background-color:${pillColor}">`;
+                                pillHtml += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle">▾ details</a>`;
+                                pillHtml += `<div class="event-pill-meta">`;
+                                if (unitname) pillHtml += `<small>🔹 ${unitname}</small><br>`;
+                                if (timeStart) pillHtml += `<small>🕐 ${timeStart}${timeEnd ? ' – ' + timeEnd : ''}</small>`;
+                                pillHtml += `</div></span>`;
+                                if (idx < MAX_VISIBLE) {
+                                    visibleHtml += pillHtml;
+                                } else {
+                                    hiddenHtml += pillHtml;
+                                }
                             });
+                            let html = visibleHtml;
+                            if (hiddenHtml) {
+                                const remaining = parts.length - MAX_VISIBLE;
+                                html += `<div class="pills-overflow" style="display:none">${hiddenHtml}</div>`;
+                                html += `<a href="javascript:void(0)" class="pills-show-more">+${remaining} more</a>`;
+                            }
                             return html;
                         }
 

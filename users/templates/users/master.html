@@ -107,41 +107,73 @@
 
         .event-pill {
             display: block;
-            font-size: 11px;
-            font-family: Verdana, sans-serif;
+            width: fit-content;
+            font-size: 11.5px;
+            font-family: 'Segoe UI', Verdana, sans-serif;
             color: #fff;
-            padding: 4px 8px;
-            border-radius: 8px;
-            margin-bottom: 4px;
+            padding: 4px 10px 4px 8px;
+            border-radius: 6px;
+            margin-bottom: 5px;
             cursor: pointer;
             word-break: break-word;
+            border-left: 3px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+            transition: box-shadow 0.15s, filter 0.15s;
         }
         .event-pill:hover {
-            opacity: 0.9;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28);
+            filter: brightness(1.1);
         }
         .pill-label {
             display: inline;
+            font-weight: 600;
+            letter-spacing: 0.01em;
         }
         .event-pill-meta {
             display: none;
-            padding-top: 4px;
+            padding-top: 5px;
             font-size: 10px;
-            color: rgba(255, 255, 255, 0.85);
-            line-height: 1.7;
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-            margin-top: 3px;
+            color: rgba(255, 255, 255, 0.92);
+            line-height: 1.8;
+            border-top: 1px solid rgba(255, 255, 255, 0.25);
+            margin-top: 4px;
         }
         .event-pill-toggle {
             display: inline;
-            font-size: 10px;
-            font-family: Verdana, sans-serif;
-            color: rgba(255, 255, 255, 0.75);
+            font-size: 9.5px;
+            font-family: 'Segoe UI', Verdana, sans-serif;
+            color: rgba(255, 255, 255, 0.92);
             text-decoration: none;
             cursor: pointer;
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 3px;
+            padding: 1px 5px;
+            margin-left: 5px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
         }
         .event-pill-toggle:hover {
             color: #fff;
-            text-decoration: underline;
+            background: rgba(255, 255, 255, 0.32);
+        }
+        .pills-show-more {
+            display: inline-block;
+            font-size: 10px;
+            font-family: 'Segoe UI', Verdana, sans-serif;
+            color: #3e68e6;
+            cursor: pointer;
+            margin-top: 4px;
+            text-decoration: none;
+            font-weight: 700;
+            background: #eef1fd;
+            border: 1px solid #c7d0f8;
+            border-radius: 10px;
+            padding: 1px 9px;
+            letter-spacing: 0.01em;
+        }
+        .pills-show-more:hover {
+            background: #dde3fb;
+            text-decoration: none;
         }
 
         /* Custom tooltip styles */
@@ -195,16 +227,67 @@
             }
         } 
 
-    /* Customize border width and color for DataTable */
+    /* DataTable — modern sharp style */
     .dataTables_wrapper table.dataTable {
-        border-collapse: collapse; /* Collapse borders for a cleaner look */
-        border: 1px solid #ddd; /* Set border width and color */
+        border-collapse: collapse;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
     }
-
-    .dataTables_wrapper table.dataTable th,
-    .dataTables_wrapper table.dataTable td {
-        border: 1px solid #ddd; /* Apply border to table cells */
-        padding: 8px; /* Add padding to improve readability */
+    .dataTables_wrapper table.dataTable thead th {
+        background-color: #1e293b;
+        color: #f1f5f9;
+        font-family: 'Segoe UI', Verdana, sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 10px 8px;
+        border-bottom: 2px solid #334155;
+        border-right: 1px solid #334155;
+        white-space: nowrap;
+    }
+    .dataTables_wrapper table.dataTable thead th.sorting:before,
+    .dataTables_wrapper table.dataTable thead th.sorting:after,
+    .dataTables_wrapper table.dataTable thead th.sorting_asc:after,
+    .dataTables_wrapper table.dataTable thead th.sorting_desc:after {
+        color: #94a3b8;
+    }
+    .dataTables_wrapper table.dataTable tbody td {
+        font-family: 'Segoe UI', Verdana, sans-serif;
+        font-size: 12px;
+        padding: 7px 8px;
+        vertical-align: top;
+        border: 1px solid #e2e8f0;
+        color: #334155;
+    }
+    .dataTables_wrapper table.dataTable tbody tr:nth-child(even) td {
+        background-color: #f8fafc;
+    }
+    .dataTables_wrapper table.dataTable tbody tr:hover td {
+        background-color: #eef2ff !important;
+    }
+    .bold-column {
+        color: #1e293b !important;
+        font-weight: 700 !important;
+    }
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 12px;
+        outline: none;
+        transition: border-color 0.15s;
+    }
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: #4f6bed;
+        box-shadow: 0 0 0 2px rgba(79, 107, 237, 0.15);
+    }
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 3px 6px;
+        font-size: 12px;
     }
 
 .dropdown-menu {
