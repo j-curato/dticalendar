@@ -1,0 +1,17 @@
+# DTI Caraga Calendar of Events - Project Dependencies
+# Generated 2026-03-13
+# Install with: pip install -r requirements.txt
+
+# Core framework
+Django==5.2
+asgiref==3.8.1
+sqlparse==0.5.3
+
+# Database
+psycopg2-binary==2.9.11
+
+# UI / Template
+django-bootstrap4==26.1
+
+# Timezone data (required for USE_TZ=True with Asia/Manila)
+tzdata==2025.2
