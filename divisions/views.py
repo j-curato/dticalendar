@@ -36,7 +36,7 @@ def save_division(request):
 
 # get org outcome list using ajax and return json response and save to data variable
 def get_divList(request):
-    divList = Division.objects.all()
+    divList = Division.objects.filter(is_active=True)
     data = [{'id': div.id, 'div_name': div.division_name} for div in divList]
     return JsonResponse(data, safe=False)
 
@@ -96,7 +96,24 @@ def delete_div_ajax(request):
         if division:
             if not _can_manage(request.user, division.fk_office_id):
                 return JsonResponse({'message': 'Unauthorized'}, status=403)
-            division.delete()
+            division.is_active = False
+            division.save()
+            return JsonResponse({'message': 'True'})
+        return JsonResponse({'message': 'Division not found'})
+    return JsonResponse({'message': 'False'})
+
+
+@login_required
+@csrf_exempt
+def reactivate_div_ajax(request):
+    if request.method == 'POST':
+        div_id = request.POST.get('id')
+        division = Division.objects.filter(id=div_id).first()
+        if division:
+            if not _can_manage(request.user, division.fk_office_id):
+                return JsonResponse({'message': 'Unauthorized'}, status=403)
+            division.is_active = True
+            division.save()
             return JsonResponse({'message': 'True'})
         return JsonResponse({'message': 'Division not found'})
     return JsonResponse({'message': 'False'})
@@ -164,6 +181,7 @@ def get_division_details(request):
                 'division_desc': div.division_desc,
                 'fk_office_id': div.fk_office_id,
                 'office_initials': div.fk_office.office_initials if div.fk_office else '-',
+                'is_active': div.is_active,
         })
 
         # Prepare the JSON response

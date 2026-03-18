@@ -4,6 +4,14 @@
         Profile Page
     {% endblock %}
 
+{% block page_scripts %}
+<script>
+  const IS_SUPERUSER = {{ user.is_superuser|lower }};
+  const IS_OFFICE_ADMIN = {% if user.profile %}{{ user.profile.is_office_admin|lower }}{% else %}false{% endif %};
+  const USER_OFFICE_ID = {% if user.profile and user.profile.fk_office_id %}{{ user.profile.fk_office_id }}{% else %}0{% endif %};
+</script>
+{% endblock %}
+
 {% block content %}
 
 <!-- <img src="{{ context.MEDIA_URL }}profile-pic.jpg" alt="Example Image">
@@ -68,11 +76,6 @@
       </div>
     </section>
 
-    <script>
-      const IS_SUPERUSER = {{ user.is_superuser|lower }};
-      const IS_OFFICE_ADMIN = {% if user.profile %}{{ user.profile.is_office_admin|lower }}{% else %}false{% endif %};
-      const USER_OFFICE_ID = {% if user.profile and user.profile.fk_office_id %}{{ user.profile.fk_office_id }}{% else %}0{% endif %};
-    </script>
 
     <div class="container-fluid">
 
@@ -419,6 +422,7 @@
                           <th>Division Name</th>
                           <th>Description</th>
                           <th>Office</th>
+                          <th class="text-center">Status</th>
                           <th class="text-center">Actions</th>
                         </tr>
                       </thead>
@@ -428,6 +432,7 @@
                           <th>Division Name</th>
                           <th>Description</th>
                           <th>Office</th>
+                          <th>Status</th>
                           <th>Actions</th>
                         </tr>
                       </tfoot>
@@ -816,6 +821,7 @@
                           <th>ID</th>
                           <th>Initials</th>
                           <th>Office Name</th>
+                          <th class="text-center">Status</th>
                           <th class="text-center">Actions</th>
                         </tr>
                       </thead>
@@ -824,6 +830,7 @@
                           <th>ID</th>
                           <th>Initials</th>
                           <th>Office Name</th>
+                          <th>Status</th>
                           <th>Actions</th>
                         </tr>
                       </tfoot>

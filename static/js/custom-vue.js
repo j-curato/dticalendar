@@ -1279,7 +1279,7 @@ const app = Vue.createApp({
             .then(res => res.json())
             .then(data => {
                 if (data.message === 'True') {
-                    this.message = 'Office deleted successfully!';
+                    this.message = 'Office deactivated successfully!';
                     this.showToast();
                     this.fetchOfficeData();
                     if ($.fn.DataTable.isDataTable('#officedataTable')) {
@@ -1287,7 +1287,31 @@ const app = Vue.createApp({
                     }
                 }
             })
-            .catch(err => console.error('Error deleting office:', err));
+            .catch(err => console.error('Error deactivating office:', err));
+        },
+
+        reactivateOfficeRow(officeId) {
+            const formData = new FormData();
+            formData.append('id', officeId);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch('/offices/reactivate-office-ajax/', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': csrfToken }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.message === 'True') {
+                    this.message = 'Office reactivated successfully!';
+                    this.showToast();
+                    this.fetchOfficeData();
+                    if ($.fn.DataTable.isDataTable('#officedataTable')) {
+                        $('#officedataTable').DataTable().ajax.reload();
+                    }
+                }
+            })
+            .catch(err => console.error('Error reactivating office:', err));
         },
 
         fetchOfficeData() {
@@ -1338,6 +1362,18 @@ const app = Vue.createApp({
                     { 'data': 'office_initials', 'searchable': true, 'sortable': true, 'width': '15%' },
                     { 'data': 'office_name', 'searchable': true, 'sortable': true },
                     {
+                        'data': 'is_active',
+                        'searchable': false,
+                        'orderable': false,
+                        'width': '10%',
+                        'className': 'text-center',
+                        'render': function(data) {
+                            return data
+                                ? `<span class="badge bg-success">Active</span>`
+                                : `<span class="badge bg-secondary">Inactive</span>`;
+                        }
+                    },
+                    {
                         'data': null,
                         'searchable': false,
                         'orderable': false,
@@ -1350,13 +1386,19 @@ const app = Vue.createApp({
                                     <i class="bi bi-pencil-square"></i> Edit
                                    </button>`
                                 : `<span class="text-muted small"><i class="bi bi-lock-fill"></i> Admin only</span>`;
-                            let deleteBtn = IS_SUPERUSER
-                                ? `<button class="btn btn-sm btn-outline-danger office-delete-btn"
-                                    data-id="${row.id}" data-name="${row.office_name}">
-                                    <i class="bi bi-trash3"></i> Delete
-                                   </button>`
-                                : '';
-                            return editBtn + ' ' + deleteBtn;
+                            let toggleBtn = '';
+                            if (IS_SUPERUSER) {
+                                toggleBtn = row.is_active
+                                    ? `<button class="btn btn-sm btn-outline-danger office-delete-btn ms-1"
+                                        data-id="${row.id}" data-name="${row.office_name}">
+                                        <i class="bi bi-slash-circle"></i> Deactivate
+                                       </button>`
+                                    : `<button class="btn btn-sm btn-outline-success office-activate-btn ms-1"
+                                        data-id="${row.id}" data-name="${row.office_name}">
+                                        <i class="bi bi-check-circle"></i> Activate
+                                       </button>`;
+                            }
+                            return editBtn + toggleBtn;
                         }
                     }
                 ],
@@ -1378,12 +1420,21 @@ const app = Vue.createApp({
                 modal.show();
             });
 
-            // Delete button click
+            // Deactivate button click
             $('#officedataTable tbody').on('click', '.office-delete-btn', function() {
                 const id = $(this).data('id');
                 const name = $(this).data('name');
-                if (confirm(`Are you sure you want to delete the office "${name}"? This action cannot be undone.`)) {
+                if (confirm(`Deactivate the office "${name}"? It will be hidden from the events calendar.`)) {
                     self.deleteOfficeRow(id);
+                }
+            });
+
+            // Activate button click
+            $('#officedataTable tbody').on('click', '.office-activate-btn', function() {
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                if (confirm(`Reactivate the office "${name}"? It will appear again in the events calendar.`)) {
+                    self.reactivateOfficeRow(id);
                 }
             });
         },
@@ -2389,6 +2440,18 @@ const app = Vue.createApp({
                     {'data': 'division_desc', 'searchable': true, 'sortable': true},
                     {'data': 'office_initials', 'searchable': true, 'sortable': false},
                     {
+                        'data': 'is_active',
+                        'searchable': false,
+                        'orderable': false,
+                        'width': '10%',
+                        'className': 'text-center',
+                        'render': function(data) {
+                            return data
+                                ? `<span class="badge bg-success">Active</span>`
+                                : `<span class="badge bg-secondary">Inactive</span>`;
+                        }
+                    },
+                    {
                         'data': null,
                         'searchable': false,
                         'orderable': false,
@@ -2396,10 +2459,11 @@ const app = Vue.createApp({
                         'className': 'text-center',
                         'render': function(data, type, row) {
                             if (IS_SUPERUSER || (IS_OFFICE_ADMIN && row.fk_office_id == USER_OFFICE_ID)) {
-                                return `
-                                    <button class="btn btn-sm btn-outline-primary div-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>
-                                    <button class="btn btn-sm btn-outline-danger div-delete-btn" data-id="${row.id}" data-name="${row.division_name}"><i class="bi bi-trash3"></i> Delete</button>
-                                `;
+                                let editBtn = `<button class="btn btn-sm btn-outline-primary div-edit-btn me-1" data-id="${row.id}"><i class="bi bi-pencil-square"></i> Edit</button>`;
+                                let toggleBtn = row.is_active
+                                    ? `<button class="btn btn-sm btn-outline-danger div-delete-btn" data-id="${row.id}" data-name="${row.division_name}"><i class="bi bi-slash-circle"></i> Deactivate</button>`
+                                    : `<button class="btn btn-sm btn-outline-success div-activate-btn" data-id="${row.id}" data-name="${row.division_name}"><i class="bi bi-check-circle"></i> Activate</button>`;
+                                return editBtn + toggleBtn;
                             } else {
                                 return `<span class="text-muted small"><i class="bi bi-lock-fill"></i> Admin only</span>`;
                             }
@@ -2431,18 +2495,37 @@ const app = Vue.createApp({
                 }
             });
 
-            // delete division
+            // deactivate division
             $('#divdataTable tbody').on('click', '.div-delete-btn', function () {
                 const id = $(this).data('id');
                 const name = $(this).data('name');
-                if (confirm(`Are you sure you want to delete the division "${name}"? This action cannot be undone.`)) {
+                if (confirm(`Deactivate the division "${name}"? It will be hidden from the events calendar.`)) {
                     const formData = new FormData();
                     formData.append('id', id);
                     fetch('/divisions/delete-div-ajax/', { method: 'POST', body: formData })
                         .then(r => r.json())
                         .then(data => {
                             if (data.message === 'True') {
-                                self.message = 'Division deleted successfully!';
+                                self.message = 'Division deactivated successfully!';
+                                self.showToast();
+                                $('#divdataTable').DataTable().ajax.reload();
+                            }
+                        });
+                }
+            });
+
+            // activate division
+            $('#divdataTable tbody').on('click', '.div-activate-btn', function () {
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                if (confirm(`Reactivate the division "${name}"? It will appear again in the events calendar.`)) {
+                    const formData = new FormData();
+                    formData.append('id', id);
+                    fetch('/divisions/reactivate-div-ajax/', { method: 'POST', body: formData })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.message === 'True') {
+                                self.message = 'Division reactivated successfully!';
                                 self.showToast();
                                 $('#divdataTable').DataTable().ajax.reload();
                             }

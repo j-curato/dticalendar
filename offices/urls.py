@@ -6,4 +6,5 @@ urlpatterns = [
     path('get-office-details/', views.get_office_details, name='get-office-details'),
     path('save-office-ajax/', views.save_office_ajax, name='save-office-ajax'),
     path('delete-office-ajax/', views.delete_office_ajax, name='delete-office-ajax'),
+    path('reactivate-office-ajax/', views.reactivate_office_ajax, name='reactivate-office-ajax'),
 ]

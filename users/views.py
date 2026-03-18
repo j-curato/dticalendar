@@ -376,9 +376,9 @@ def autocomplete(request):
 def get_divisions(request):
     office = request.GET.get('office', None)
     if office:
-        divisions = Division.objects.filter(fk_office__office_initials=office).order_by('id')
+        divisions = Division.objects.filter(fk_office__office_initials=office, is_active=True).order_by('id')
     else:
-        divisions = Division.objects.all().order_by('id')
+        divisions = Division.objects.filter(is_active=True).order_by('id')
     data = [{'id': division.id, 'division_name': division.division_name, 'fk_office_id': division.fk_office_id} for division in divisions]
     return JsonResponse(data, safe=False)
 
