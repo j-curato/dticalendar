@@ -184,7 +184,17 @@ const appEvents = Vue.createApp({
                             window.open('/events/export-pdf/?year=' + yr, '_blank');
                         }
                     },
+                    {
+                        extend: 'print',
+                        text: '🖨 Print',
+                        className: 'btn btn-sm btn-secondary',
+                        title: 'DTI Caraga Calendar of Events',
+                        exportOptions: { columns: ':visible' }
+                    },
                 ],
+                'scrollY': 'calc(100vh - 280px)',
+                'scrollX': true,
+                'scrollCollapse': true,
                 'columns': dtColumns,
                 'order': [[1, 'asc']], // Sort by visible Event Date column (column 1)
                 'autoWidth': true,
@@ -312,7 +322,17 @@ const appEvents = Vue.createApp({
                                         window.open('/events/export-pdf/?year=' + yr + '&office=' + office, '_blank');
                                     }
                                 },
+                                {
+                                    extend: 'print',
+                                    text: '🖨 Print',
+                                    className: 'btn btn-sm btn-secondary',
+                                    title: 'DTI Caraga Calendar of Events',
+                                    exportOptions: { columns: ':visible' }
+                                },
                             ],
+                            'scrollY': 'calc(100vh - 280px)',
+                            'scrollX': true,
+                            'scrollCollapse': true,
                             'columns': dtDivColumns,
                             'order': [[0, 'asc']],
                             'autoWidth': true,

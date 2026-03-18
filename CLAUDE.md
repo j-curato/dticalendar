@@ -240,3 +240,23 @@ API endpoints follow the pattern `/app/api/get-modelList/` for JSON list fetches
 - **Template inheritance:** All pages extend `users/templates/users/master.html` which loads all JS/CSS.
 - **No type hints** used anywhere in the codebase.
 - **Variable naming:** `snake_case` throughout Python. JS uses `camelCase`.
+
+---
+
+## Self-Improvement Loop
+
+> Rules added after real mistakes during development. Review at the start of every session. Every entry = a mistake that must never repeat.
+
+### CSS
+
+- **DataTables `className` in `columnDefs` applies to BOTH `thead th` AND `tbody td`.** Never write a bare utility class (e.g. `.bold-column { color: X }`) and then assign it via `columnDefs`. The color will override the `thead th` style. Always scope utility classes to `tbody td` — e.g. `.dataTables_wrapper table.dataTable tbody td.bold-column { ... }`.
+
+- **DataTables sort icons are hidden by `opacity: .125`, not by `color`.** Setting `color` on sort icon pseudo-elements does nothing visible. Always override `opacity: 1` alongside `color` to make them visible. Cover all three states: `sorting`, `sorting_asc`, `sorting_desc` (both `:before` and `:after`).
+
+- **`overflow: hidden` on any ancestor blocks `position: sticky`.** It creates a scroll container, trapping the sticky element inside it. To get sticky `thead` headers, never put `overflow: hidden` on `.dataTables_wrapper` or the `table` itself. Put borders directly on the `table` element and avoid `overflow: hidden` on ancestors entirely.
+
+- **CSS `position: sticky` on `thead th` is unreliable with `border-collapse: collapse`.** Do not use CSS sticky for DataTables frozen headers. Use DataTables' native `scrollY` + `scrollX` + `scrollCollapse` options instead — they create a `.dataTables_scrollHead` div that reliably pins the header. Also style `.dataTables_scrollHead` and `.dataTables_scrollHead table.dataTable thead th` to match the custom header colors, since DataTables clones the thead into that div.
+
+### Dependencies
+
+- **`requirements.txt` must be kept in sync with `events/views.py` imports.** When a new library is added to views (e.g. `openpyxl`, `reportlab`), add it to `requirements.txt` immediately or the server won't start. Check `events/views.py` imports whenever pulling a PR that touches that file.

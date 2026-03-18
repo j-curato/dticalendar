@@ -231,8 +231,6 @@
     .dataTables_wrapper table.dataTable {
         border-collapse: collapse;
         border: 1px solid #64748b;
-        border-radius: 8px;
-        overflow: hidden;
     }
     .dataTables_wrapper table.dataTable thead th {
         background-color: #1e293b;
@@ -247,11 +245,21 @@
         border-right: 1px solid #334155;
         white-space: nowrap;
     }
+    /* Frozen header clone (scrollY mode) */
+    .dataTables_wrapper .dataTables_scrollHead,
+    .dataTables_wrapper .dataTables_scrollHead table.dataTable thead th {
+        background-color: #1e293b;
+        color: #f1f5f9;
+    }
+    /* Sort icons — override DataTables' near-invisible opacity and inherit white color */
     .dataTables_wrapper table.dataTable thead th.sorting:before,
     .dataTables_wrapper table.dataTable thead th.sorting:after,
+    .dataTables_wrapper table.dataTable thead th.sorting_asc:before,
     .dataTables_wrapper table.dataTable thead th.sorting_asc:after,
+    .dataTables_wrapper table.dataTable thead th.sorting_desc:before,
     .dataTables_wrapper table.dataTable thead th.sorting_desc:after {
-        color: #94a3b8;
+        opacity: 1;
+        color: #f1f5f9;
     }
     .dataTables_wrapper table.dataTable tbody td {
         font-family: 'Segoe UI', Verdana, sans-serif;
@@ -267,7 +275,7 @@
     .dataTables_wrapper table.dataTable tbody tr:hover td {
         background-color: #eef2ff !important;
     }
-    .bold-column {
+    .dataTables_wrapper table.dataTable tbody td.bold-column {
         color: #1e293b !important;
         font-weight: 700 !important;
     }
