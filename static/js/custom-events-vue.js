@@ -57,18 +57,23 @@ const appEvents = Vue.createApp({
         // initialize the datatable
         $(function() {
 
-            // Division color palette — modern, eye-friendly
+            // Division color palette — pastel bg + dark text pairs (15 to avoid collisions)
             const PILL_COLORS = [
-                '#3b5fe2', // Indigo
-                '#0d9488', // Teal
-                '#7c3aed', // Violet
-                '#db2777', // Rose
-                '#b45309', // Amber
-                '#059669', // Emerald
-                '#0284c7', // Sky
-                '#c2410c', // Orange
-                '#475569', // Slate
-                '#a21caf', // Fuchsia
+                { bg: '#e0e7ff', text: '#3730a3', border: '#a5b4fc' }, // Indigo
+                { bg: '#ccfbf1', text: '#0f766e', border: '#5eead4' }, // Teal
+                { bg: '#ede9fe', text: '#5b21b6', border: '#c4b5fd' }, // Violet
+                { bg: '#fce7f3', text: '#9d174d', border: '#f9a8d4' }, // Rose
+                { bg: '#fef3c7', text: '#92400e', border: '#fcd34d' }, // Amber
+                { bg: '#d1fae5', text: '#065f46', border: '#6ee7b7' }, // Emerald
+                { bg: '#e0f2fe', text: '#0369a1', border: '#7dd3fc' }, // Sky
+                { bg: '#ffedd5', text: '#9a3412', border: '#fdba74' }, // Orange
+                { bg: '#f1f5f9', text: '#334155', border: '#94a3b8' }, // Slate
+                { bg: '#fae8ff', text: '#86198f', border: '#e879f9' }, // Fuchsia
+                { bg: '#cffafe', text: '#155e75', border: '#67e8f9' }, // Cyan
+                { bg: '#f7fee7', text: '#3f6212', border: '#bef264' }, // Lime
+                { bg: '#ffe4e6', text: '#9f1239', border: '#fda4af' }, // Crimson
+                { bg: '#dbeafe', text: '#1e40af', border: '#93c5fd' }, // Blue
+                { bg: '#fef9c3', text: '#713f12', border: '#fde047' }, // Yellow
             ];
             function getDivisionColor(divname) {
                 if (!divname) return PILL_COLORS[0];
@@ -126,7 +131,7 @@ const appEvents = Vue.createApp({
                             const shortTitle = title.length > MAX_CHARS ? title.substring(0, MAX_CHARS) + '…' : title;
                             const safeTitle = title.replace(/"/g, '&quot;');
                             const pillColor = getDivisionColor(divname);
-                            let pillHtml = `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}" style="background-color:${pillColor}">`;
+                            let pillHtml = `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}" style="background-color:${pillColor.bg};color:${pillColor.text};border-left-color:${pillColor.border}">`;
                             pillHtml += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle">▾ details</a>`;
                             pillHtml += `<div class="event-pill-meta">`;
                             if (divname) pillHtml += `<small>📁 ${divname}</small><br>`;
@@ -149,7 +154,6 @@ const appEvents = Vue.createApp({
                     }
 
             table = $('#eventsDisplayTable').DataTable({
-                'dom': 'Rlfrtip',
                         'colReorder': {
                             'allowReorder': true
                         },
@@ -162,105 +166,23 @@ const appEvents = Vue.createApp({
                         d.year = $('#filterYear').val() || new Date().getFullYear();
                     }
                 },
-                'dom': 'Bfrtip<"clear">l',        // Add this to enable export buttons
+                'dom': 'Bfrtip<"clear">l',
                 'buttons': [
                     {
-                        extend: 'copy',
-                        exportOptions: {
-                            columns: ':not(:first)' // Excludes the first visible column
+                        text: '⬇ Excel',
+                        className: 'btn btn-sm btn-success',
+                        action: function() {
+                            const yr = $('#filterYear').val() || new Date().getFullYear();
+                            window.open('/events/export-excel/?year=' + yr, '_blank');
                         }
                     },
                     {
-                        extend: 'csv',
-                        exportOptions: {
-                            columns: ':not(:first)' // Excludes the first visible column
+                        text: '⬇ PDF',
+                        className: 'btn btn-sm btn-danger',
+                        action: function() {
+                            const yr = $('#filterYear').val() || new Date().getFullYear();
+                            window.open('/events/export-pdf/?year=' + yr, '_blank');
                         }
-                    },
-                    {
-                        extend: 'excel',
-                        exportOptions: {
-                            columns: ':not(:first)' // Excludes the first visible column
-                        },   
-                        customize: function (xlsx) {
-                            // Modify the content before exporting to PDF
-                            const sheet = xlsx.xl.worksheets['sheet1.xml'];
-                            // Ensure that the text containing bullet points is formatted properly and move to the next line after each bullet point
-                            ['B', 'C', 'D', 'E', 'F', 'G'].forEach(function(columnLetter) {
-                                $('row c[r^="' + columnLetter + '"]', sheet).each(function () {
-                                    if ($(this).text().includes('•')) {
-                                        // apply wrap text style
-                                        $(this).attr('s', '55');
-                                        // Insert line breaks after each bullet point
-                                        $(this).html($(this).html().replace(/• /g, '\n• ')); // Insert line breaks after each bullet point
-                                    }
-                                });
-                            });
-                            
-                        }
-                    },
-                    {
-                        extend: 'pdf',
-                        exportOptions: {
-                            columns: ':not(:first)' // Excludes the first visible column
-                        },
-                        customize: function (doc) {
-
-                            // Modify the content before exporting to PDF
-                            doc.content[1].table.body.forEach(row => {
-                                row.forEach(cell => {
-                                    // Set border property for each cell
-                                    cell['style'] = 'tableCell'; // Apply the table cell style
-                                });
-                            });
-                            // Apply the table border style
-                            doc.content[1].layout = {
-                                hLineWidth: function () { return 1; },
-                                vLineWidth: function () { return 1; },
-                                hLineColor: function () { return '#b3b3b3'; },
-                                vLineColor: function () { return '#b3b3b3'; },
-                            };
-
-                            // increase header width
-                            doc.content[1].table.widths = ['*', '*', '*', '*', '*', '*', '*'];
-
-                            // apply header background color
-                            doc.content[1].table.body[0].forEach(cell => {
-                                cell['fillColor'] = '#e6e6e6'; // Apply the header background color
-                            });
-
-                            // Increase the width of the exported PDF
-                            doc.pageOrientation = 'landscape'; // Change orientation to landscape
-                            doc.pageSize = 'A4'; // Set page size to A3
-                    
-                            // Modify the content before exporting to PDF
-                            doc.content[1].table.body.forEach(row => {
-                                row.forEach((cell, index) => {
-                                    // Ensure that the text containing bullet points is formatted properly
-                                    if (typeof cell.text === 'string' && cell.text.includes('•')) {
-                                        cell.text = cell.text.replace(/• /g, '\n• '); // Insert line breaks after each bullet point
-                                    }
-                                });
-                            });
-                        }
-                    },
-                    {
-                        extend: 'print',
-                        exportOptions: {
-                            columns: ':not(:first)' // Excludes the first visible column
-                        },
-                        customize: function (win) {
-                            const table = $(win.document.body).find('table tbody');
-                    
-                            table.find('tr').each(function () {
-                                const cells = $(this).find('td');
-                    
-                                cells.each(function () {
-                                    const newText = $(this).text().replace(/•/g, '\n•');
-                                    $(this).text(newText);
-                                });
-                            });
-                        } 
-                        
                     },
                 ],
                 'columns': dtColumns,
@@ -335,7 +257,7 @@ const appEvents = Vue.createApp({
                                 const shortTitle = title.length > MAX_CHARS ? title.substring(0, MAX_CHARS) + '…' : title;
                                 const safeTitle = title.replace(/"/g, '&quot;');
                                 const pillColor = getDivisionColor(divname);
-                                let pillHtml = `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}" style="background-color:${pillColor}">`;
+                                let pillHtml = `<span class="event-pill regional-office" data-id="${id}" data-full-title="${safeTitle}" style="background-color:${pillColor.bg};color:${pillColor.text};border-left-color:${pillColor.border}">`;
                                 pillHtml += `<span class="pill-label">● ${shortTitle}</span><a href="javascript:void(0)" class="event-pill-toggle">▾ details</a>`;
                                 pillHtml += `<div class="event-pill-meta">`;
                                 if (unitname) pillHtml += `<small>🔹 ${unitname}</small><br>`;
@@ -357,7 +279,6 @@ const appEvents = Vue.createApp({
                         }
 
                         tblEventsDiv = $('#eventsDivDisplayTable').DataTable({
-                            'dom': 'Rlfrtip',
                             'colReorder': {
                                 'allowReorder': true
                             },
@@ -374,66 +295,21 @@ const appEvents = Vue.createApp({
                             'dom': 'Bfrtip<"clear">l',
                             'buttons': [
                                 {
-                                    extend: 'copy',
-                                    exportOptions: { columns: ':not(:first)' }
-                                },
-                                {
-                                    extend: 'csv',
-                                    exportOptions: { columns: ':not(:first)' }
-                                },
-                                {
-                                    extend: 'excel',
-                                    exportOptions: { columns: ':not(:first)' },
-                                    customize: function (xlsx) {
-                                        const sheet = xlsx.xl.worksheets['sheet1.xml'];
-                                        const exportLetters = Array.from({length: divisionList.length + 1}, function(_, i) { return String.fromCharCode(66 + i); });
-                                        exportLetters.forEach(function(columnLetter) {
-                                            $('row c[r^="' + columnLetter + '"]', sheet).each(function () {
-                                                if ($(this).text().includes('•')) {
-                                                    $(this).attr('s', '55');
-                                                    $(this).html($(this).html().replace(/• /g, '\n• '));
-                                                }
-                                            });
-                                        });
+                                    text: '⬇ Excel',
+                                    className: 'btn btn-sm btn-success',
+                                    action: function() {
+                                        const yr = $('#filterYear').val() || new Date().getFullYear();
+                                        const office = $('#office-txt').val() || '';
+                                        window.open('/events/export-excel/?year=' + yr + '&office=' + office, '_blank');
                                     }
                                 },
                                 {
-                                    extend: 'pdf',
-                                    exportOptions: { columns: ':not(:first)' },
-                                    customize: function (doc) {
-                                        doc.content[1].table.body.forEach(row => {
-                                            row.forEach(cell => { cell['style'] = 'tableCell'; });
-                                        });
-                                        doc.content[1].layout = {
-                                            hLineWidth: function () { return 1; },
-                                            vLineWidth: function () { return 1; },
-                                            hLineColor: function () { return '#b3b3b3'; },
-                                            vLineColor: function () { return '#b3b3b3'; },
-                                        };
-                                        const widths = Array.from({length: divisionList.length + 1}, function() { return '*'; });
-                                        doc.content[1].table.widths = widths;
-                                        doc.content[1].table.body[0].forEach(cell => { cell['fillColor'] = '#e6e6e6'; });
-                                        doc.pageOrientation = 'landscape';
-                                        doc.pageSize = 'A4';
-                                        doc.content[1].table.body.forEach(row => {
-                                            row.forEach((cell) => {
-                                                if (typeof cell.text === 'string' && cell.text.includes('•')) {
-                                                    cell.text = cell.text.replace(/• /g, '\n• ');
-                                                }
-                                            });
-                                        });
-                                    }
-                                },
-                                {
-                                    extend: 'print',
-                                    exportOptions: { columns: ':not(:first)' },
-                                    customize: function (win) {
-                                        const table = $(win.document.body).find('table tbody');
-                                        table.find('tr').each(function () {
-                                            $(this).find('td').each(function () {
-                                                $(this).text($(this).text().replace(/•/g, '\n•'));
-                                            });
-                                        });
+                                    text: '⬇ PDF',
+                                    className: 'btn btn-sm btn-danger',
+                                    action: function() {
+                                        const yr = $('#filterYear').val() || new Date().getFullYear();
+                                        const office = $('#office-txt').val() || '';
+                                        window.open('/events/export-pdf/?year=' + yr + '&office=' + office, '_blank');
                                     }
                                 },
                             ],
@@ -632,12 +508,17 @@ const appEvents = Vue.createApp({
         },
 
         filterByYear() {
-            // Reload whichever DataTable is currently visible
+            const yr = $('#filterYear').val() || new Date().getFullYear();
             if ($.fn.DataTable.isDataTable('#eventsDisplayTable')) {
                 $('#eventsDisplayTable').DataTable().ajax.reload();
+                $('#btn-export-excel').attr('href', `/events/export-excel/?year=${yr}`);
+                $('#btn-export-pdf').attr('href', `/events/export-pdf/?year=${yr}`);
             }
             if ($.fn.DataTable.isDataTable('#eventsDivDisplayTable')) {
                 $('#eventsDivDisplayTable').DataTable().ajax.reload();
+                const office = $('#office-txt').val() || '';
+                $('#btn-export-excel-div').attr('href', `/events/export-excel/?year=${yr}&office=${office}`);
+                $('#btn-export-pdf-div').attr('href', `/events/export-pdf/?year=${yr}&office=${office}`);
             }
         },
 

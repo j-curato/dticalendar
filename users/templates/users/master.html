@@ -110,19 +110,19 @@
             width: fit-content;
             font-size: 11.5px;
             font-family: 'Segoe UI', Verdana, sans-serif;
-            color: #fff;
-            padding: 4px 10px 4px 8px;
+            /* color is set inline per division */
+            padding: 4px 10px 4px 9px;
             border-radius: 6px;
             margin-bottom: 5px;
             cursor: pointer;
             word-break: break-word;
-            border-left: 3px solid rgba(255, 255, 255, 0.35);
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+            border-left: 3px solid transparent; /* color set inline */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
             transition: box-shadow 0.15s, filter 0.15s;
         }
         .event-pill:hover {
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28);
-            filter: brightness(1.1);
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.13);
+            filter: brightness(0.96);
         }
         .pill-label {
             display: inline;
@@ -133,46 +133,46 @@
             display: none;
             padding-top: 5px;
             font-size: 10px;
-            color: rgba(255, 255, 255, 0.92);
+            opacity: 0.78;
             line-height: 1.8;
-            border-top: 1px solid rgba(255, 255, 255, 0.25);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
             margin-top: 4px;
         }
         .event-pill-toggle {
             display: inline;
             font-size: 9.5px;
             font-family: 'Segoe UI', Verdana, sans-serif;
-            color: rgba(255, 255, 255, 0.92);
             text-decoration: none;
             cursor: pointer;
-            background: rgba(255, 255, 255, 0.18);
+            background: rgba(0, 0, 0, 0.07);
             border-radius: 3px;
             padding: 1px 5px;
             margin-left: 5px;
             font-weight: 700;
             letter-spacing: 0.03em;
+            opacity: 0.72;
         }
         .event-pill-toggle:hover {
-            color: #fff;
-            background: rgba(255, 255, 255, 0.32);
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.13);
         }
         .pills-show-more {
             display: inline-block;
             font-size: 10px;
             font-family: 'Segoe UI', Verdana, sans-serif;
-            color: #3e68e6;
+            color: #3730a3;
             cursor: pointer;
             margin-top: 4px;
             text-decoration: none;
             font-weight: 700;
-            background: #eef1fd;
-            border: 1px solid #c7d0f8;
+            background: #e0e7ff;
+            border: 1px solid #a5b4fc;
             border-radius: 10px;
             padding: 1px 9px;
             letter-spacing: 0.01em;
         }
         .pills-show-more:hover {
-            background: #dde3fb;
+            background: #c7d2fe;
             text-decoration: none;
         }
 
@@ -230,7 +230,7 @@
     /* DataTable — modern sharp style */
     .dataTables_wrapper table.dataTable {
         border-collapse: collapse;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #64748b;
         border-radius: 8px;
         overflow: hidden;
     }
@@ -258,7 +258,7 @@
         font-size: 12px;
         padding: 7px 8px;
         vertical-align: top;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #94a3b8;
         color: #334155;
     }
     .dataTables_wrapper table.dataTable tbody tr:nth-child(even) td {

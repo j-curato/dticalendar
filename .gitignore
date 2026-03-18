@@ -1,0 +1,25 @@
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+
+# Media uploads (user-generated content, not source code)
+media/
+
+# Claude Code local settings and memory (personal, not shared)
+.claude/settings.local.json
+.claude/memory/
+
+# Environment / secrets
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
