@@ -257,6 +257,10 @@ API endpoints follow the pattern `/app/api/get-modelList/` for JSON list fetches
 
 - **CSS `position: sticky` on `thead th` is unreliable with `border-collapse: collapse`.** Do not use CSS sticky for DataTables frozen headers. Use DataTables' native `scrollY` + `scrollX` + `scrollCollapse` options instead — they create a `.dataTables_scrollHead` div that reliably pins the header. Also style `.dataTables_scrollHead` and `.dataTables_scrollHead table.dataTable thead th` to match the custom header colors, since DataTables clones the thead into that div.
 
+- **When adding a column to a DataTable, always update `<thead>` and `<tfoot>` in the HTML template to match.** DataTables requires `<th>` count to exactly match the `columns` array. A mismatch causes a silent error — the loading spinner never hides and data never renders.
+
+- **Never put `<script>` tags inside Vue's mount element.** Vue 3 strips `<script>` and `<style>` tags inside its template. Constants like `IS_SUPERUSER` defined this way will be undefined at runtime. Use a `{% block page_scripts %}` block in master.html placed *before* the Vue mount div so scripts render outside Vue's template.
+
 ### Dependencies
 
 - **`requirements.txt` must be kept in sync with `events/views.py` imports.** When a new library is added to views (e.g. `openpyxl`, `reportlab`), add it to `requirements.txt` immediately or the server won't start. Check `events/views.py` imports whenever pulling a PR that touches that file.

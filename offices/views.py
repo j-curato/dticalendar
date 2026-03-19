@@ -19,13 +19,12 @@ def _can_manage_office(user, office_id=None):
 
 
 def get_offices_list(request):
-    """Return all offices as JSON for dropdowns."""
-    offices = Office.objects.all().order_by('office_initials')
+    """Return active offices as JSON for dropdowns and events DataTable columns."""
+    offices = Office.objects.filter(is_active=True).order_by('office_initials')
     data = [{'id': o.id, 'office_initials': o.office_initials, 'office_name': o.office_name} for o in offices]
     return JsonResponse(data, safe=False)
 
 
-@login_required
 @login_required
 def get_office_details(request):
     """Server-side DataTable for offices - all logged-in users can view."""
@@ -60,7 +59,7 @@ def get_office_details(request):
         filtered_records = office_list.count()
         office_list = office_list[start:start + length]
 
-        data = [{'id': o.id, 'office_initials': o.office_initials, 'office_name': o.office_name} for o in office_list]
+        data = [{'id': o.id, 'office_initials': o.office_initials, 'office_name': o.office_name, 'is_active': o.is_active} for o in office_list]
 
         return JsonResponse({
             'draw': draw,
@@ -107,7 +106,7 @@ def save_office_ajax(request):
 @login_required
 @csrf_exempt
 def delete_office_ajax(request):
-    """Delete an office - superusers only."""
+    """Soft-delete an office (set is_active=False) - superusers only."""
     if not request.user.is_superuser:
         return JsonResponse({'message': 'Unauthorized'}, status=403)
 
@@ -115,7 +114,27 @@ def delete_office_ajax(request):
         office_id = request.POST.get('id')
         office = Office.objects.filter(id=office_id).first()
         if office:
-            office.delete()
+            office.is_active = False
+            office.save()
+            return JsonResponse({'message': 'True'})
+        return JsonResponse({'message': 'Office not found'})
+
+    return JsonResponse({'message': 'False'})
+
+
+@login_required
+@csrf_exempt
+def reactivate_office_ajax(request):
+    """Reactivate a deactivated office (set is_active=True) - superusers only."""
+    if not request.user.is_superuser:
+        return JsonResponse({'message': 'Unauthorized'}, status=403)
+
+    if request.method == 'POST':
+        office_id = request.POST.get('id')
+        office = Office.objects.filter(id=office_id).first()
+        if office:
+            office.is_active = True
+            office.save()
             return JsonResponse({'message': 'True'})
         return JsonResponse({'message': 'Office not found'})
 
