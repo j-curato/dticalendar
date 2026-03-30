@@ -196,6 +196,7 @@ const appEvents = Vue.createApp({
                 'scrollX': true,
                 'scrollCollapse': true,
                 'columns': dtColumns,
+                'pageLength': 30,
                 'order': [[1, 'asc']], // Sort by visible Event Date column (column 1)
                 'autoWidth': true,
                 'columnDefs': [
@@ -292,6 +293,7 @@ const appEvents = Vue.createApp({
                             'colReorder': {
                                 'allowReorder': true
                             },
+                            'pageLength': 30,
                             'processing': true,
                             'serverSide': true,
                             'ajax': {

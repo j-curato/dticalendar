@@ -697,8 +697,8 @@ def fetch_events_ajax(request):
         sort_dir = 'DESC' if order_direction == 'desc' else 'ASC'
         year = int(request.GET.get('year', timezone.now().year))
 
-        # Fetch offices dynamically from tbl_offices
-        offices = list(Office.objects.order_by('id').values_list('office_initials', flat=True))
+        # Fetch offices dynamically from tbl_offices (active only)
+        offices = list(Office.objects.filter(is_active=True).order_by('id').values_list('office_initials', flat=True))
 
         # Define searchable columns dynamically
         columns = ['whole_date_start_searchable'] + offices
@@ -711,10 +711,17 @@ def fetch_events_ajax(request):
 
         query = f"""
         SELECT
-            DISTINCT generated_date,
-            TO_CHAR(generated_date, 'FMMonth DD, YYYY') AS whole_date_start_searchable,
+            d.day::date AS generated_date,
+            TO_CHAR(d.day, 'FMMonth DD, YYYY') AS whole_date_start_searchable,
             {case_statements}
         FROM (
+            SELECT generate_series(
+                DATE '{year}-01-01',
+                DATE '{year}-12-31',
+                '1 day'::interval
+            ) AS day
+        ) d
+        LEFT JOIN (
             SELECT
                 generated_date,
                 office,
@@ -731,12 +738,13 @@ def fetch_events_ajax(request):
                     event_time_end
                 FROM events_event
                 WHERE display_status = true
+                  AND EXTRACT(YEAR FROM whole_date_start) = {year}
             ) AS date_series
             WHERE EXTRACT(YEAR FROM generated_date) = {year}
             GROUP BY generated_date, office
-        ) AS subquery
-        GROUP BY generated_date
-        ORDER BY generated_date {sort_dir};
+        ) AS subquery ON subquery.generated_date = d.day::date
+        GROUP BY d.day
+        ORDER BY d.day {sort_dir};
         """
 
         with connection.cursor() as cursor:
@@ -867,7 +875,7 @@ def fetch_events_by_div_ajax(request):
         search_value = request.GET.get('search[value]', '')
         year = int(request.GET.get('year', timezone.now().year))
 
-        # Fetch division names filtered by the selected office
+        # Fetch division names filtered by the selected office (active only)
         office = request.GET.get('office', '')
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -875,6 +883,8 @@ def fetch_events_by_div_ajax(request):
                 FROM divisions_division dd
                 INNER JOIN tbl_offices o ON dd.fk_office_id = o.id
                 WHERE o.office_initials = %s
+                  AND dd.is_active = true
+                  AND o.is_active = true
                 ORDER BY dd.id
             """, [office])
             division_names = [row[0] for row in cursor.fetchall()]
@@ -889,10 +899,17 @@ def fetch_events_by_div_ajax(request):
 
         query = f"""
             SELECT
-                generated_date,
-                TO_CHAR(generated_date, 'FMMonth DD, YYYY') AS whole_date_start_searchable,
+                d.day::date AS generated_date,
+                TO_CHAR(d.day, 'FMMonth DD, YYYY') AS whole_date_start_searchable,
                 {columns_sql}
             FROM (
+                SELECT generate_series(
+                    DATE '{year}-01-01',
+                    DATE '{year}-12-31',
+                    '1 day'::interval
+                ) AS day
+            ) d
+            LEFT JOIN (
                 SELECT
                     generated_date,
                     division_name,
@@ -909,11 +926,12 @@ def fetch_events_by_div_ajax(request):
                     FROM events_event
                     WHERE office = %s
                       AND display_status = true
+                      AND EXTRACT(YEAR FROM whole_date_start) = {year}
                 ) AS date_series
                 WHERE EXTRACT(YEAR FROM generated_date) = {year}
                 GROUP BY generated_date, division_name
-            ) AS subquery
-            GROUP BY generated_date
+            ) AS subquery ON subquery.generated_date = d.day::date
+            GROUP BY d.day
         """
 
         with connection.cursor() as cursor:
@@ -1325,7 +1343,7 @@ def _format_cell_text(cell_data):
 
 def _get_office_export_data(year):
     """Return (columns, data) for office-level export."""
-    offices = list(Office.objects.order_by('id').values_list('office_initials', flat=True))
+    offices = list(Office.objects.filter(is_active=True).order_by('id').values_list('office_initials', flat=True))
     case_statements = ',\n            '.join([
         f"MAX(CASE WHEN office = '{o}' THEN event_titles END) AS \"{o}\""
         for o in offices
@@ -1381,6 +1399,8 @@ def _get_div_export_data(year, office):
             FROM divisions_division dd
             INNER JOIN tbl_offices o ON dd.fk_office_id = o.id
             WHERE o.office_initials = %s
+              AND dd.is_active = true
+              AND o.is_active = true
             ORDER BY dd.id
         """, [office])
         division_names = [row[0] for row in cursor.fetchall()]
